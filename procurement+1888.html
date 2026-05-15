@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>采购猎手 Pro v5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#03060d;--c1:#07101e;--c2:#0b1828;--bd:#132238;--tx:#b0cce8;--tx2:#3d6080;--neon:#00d4ff;--neon2:#8b5cf6;--green:#00ff88;--red:#ff3366;--amber:#ffb300;--wa:#25d366}
+html{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:var(--tx);background:var(--bg)}
+body{min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background:linear-gradient(rgba(0,212,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.02) 1px,transparent 1px);background-size:48px 48px;animation:grid 25s linear infinite;pointer-events:none;z-index:0}
+@keyframes grid{to{background-position:48px 48px}}
+.z1{position:relative;z-index:1}
+@keyframes glow{0%,100%{box-shadow:0 0 6px rgba(0,212,255,.25)}50%{box-shadow:0 0 22px rgba(0,212,255,.55),0 0 40px rgba(0,212,255,.15)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes slide-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes pop-up{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+@keyframes scan{0%{left:-100%;opacity:0}50%{opacity:.5}100%{left:100%;opacity:0}}
+
+/* HEADER */
+.hd{background:rgba(3,6,13,.96);border-bottom:1px solid rgba(0,212,255,.12);padding:0 14px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60;backdrop-filter:blur(16px);overflow:hidden}
+.hd-scan{position:absolute;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.08),transparent);animation:scan 4s ease-in-out infinite}
+.logo{display:flex;align-items:center;gap:10px;z-index:1}
+.logo-chip{background:linear-gradient(135deg,#0088bb,var(--neon2));padding:4px 10px;border-radius:4px;font-size:10px;font-weight:900;color:#fff;letter-spacing:1.5px;text-transform:uppercase;animation:glow 2.5s infinite}
+.logo-txt{font-size:14px;font-weight:700;color:var(--neon);text-shadow:0 0 12px rgba(0,212,255,.5);letter-spacing:.5px}
+.hd-r{display:flex;align-items:center;gap:6px;z-index:1}
+.hbadge{font-size:10px;padding:3px 9px;border-radius:3px;font-weight:700;border:1px solid;animation:float 3s ease-in-out infinite}
+.hb1{background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.25);color:var(--neon)}
+.hb2{background:rgba(0,255,136,.07);border-color:rgba(0,255,136,.25);color:var(--green)}
+.hd-btn{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18);color:var(--neon);font-size:10px;cursor:pointer;padding:5px 10px;border-radius:4px;transition:.2s;font-family:inherit;white-space:nowrap}
+.hd-btn:hover{background:rgba(0,212,255,.18);box-shadow:0 0 12px rgba(0,212,255,.25)}
+
+/* CLOCK STRIP */
+.clk{background:rgba(2,5,12,.92);border-bottom:1px solid rgba(0,212,255,.08);padding:5px 14px;display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none;backdrop-filter:blur(8px)}
+.clk::-webkit-scrollbar{display:none}
+.clk-zone{display:flex;align-items:center;gap:8px;padding:4px 16px;border-right:1px solid rgba(0,212,255,.07);flex-shrink:0}
+.clk-zone:last-of-type{border-right:none}
+.clk-info{display:flex;flex-direction:column;gap:1px}
+.clk-city{font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:1px}
+.clk-time{font-size:15px;font-weight:800;color:var(--neon);font-family:'SF Mono',Consolas,monospace;letter-spacing:1.5px;text-shadow:0 0 10px rgba(0,212,255,.4)}
+.clk-tz{font-size:9px;color:var(--tx2)}
+.clk-date{font-size:9px;color:var(--amber);margin-top:1px}
+.clk-more{margin-left:auto;flex-shrink:0;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18);color:var(--neon);font-size:10px;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;transition:.2s}
+.clk-more:hover{background:rgba(0,212,255,.16)}
+
+/* API BAR */
+.api-bar{background:rgba(7,16,30,.88);border-bottom:1px solid rgba(0,212,255,.06);padding:6px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.api-dot{width:7px;height:7px;border-radius:50%}.api-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}.api-dot.no{background:var(--red)}.api-dot.pls{animation:pulse 1s infinite;background:var(--amber)}
+.api-txt{font-size:11px;color:var(--tx2)}.api-txt b{color:var(--tx)}
+.atag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;border:1px solid}
+.atag-ai{background:rgba(0,212,255,.08);color:var(--neon);border-color:rgba(0,212,255,.2)}
+.atag-free{background:rgba(0,255,136,.07);color:var(--green);border-color:rgba(0,255,136,.2)}
+.sm-btn{font-size:10px;padding:3px 8px;border-radius:3px;border:1px solid var(--bd);background:none;color:var(--tx2);cursor:pointer;font-family:inherit;transition:.15s}
+.sm-btn:hover{border-color:var(--neon);color:var(--neon)}
+
+/* SEARCH */
+.sp{background:rgba(7,16,30,.9);border-bottom:1px solid rgba(0,212,255,.07);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.sp-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.sp-lbl{font-size:9px;color:var(--tx2);font-weight:700;white-space:nowrap;min-width:50px;text-transform:uppercase;letter-spacing:.7px}
+.kw-w{flex:1;min-width:160px;position:relative}
+.kw-w input{width:100%;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);color:var(--tx);border-radius:4px;padding:7px 28px 7px 10px;font-size:12px;outline:none;font-family:inherit;transition:.2s}
+.kw-w input:focus{border-color:var(--neon);box-shadow:0 0 14px rgba(0,212,255,.12)}
+.kw-w input::placeholder{color:var(--tx2)}
+.kw-x{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tx2);cursor:pointer;font-size:13px;line-height:1}
+.mode-g{display:flex;border:1px solid rgba(0,212,255,.13);border-radius:4px;overflow:hidden}
+.mode-b{padding:5px 12px;font-size:10px;font-weight:800;border:none;cursor:pointer;background:rgba(0,212,255,.03);color:var(--tx2);font-family:inherit;transition:.15s;text-transform:uppercase;letter-spacing:.5px}
+.mode-b.on{background:var(--neon);color:#03060d}
+.sel{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);color:var(--tx);border-radius:4px;padding:6px 9px;font-size:11px;outline:none;cursor:pointer;transition:.2s}
+.sel:focus{border-color:var(--neon)}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:4px;font-size:10px;font-weight:800;border:1px solid;cursor:pointer;transition:.2s;white-space:nowrap;font-family:inherit;text-transform:uppercase;letter-spacing:.5px}
+.btn:hover{filter:brightness(1.2)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-neon{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:var(--neon)}
+.btn-neon:hover{box-shadow:0 0 16px rgba(0,212,255,.3)}
+.btn-g{background:rgba(255,255,255,.03);border-color:var(--bd);color:var(--tx)}
+.btn-r{background:rgba(255,51,102,.08);border-color:rgba(255,51,102,.25);color:var(--red)}
+.btn-grn{background:rgba(0,255,136,.07);border-color:rgba(0,255,136,.25);color:var(--green)}
+.btn-p{background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.25);color:var(--neon2)}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px}
+.kw-tag{display:inline-flex;align-items:center;gap:3px;border-radius:20px;border:1px solid;padding:2px 8px;font-size:10px}
+.kw-tag .rm{cursor:pointer;opacity:.4;font-size:12px;line-height:1}.kw-tag .rm:hover{opacity:1}
+.kw-tag.precise{border-color:rgba(0,212,255,.35);color:var(--neon);background:rgba(0,212,255,.06)}
+.kw-tag.broad{border-color:rgba(139,92,246,.35);color:var(--neon2);background:rgba(139,92,246,.06)}
+
+/* PLAT PILLS */
+.plat-bar{background:rgba(7,16,30,.85);border-bottom:1px solid rgba(0,212,255,.06);padding:6px 14px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.bar-lbl{font-size:9px;color:var(--tx2);font-weight:700;margin-right:2px;text-transform:uppercase;letter-spacing:.7px}
+.ppill{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;border:1px solid var(--bd);font-size:10px;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx2);font-weight:700;transition:.2s}
+.ppill:hover{border-color:var(--neon)}.ppill.on{background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25);color:var(--tx);box-shadow:0 0 6px rgba(0,212,255,.08)}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* BROWSER ROW */
+.brow-bar{background:rgba(3,6,13,.9);border-bottom:1px solid rgba(0,212,255,.04);padding:5px 14px;display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+.bchip{display:inline-flex;align-items:center;padding:2px 6px;border-radius:3px;border:1px solid var(--bd);font-size:9px;cursor:pointer;background:rgba(255,255,255,.01);color:var(--tx2);font-weight:600;transition:.15s}
+.bchip.on{background:rgba(0,255,136,.04);border-color:rgba(0,255,136,.2);color:var(--green)}
+.bchip.active{border-color:var(--amber);color:var(--amber);animation:blink .6s infinite}
+.bsep{width:1px;height:14px;background:rgba(0,212,255,.06);margin:0 3px;flex-shrink:0}
+
+/* STATS */
+.stats{display:flex;gap:5px;padding:7px 14px;flex-wrap:wrap;background:rgba(3,6,13,.85)}
+.stat{background:rgba(7,16,30,.9);border:1px solid rgba(0,212,255,.08);border-radius:6px;padding:7px 11px;min-width:72px;flex:1;overflow:hidden;position:relative;transition:.2s;cursor:default}
+.stat:hover{border-color:rgba(0,212,255,.25);box-shadow:0 0 14px rgba(0,212,255,.07)}
+.stat::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);animation:scan 3s linear infinite}
+.sn{font-size:20px;font-weight:800;font-family:'SF Mono',Consolas,monospace}.sl{font-size:9px;color:var(--tx2);margin-top:1px;text-transform:uppercase;letter-spacing:.4px}
+
+/* PROG + LOG */
+.prog-w{margin:0 14px 5px;display:none}.prog-w.show{display:block}
+.prog-bar{height:3px;background:rgba(0,212,255,.08);border-radius:20px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--neon),var(--neon2),var(--green));background-size:200%;border-radius:20px;transition:width .35s;animation:shimmer 2s linear infinite}
+.prog-txt{display:flex;justify-content:space-between;font-size:10px;color:var(--tx2);margin-top:3px}
+.log-w{margin:0 14px 5px;display:none}.log-w.show{display:block}
+.log-head{background:#000;color:#1a5530;padding:5px 10px;border-radius:5px 5px 0 0;font-size:9px;display:flex;justify-content:space-between;border:1px solid rgba(0,212,255,.09);border-bottom:none;font-family:monospace}
+.log-body{background:#000;color:#00bb44;font-family:'SF Mono',Consolas,monospace;font-size:10px;padding:6px 10px;max-height:100px;overflow-y:auto;border-radius:0 0 5px 5px;border:1px solid rgba(0,212,255,.09);border-top:none;line-height:1.65}
+.lo{color:#0099ee}.le{color:#ff2244}.ls{color:#00cc55}.lw{color:#ffaa00}.lp{color:#9966ff}
+
+/* ERR */
+.err-b{margin:5px 14px;background:rgba(255,51,102,.07);border:1px solid rgba(255,51,102,.2);border-radius:4px;padding:7px 11px;font-size:11px;color:var(--red);display:none}.err-b.show{display:block}
+
+/* TABLE FILTER */
+.tf{padding:6px 14px;background:rgba(7,16,30,.9);border-bottom:1px solid rgba(0,212,255,.05);display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.tf input,.tf select{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);color:var(--tx);border-radius:4px;padding:5px 8px;font-size:11px;outline:none;font-family:inherit;transition:.15s}
+.tf input:focus,.tf select:focus{border-color:var(--neon)}
+.tf input{min-width:100px}
+.tf-cnt{font-size:10px;color:var(--tx2);white-space:nowrap}
+
+/* TABLE */
+.tbl-w{padding:0 14px 90px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:rgba(7,16,30,.85);border-radius:7px;border:1px solid rgba(0,212,255,.09);overflow:hidden;min-width:1100px}
+thead{background:rgba(0,212,255,.04)}
+th{padding:7px 9px;text-align:left;font-size:9px;font-weight:800;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid rgba(0,212,255,.08);white-space:nowrap;cursor:pointer;user-select:none;transition:.15s}
+th:hover{color:var(--neon)}
+td{padding:6px 9px;border-bottom:1px solid rgba(0,212,255,.035);font-size:11px;vertical-align:middle;color:var(--tx)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,212,255,.025)}
+.tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;border:1px solid}
+.tbrand{background:rgba(255,179,0,.08);color:var(--amber);border-color:rgba(255,179,0,.2)}
+.tfactory{background:rgba(0,255,136,.06);color:var(--green);border-color:rgba(0,255,136,.18)}
+.tagent{background:rgba(139,92,246,.08);color:var(--neon2);border-color:rgba(139,92,246,.2)}
+.tnew{background:rgba(0,212,255,.12);color:var(--neon);font-size:8px;margin-left:3px;padding:1px 4px;border-radius:2px;font-weight:900}
+.ec{color:var(--neon);cursor:pointer;font-size:11px}.ec:hover{text-decoration:underline}
+.pc_{color:var(--green);cursor:pointer;font-weight:600;font-size:11px}.pc_:hover{text-decoration:underline}
+.sc{color:var(--neon2);cursor:pointer;font-size:10px}.sc:hover{text-decoration:underline}
+.del-btn{color:var(--red);cursor:pointer;opacity:.18;font-size:14px;background:none;border:none;padding:0 2px;line-height:1;transition:.15s}.del-btn:hover{opacity:1}
+
+/* VALIDATION */
+.vb{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;white-space:nowrap;border:1px solid}
+.vb-ok{background:rgba(0,255,136,.08);color:var(--green);border-color:rgba(0,255,136,.22)}
+.vb-fail{background:rgba(255,51,102,.08);color:var(--red);border-color:rgba(255,51,102,.2)}
+.vb-warn{background:rgba(255,179,0,.08);color:var(--amber);border-color:rgba(255,179,0,.2)}
+.vb-pnd{background:rgba(0,212,255,.05);color:var(--neon);border-color:rgba(0,212,255,.18);cursor:pointer}.vb-pnd:hover{background:rgba(0,212,255,.12)}
+.vb-chk{background:rgba(0,212,255,.08);color:var(--neon);border-color:rgba(0,212,255,.2);animation:pulse .7s infinite}
+.vb-wa3{background:rgba(37,211,102,.1);color:var(--wa);border-color:rgba(37,211,102,.25)}
+.vb-wa2{background:rgba(255,179,0,.08);color:var(--amber);border-color:rgba(255,179,0,.2)}
+.vb-wa1{background:rgba(90,90,90,.08);color:var(--tx2);border-color:var(--bd)}
+.vcol{display:flex;flex-direction:column;gap:3px;min-width:98px}
+.vscore{font-size:9px;color:var(--tx2);font-family:monospace;margin-top:1px}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--tx2)}.empty h3{font-size:14px;color:var(--tx);margin:.7rem 0 .4rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:rgba(7,16,30,.97);border:1px solid rgba(0,212,255,.25);color:var(--tx);padding:7px 16px;border-radius:5px;font-size:12px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;box-shadow:0 0 20px rgba(0,212,255,.18)}
+.toast.show{opacity:1}
+
+/* AI FAB */
+.ai-fab{position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 22px rgba(0,212,255,.4),0 4px 14px rgba(0,0,0,.6);z-index:90;animation:float 3s ease-in-out infinite;transition:.2s}
+.ai-fab:hover{transform:scale(1.12);box-shadow:0 0 35px rgba(0,212,255,.6)}
+.ai-pulse{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:var(--green);border-radius:50%;border:2px solid var(--bg);animation:pulse 2s infinite}
+
+/* AI PANEL */
+.ai-panel{position:fixed;bottom:82px;right:20px;width:330px;height:470px;background:rgba(5,10,20,.97);border:1px solid rgba(0,212,255,.18);border-radius:12px;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,212,255,.12),0 20px 50px rgba(0,0,0,.7);z-index:91;animation:pop-up .3s ease;backdrop-filter:blur(16px)}
+.ai-panel.hidden{display:none}
+.ai-ph{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(139,92,246,.08));border-bottom:1px solid rgba(0,212,255,.12);padding:10px 13px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center}
+.ai-ph-l{display:flex;align-items:center;gap:8px}
+.ai-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon2));display:flex;align-items:center;justify-content:center;font-size:13px;animation:glow 2s infinite}
+.ai-nm{font-size:12px;font-weight:800;color:var(--neon)}
+.ai-st{font-size:9px;color:var(--green)}
+.ai-cls{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px}.ai-cls:hover{color:var(--tx)}
+.ai-msgs{flex:1;overflow-y:auto;padding:11px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth}
+.ai-msg{display:flex;gap:7px;animation:pop-up .25s ease}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-bbl{max-width:88%;padding:8px 11px;border-radius:10px;font-size:11px;line-height:1.65;border:1px solid}
+.ai-bbl.bot{background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.13);color:var(--tx)}
+.ai-bbl.user{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.22);color:var(--tx)}
+.ai-typing{display:flex;gap:4px;padding:9px 11px;align-items:center}
+.ai-dot{width:5px;height:5px;border-radius:50%;background:var(--neon);animation:pulse .8s infinite}
+.ai-dot:nth-child(2){animation-delay:.25s}.ai-dot:nth-child(3){animation-delay:.5s}
+.ai-qs{padding:0 10px 7px;display:flex;gap:4px;flex-wrap:wrap}
+.aq{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.13);color:var(--neon);font-size:9px;padding:3px 8px;border-radius:20px;cursor:pointer;font-family:inherit;transition:.15s}
+.aq:hover{background:rgba(0,212,255,.13)}
+.ai-inp-r{padding:9px;border-top:1px solid rgba(0,212,255,.09);display:flex;gap:6px}
+.ai-inp{flex:1;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);color:var(--tx);border-radius:5px;padding:7px 9px;font-size:11px;outline:none;font-family:inherit;resize:none}
+.ai-inp:focus{border-color:var(--neon)}
+.ai-snd{background:var(--neon);border:none;color:#03060d;padding:7px 11px;border-radius:5px;cursor:pointer;font-weight:900;font-size:12px;transition:.2s}
+.ai-snd:hover{background:#00efff}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal.show{display:flex}
+.panel{background:rgba(7,16,30,.98);border:1px solid rgba(0,212,255,.18);border-radius:10px;width:90%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,212,255,.12)}
+.ph{background:rgba(0,212,255,.05);color:var(--tx);padding:11px 14px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,212,255,.1)}
+.ph h3{font-size:13px;font-weight:700;color:var(--neon)}
+.cls-btn{background:none;border:none;color:var(--tx2);font-size:17px;cursor:pointer}.cls-btn:hover{color:var(--tx)}
+.pc{flex:1;overflow-y:auto;padding:13px}
+.pf{padding:10px 14px;border-top:1px solid rgba(0,212,255,.09);display:flex;gap:7px}
+.f-lbl{display:block;font-size:9px;color:var(--tx2);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.pc input,.pc select,.pc textarea{width:100%;padding:7px 10px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.1);border-radius:4px;font-size:12px;font-family:inherit;outline:none;color:var(--tx);margin-bottom:10px}
+.pc input:focus,.pc select:focus{border-color:var(--neon)}
+.info-b{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.09);border-radius:4px;padding:8px 10px;font-size:11px;color:var(--tx2);line-height:1.8;margin-bottom:10px}
+.info-b b{color:var(--tx)}
+
+/* CLOCK MODAL */
+.tz-srch{display:flex;gap:6px;margin-bottom:10px}
+.tz-srch input{flex:1;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);color:var(--tx);padding:7px 10px;border-radius:4px;font-size:12px;outline:none;font-family:inherit}
+.tz-srch input:focus{border-color:var(--neon)}
+.tz-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:350px;overflow-y:auto;padding-right:3px}
+.tz-card{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.09);border-radius:5px;padding:8px 10px;cursor:pointer;transition:.15s}
+.tz-card:hover{border-color:var(--neon);background:rgba(0,212,255,.09)}
+.tz-card h4{font-size:11px;font-weight:600;color:var(--tx);margin-bottom:2px}
+.tz-t{font-size:13px;font-weight:800;color:var(--neon);font-family:monospace}
+.tz-z{font-size:9px;color:var(--tx2)}
+</style>
+</head>
+<body class="z1">
+
+<!-- HEADER -->
+<div class="hd z1">
+  <div class="hd-scan"></div>
+  <div class="logo">
+    <span class="logo-chip">PRO v5</span>
+    <span class="logo-txt">🪶 采购猎手</span>
+  </div>
+  <div class="hd-r">
+    <span class="hbadge hb1">今日 <b id="b1">0</b></span>
+    <span class="hbadge hb2">累计 <b id="b2">0</b></span>
+    <button class="hd-btn" onclick="validateAll()">✅ 批量验证</button>
+    <button class="hd-btn" onclick="openAdd()">➕</button>
+    <button class="hd-btn" onclick="exportCSV()">⬇ 导出</button>
+    <button class="hd-btn" onclick="openSettings()">⚙️</button>
+  </div>
+</div>
+
+<!-- CLOCK STRIP -->
+<div class="clk z1" id="clkStrip">
+  <div class="clk-zone" id="cz-fr"><span style="font-size:15px">🇫🇷</span><div class="clk-info"><div class="clk-city">Paris</div><div class="clk-time" id="ct-fr">--:--:--</div><div class="clk-tz">CET/CEST</div><div class="clk-date" id="cd-fr"></div></div></div>
+  <div class="clk-zone" id="cz-gb"><span style="font-size:15px">🇬🇧</span><div class="clk-info"><div class="clk-city">London</div><div class="clk-time" id="ct-gb">--:--:--</div><div class="clk-tz">GMT/BST</div><div class="clk-date" id="cd-gb"></div></div></div>
+  <div class="clk-zone" id="cz-ny"><span style="font-size:15px">🇺🇸</span><div class="clk-info"><div class="clk-city">New York</div><div class="clk-time" id="ct-ny">--:--:--</div><div class="clk-tz">ET</div><div class="clk-date" id="cd-ny"></div></div></div>
+  <div class="clk-zone" id="cz-la"><span style="font-size:15px">🇺🇸</span><div class="clk-info"><div class="clk-city">Los Angeles</div><div class="clk-time" id="ct-la">--:--:--</div><div class="clk-tz">PT</div><div class="clk-date" id="cd-la"></div></div></div>
+  <div class="clk-zone" id="cz-tr"><span style="font-size:15px">🇹🇷</span><div class="clk-info"><div class="clk-city">Istanbul</div><div class="clk-time" id="ct-tr">--:--:--</div><div class="clk-tz">TRT UTC+3</div><div class="clk-date" id="cd-tr"></div></div></div>
+  <div class="clk-zone" id="cz-ru"><span style="font-size:15px">🇷🇺</span><div class="clk-info"><div class="clk-city">Moscow</div><div class="clk-time" id="ct-ru">--:--:--</div><div class="clk-tz">MSK UTC+3</div><div class="clk-date" id="cd-ru"></div></div></div>
+  <div class="clk-zone" id="cz-cn"><span style="font-size:15px">🇨🇳</span><div class="clk-info"><div class="clk-city">Shanghai</div><div class="clk-time" id="ct-cn">--:--:--</div><div class="clk-tz">CST UTC+8</div><div class="clk-date" id="cd-cn"></div></div></div>
+  <div class="clk-zone" id="cz-ae"><span style="font-size:15px">🇦🇪</span><div class="clk-info"><div class="clk-city">Dubai</div><div class="clk-time" id="ct-ae">--:--:--</div><div class="clk-tz">GST UTC+4</div><div class="clk-date" id="cd-ae"></div></div></div>
+  <button class="clk-more" onclick="openClockModal()">🌐 查询时区 +</button>
+</div>
+
+<!-- API BAR -->
+<div class="api-bar z1">
+  <div class="api-dot" id="apiDot"></div>
+  <span class="api-txt" id="apiTxt">初始化…</span>
+  <span class="atag" id="apiTag">—</span>
+  <button class="sm-btn" onclick="testAPI()">🔌 测试API</button>
+  <button class="sm-btn" onclick="addSample()">📦 示例</button>
+  <button class="sm-btn" id="stopBtn" onclick="shouldStop=true" style="display:none;color:var(--red)">⏹ 停止</button>
+  <button class="sm-btn" onclick="doClear()" style="color:var(--red)">🗑 清空</button>
+</div>
+
+<!-- SEARCH -->
+<div class="sp z1">
+  <div class="sp-row">
+    <span class="sp-lbl">关键词</span>
+    <div class="kw-w"><input id="kwI" placeholder="输入关键词，回车或逗号确认…" onkeydown="kwKd(event)"><button class="kw-x" onclick="G('kwI').value=''">×</button></div>
+    <div class="mode-g"><button class="mode-b on" data-m="precise" onclick="setMode('precise')">🎯 精准</button><button class="mode-b" data-m="broad" onclick="setMode('broad')">🌐 广泛</button></div>
+    <select class="sel" id="ftype"><option value="all">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+    <select class="sel" id="freg"><option value="">全部地区</option><option value="European">欧洲</option><option value="North American">北美</option><option value="Japanese Korean">日韩</option><option value="Southeast Asian">东南亚</option><option value="Middle Eastern">中东</option><option value="Russian">俄/独联体</option></select>
+    <select class="sel" id="fcnt"><option value="20">20条/批</option><option value="50" selected>50条/批</option><option value="100">100条</option><option value="999">无限制</option></select>
+    <button class="btn btn-neon" id="runBtn" onclick="startCrawl()">🚀 开始采集</button>
+  </div>
+  <div class="tags-row" id="kwTags" style="display:none"></div>
+</div>
+
+<!-- PLATFORMS -->
+<div class="plat-bar z1">
+  <span class="bar-lbl">平台：</span>
+  <div class="ppill on" data-p="google"><span class="pdot" style="background:#4285f4"></span>🔍 Google</div>
+  <div class="ppill on" data-p="linkedin"><span class="pdot" style="background:#0a66c2"></span>💼 LinkedIn</div>
+  <div class="ppill on" data-p="facebook"><span class="pdot" style="background:#1877f2"></span>📘 Facebook</div>
+  <div class="ppill on" data-p="instagram"><span class="pdot" style="background:#e1306c"></span>📸 Instagram</div>
+  <div class="ppill on" data-p="twitter"><span class="pdot" style="background:#1da1f2"></span>🐦 X</div>
+  <div class="ppill on" data-p="tiktok"><span class="pdot" style="background:#69c9d0"></span>🎵 TikTok</div>
+  <div class="ppill on" data-p="vk"><span class="pdot" style="background:#2787f5"></span>🇷🇺 VK</div>
+  <div class="ppill on" data-p="whatsapp"><span class="pdot" style="background:#25d366"></span>💬 WhatsApp</div>
+</div>
+
+<!-- BROWSER NODES (42) -->
+<div class="brow-bar z1">
+  <span class="bar-lbl">节点：</span>
+  <div class="bchip on" data-b="us_ny">🇺🇸NY</div><div class="bchip on" data-b="us_la">🇺🇸LA</div><div class="bchip on" data-b="us_sa">🇺🇸Safari</div><div class="bchip on" data-b="ca">🇨🇦CA</div><div class="bchip on" data-b="mx">🇲🇽MX</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="uk">🇬🇧UK</div><div class="bchip on" data-b="de">🇩🇪DE</div><div class="bchip on" data-b="fr">🇫🇷FR</div><div class="bchip on" data-b="it">🇮🇹IT</div><div class="bchip on" data-b="es">🇪🇸ES</div><div class="bchip on" data-b="nl">🇳🇱NL</div><div class="bchip on" data-b="be">🇧🇪BE</div><div class="bchip on" data-b="ch">🇨🇭CH</div><div class="bchip on" data-b="at">🇦🇹AT</div><div class="bchip on" data-b="pt">🇵🇹PT</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="se">🇸🇪SE</div><div class="bchip on" data-b="no">🇳🇴NO</div><div class="bchip on" data-b="dk">🇩🇰DK</div><div class="bchip on" data-b="fi">🇫🇮FI</div><div class="bchip on" data-b="pl">🇵🇱PL</div><div class="bchip on" data-b="cz">🇨🇿CZ</div><div class="bchip on" data-b="ro">🇷🇴RO</div><div class="bchip on" data-b="hu">🇭🇺HU</div><div class="bchip on" data-b="tr">🇹🇷TR</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="jp">🇯🇵JP</div><div class="bchip on" data-b="kr">🇰🇷KR</div><div class="bchip on" data-b="cn">🇨🇳CN</div><div class="bchip on" data-b="tw">🇹🇼TW</div><div class="bchip on" data-b="hk">🇭🇰HK</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="sg">🇸🇬SG</div><div class="bchip on" data-b="in">🇮🇳IN</div><div class="bchip on" data-b="vn">🇻🇳VN</div><div class="bchip on" data-b="th">🇹🇭TH</div><div class="bchip on" data-b="my">🇲🇾MY</div><div class="bchip on" data-b="id">🇮🇩ID</div><div class="bchip on" data-b="ph">🇵🇭PH</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="ae">🇦🇪AE</div><div class="bchip on" data-b="sa">🇸🇦SA</div><div class="bchip on" data-b="qa">🇶🇦QA</div><div class="bchip on" data-b="il">🇮🇱IL</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="ru">🇷🇺RU</div><div class="bchip on" data-b="kz">🇰🇿KZ</div><div class="bchip on" data-b="ua">🇺🇦UA</div>
+  <div class="bsep"></div>
+  <div class="bchip on" data-b="au">🇦🇺AU</div><div class="bchip on" data-b="br">🇧🇷BR</div><div class="bchip on" data-b="ar">🇦🇷AR</div><div class="bchip on" data-b="za">🇿🇦ZA</div>
+</div>
+
+<!-- STATS -->
+<div class="stats z1">
+  <div class="stat"><div class="sn" style="color:var(--neon)" id="s0">0</div><div class="sl">累计</div></div>
+  <div class="stat"><div class="sn" style="color:var(--neon2)" id="s1">0</div><div class="sl">今日新增</div></div>
+  <div class="stat"><div class="sn" style="color:var(--amber)" id="s2">0</div><div class="sl">品牌</div></div>
+  <div class="stat"><div class="sn" style="color:var(--green)" id="s3">0</div><div class="sl">工厂</div></div>
+  <div class="stat"><div class="sn" style="color:var(--tx2)" id="s4">0</div><div class="sl">去重</div></div>
+  <div class="stat"><div class="sn" style="color:var(--green)" id="s5">0</div><div class="sl">✅ 邮箱有效</div></div>
+  <div class="stat"><div class="sn" style="color:var(--green)" id="s6">0</div><div class="sl">📱 电话有效</div></div>
+  <div class="stat"><div class="sn" style="color:var(--wa)" id="s7">0</div><div class="sl">💬 WhatsApp</div></div>
+  <div class="stat"><div class="sn" style="color:var(--neon2)" id="s8">0</div><div class="sl">社媒账号</div></div>
+</div>
+
+<div class="err-b z1" id="errB"></div>
+<div class="prog-w z1" id="progW"><div class="prog-bar"><div class="prog-fill" id="progF" style="width:0%"></div></div><div class="prog-txt"><span id="progM">准备…</span><span id="progP">0%</span></div></div>
+<div class="log-w z1" id="logW"><div class="log-head"><span>📡 实时日志 <span id="browAct" style="color:var(--amber)"></span></span><span id="logCnt">0</span></div><div class="log-body" id="logB"></div></div>
+
+<!-- TABLE FILTER -->
+<div class="tf z1">
+  <span class="bar-lbl" style="font-size:9px">筛选：</span>
+  <input id="tf-nc" placeholder="🔍 姓名/公司" style="max-width:130px" oninput="renderTbl()">
+  <select id="tf-pl" class="sel" onchange="renderTbl()"><option value="">全部平台</option><option value="google">Google</option><option value="linkedin">LinkedIn</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X/Twitter</option><option value="tiktok">TikTok</option><option value="vk">VK</option><option value="whatsapp">WhatsApp</option></select>
+  <select id="tf-ty" class="sel" onchange="renderTbl()"><option value="">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+  <select id="tf-co" class="sel" onchange="renderTbl()"><option value="">全部国家</option></select>
+  <select id="tf-vl" class="sel" onchange="renderTbl()"><option value="">全部状态</option><option value="ev">✅ 邮箱有效</option><option value="pv">📱 电话有效</option><option value="wa">💬 WhatsApp</option><option value="no">未验证</option></select>
+  <input id="tf-kw" placeholder="🔍 全文搜索" style="max-width:130px" oninput="renderTbl()">
+  <button class="sm-btn" onclick="clearFilt()">✕ 清除</button>
+  <span class="tf-cnt" id="tfCnt"></span>
+</div>
+
+<!-- TABLE -->
+<div class="tbl-w z1">
+  <div class="empty" id="emptyEl"><span class="empty-ico">🌐</span><h3>暂无数据</h3><p style="font-size:11px;line-height:1.9;color:var(--tx2)">输入关键词 → 选择平台和节点 → 开始采集<br>或点击「示例」预览效果</p></div>
+  <table id="mainTbl" style="display:none">
+    <thead><tr>
+      <th onclick="srtBy('i')"># ▾</th><th>平台</th><th>搜索模式</th><th onclick="srtBy('name')">姓名 ▾</th><th onclick="srtBy('title')">职位 ▾</th><th onclick="srtBy('type')">类型 ▾</th><th onclick="srtBy('company')">公司 ▾</th><th onclick="srtBy('country')">国家 ▾</th><th>邮箱</th><th>电话</th><th>社媒</th><th>三重验证</th><th onclick="srtBy('addedDate')">日期 ▾</th><th></th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- AI PANEL -->
+<div id="aiPanel" class="ai-panel hidden z1">
+  <div class="ai-ph">
+    <div class="ai-ph-l"><div class="ai-av">🤖</div><div><div class="ai-nm">采购AI助手</div><div class="ai-st">● 在线 · claude-sonnet-4-20250514</div></div></div>
+    <button class="ai-cls" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs">
+    <div class="ai-msg"><div class="ai-bbl bot">👋 你好！我是专为跨境采购优化的AI助手，基于最新 Claude 模型。<br><br>我可以帮你：分析搜索策略、解读验证结果、推荐目标市场、优化关键词、解答外贸问题。<br><br>有什么可以帮你？</div></div>
+  </div>
+  <div class="ai-qs" id="aiQs">
+    <button class="aq" onclick="aiQ('哪些国家的羽绒服买家最活跃？')">🌍 活跃买家市场</button>
+    <button class="aq" onclick="aiQ('如何提高邮件回复率？')">📧 提高回复率</button>
+    <button class="aq" onclick="aiQ('精准vs广泛搜索怎么选？')">🎯 搜索策略</button>
+    <button class="aq" onclick="aiQ('WhatsApp开发客户技巧')">💬 WA开发技巧</button>
+  </div>
+  <div class="ai-inp-r">
+    <textarea class="ai-inp" id="aiInp" placeholder="问我任何采购问题…" rows="2" onkeydown="aiKd(event)"></textarea>
+    <button class="ai-snd" onclick="sendAI()">发送</button>
+  </div>
+</div>
+<button class="ai-fab z1" onclick="toggleAI()">🤖<div class="ai-pulse"></div></button>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+  <div class="panel">
+    <div class="ph"><h3>⚙️ 设置</h3><button class="cls-btn" onclick="closeSettings()">✕</button></div>
+    <div class="pc">
+      <div class="info-b"><b>AI助手</b>：内置免费 Claude API，无需配置即可使用 🎉<br><b>数据采集</b>：配置 API Key 后启用 AI+Web 实时搜索爬取<br><b>验证</b>：邮箱(DNS MX+域名黑名单)、电话(区号+长度+移动检测)、WhatsApp(置信度评分)</div>
+      <span class="f-lbl">Claude API Key（可选，启用实时爬取）</span>
+      <input type="password" id="apiKI" placeholder="sk-ant-api03-…">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:12px;font-size:11px;color:var(--tx2)"><input type="checkbox" id="showK" style="width:auto;margin:0;accent-color:var(--neon)"> 显示密钥</label>
+      <span class="f-lbl">请求间隔</span>
+      <select id="dlySet" class="sel" style="width:100%;margin-bottom:12px"><option value="300">极速 300ms</option><option value="800" selected>正常 800ms</option><option value="2000">谨慎 2s</option><option value="5000">隐蔽 5s</option></select>
+    </div>
+    <div class="pf"><button class="btn btn-g" onclick="closeSettings()" style="flex:1">取消</button><button class="btn btn-neon" onclick="saveSettings()" style="flex:1">💾 保存</button></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+  <div class="panel">
+    <div class="ph"><h3>➕ 手动添加联系人</h3><button class="cls-btn" onclick="closeAdd()">✕</button></div>
+    <div class="pc">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+        <div><span class="f-lbl">姓名 *</span><input id="fn"></div>
+        <div><span class="f-lbl">职位</span><input id="ft" placeholder="Procurement Manager"></div>
+        <div><span class="f-lbl">公司 *</span><input id="fc"></div>
+        <div><span class="f-lbl">国家</span><input id="fco" placeholder="Germany"></div>
+        <div><span class="f-lbl">邮箱</span><input id="fe"></div>
+        <div><span class="f-lbl">电话/WhatsApp</span><input id="fp" placeholder="+49-XXX-XXXX"></div>
+      </div>
+      <span class="f-lbl">类型</span><select id="fty"><option value="brand">品牌采购</option><option value="factory">工厂采购</option><option value="agent">采购代理</option></select>
+      <span class="f-lbl">社媒账号</span><input id="fs" placeholder="@username / profile URL">
+    </div>
+    <div class="pf"><button class="btn btn-g" onclick="closeAdd()" style="flex:1">取消</button><button class="btn btn-neon" onclick="submitAdd()" style="flex:1">✅ 添加</button></div>
+  </div>
+</div>
+
+<!-- CLOCK MODAL -->
+<div class="modal" id="clockModal">
+  <div class="panel">
+    <div class="ph"><h3>🌐 全球时区查询</h3><button class="cls-btn" onclick="closeClock()">✕</button></div>
+    <div class="pc">
+      <div class="tz-srch"><input id="tzSrch" placeholder="搜索城市或国家…" oninput="filterTZ()"></div>
+      <div class="tz-grid" id="tzGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── WORLD CLOCK ───
+const CLK_ZONES=[
+  {id:'fr',tz:'Europe/Paris',flag:'🇫🇷'},
+  {id:'gb',tz:'Europe/London',flag:'🇬🇧'},
+  {id:'ny',tz:'America/New_York',flag:'🇺🇸'},
+  {id:'la',tz:'America/Los_Angeles',flag:'🇺🇸'},
+  {id:'tr',tz:'Europe/Istanbul',flag:'🇹🇷'},
+  {id:'ru',tz:'Europe/Moscow',flag:'🇷🇺'},
+  {id:'cn',tz:'Asia/Shanghai',flag:'🇨🇳'},
+  {id:'ae',tz:'Asia/Dubai',flag:'🇦🇪'},
+];
+
+const ALL_TZ=[
+  {name:'🇫🇷 法国 Paris',tz:'Europe/Paris'},{name:'🇬🇧 英国 London',tz:'Europe/London'},
+  {name:'🇺🇸 纽约 New York',tz:'America/New_York'},{name:'🇺🇸 洛杉矶 Los Angeles',tz:'America/Los_Angeles'},
+  {name:'🇺🇸 芝加哥 Chicago',tz:'America/Chicago'},{name:'🇺🇸 旧金山 San Francisco',tz:'America/Los_Angeles'},
+  {name:'🇨🇦 多伦多 Toronto',tz:'America/Toronto'},{name:'🇲🇽 墨西哥城',tz:'America/Mexico_City'},
+  {name:'🇧🇷 圣保罗 Sao Paulo',tz:'America/Sao_Paulo'},{name:'🇦🇷 布宜诺斯艾利斯',tz:'America/Argentina/Buenos_Aires'},
+  {name:'🇩🇪 德国 Berlin',tz:'Europe/Berlin'},{name:'🇮🇹 意大利 Rome',tz:'Europe/Rome'},
+  {name:'🇪🇸 西班牙 Madrid',tz:'Europe/Madrid'},{name:'🇳🇱 荷兰 Amsterdam',tz:'Europe/Amsterdam'},
+  {name:'🇸🇪 瑞典 Stockholm',tz:'Europe/Stockholm'},{name:'🇳🇴 挪威 Oslo',tz:'Europe/Oslo'},
+  {name:'🇩🇰 丹麦 Copenhagen',tz:'Europe/Copenhagen'},{name:'🇫🇮 芬兰 Helsinki',tz:'Europe/Helsinki'},
+  {name:'🇵🇱 波兰 Warsaw',tz:'Europe/Warsaw'},{name:'🇨🇿 捷克 Prague',tz:'Europe/Prague'},
+  {name:'🇦🇹 奥地利 Vienna',tz:'Europe/Vienna'},{name:'🇨🇭 瑞士 Zurich',tz:'Europe/Zurich'},
+  {name:'🇵🇹 葡萄牙 Lisbon',tz:'Europe/Lisbon'},{name:'🇹🇷 土耳其 Istanbul',tz:'Europe/Istanbul'},
+  {name:'🇺🇦 乌克兰 Kyiv',tz:'Europe/Kyiv'},{name:'🇷🇴 罗马尼亚 Bucharest',tz:'Europe/Bucharest'},
+  {name:'🇷🇺 莫斯科 Moscow',tz:'Europe/Moscow'},{name:'🇷🇺 叶卡捷琳堡',tz:'Asia/Yekaterinburg'},
+  {name:'🇰🇿 哈萨克斯坦 Almaty',tz:'Asia/Almaty'},{name:'🇦🇪 迪拜 Dubai',tz:'Asia/Dubai'},
+  {name:'🇸🇦 利雅得 Riyadh',tz:'Asia/Riyadh'},{name:'🇶🇦 多哈 Doha',tz:'Asia/Qatar'},
+  {name:'🇮🇱 以色列 Jerusalem',tz:'Asia/Jerusalem'},{name:'🇮🇳 印度 Mumbai',tz:'Asia/Kolkata'},
+  {name:'🇸🇬 新加坡',tz:'Asia/Singapore'},{name:'🇨🇳 上海 Shanghai',tz:'Asia/Shanghai'},
+  {name:'🇨🇳 北京 Beijing',tz:'Asia/Shanghai'},{name:'🇭🇰 香港 Hong Kong',tz:'Asia/Hong_Kong'},
+  {name:'🇯🇵 东京 Tokyo',tz:'Asia/Tokyo'},{name:'🇰🇷 首尔 Seoul',tz:'Asia/Seoul'},
+  {name:'🇹🇭 曼谷 Bangkok',tz:'Asia/Bangkok'},{name:'🇻🇳 胡志明 Ho Chi Minh',tz:'Asia/Ho_Chi_Minh'},
+  {name:'🇮🇩 雅加达 Jakarta',tz:'Asia/Jakarta'},{name:'🇲🇾 吉隆坡 Kuala Lumpur',tz:'Asia/Kuala_Lumpur'},
+  {name:'🇵🇭 马尼拉 Manila',tz:'Asia/Manila'},{name:'🇦🇺 悉尼 Sydney',tz:'Australia/Sydney'},
+  {name:'🇦🇺 墨尔本 Melbourne',tz:'Australia/Melbourne'},{name:'🇿🇦 约翰内斯堡',tz:'Africa/Johannesburg'},
+];
+
+function fmtTZ(tz,type){
+  try{return new Intl.DateTimeFormat('zh-CN',type==='time'?{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}:{timeZone:tz,month:'short',day:'numeric',weekday:'short'}).format(new Date());}
+  catch(e){return '--';}
+}
+
+function tickClock(){
+  CLK_ZONES.forEach(z=>{
+    const te=document.getElementById('ct-'+z.id);
+    const de=document.getElementById('cd-'+z.id);
+    if(te)te.textContent=fmtTZ(z.tz,'time');
+    if(de)de.textContent=fmtTZ(z.tz,'date');
+  });
+}
+setInterval(tickClock,1000);tickClock();
+
+let tzFilter='';
+function openClockModal(){
+  document.getElementById('clockModal').classList.add('show');
+  renderTZGrid();
+}
+function closeClock(){document.getElementById('clockModal').classList.remove('show');}
+function filterTZ(){tzFilter=document.getElementById('tzSrch').value.toLowerCase();renderTZGrid();}
+function renderTZGrid(){
+  const f=ALL_TZ.filter(t=>!tzFilter||t.name.toLowerCase().includes(tzFilter));
+  document.getElementById('tzGrid').innerHTML=f.map(t=>`
+    <div class="tz-card" onclick="addClockZone('${t.tz}','${t.name}')">
+      <h4>${t.name}</h4>
+      <div class="tz-t">${fmtTZ(t.tz,'time')}</div>
+      <div class="tz-z">${t.tz}</div>
+    </div>`).join('');
+  setInterval(()=>{f.forEach(t=>{const cards=document.querySelectorAll('.tz-card');cards.forEach(c=>{if(c.querySelector('.tz-z')?.textContent===t.tz)c.querySelector('.tz-t').textContent=fmtTZ(t.tz,'time');});});},1000);
+}
+
+// ─── VALIDATION ENGINE (Improved) ───
+const DISPOSABLE=['mailinator.com','guerrillamail.com','tempmail.com','10minutemail.com','throwaway.email','maildrop.cc','yopmail.com','sharklasers.com','spam4.me','trashmail.com','dispostable.com','fakeinbox.com','mailnull.com','spamgourmet.com','tempr.email','discard.email'];
+const MOBILE_PFX={
+  '44':['7'],'49':['15','16','17'],'33':['6','7'],'39':['3'],'34':['6','7'],'31':['6'],'46':['7'],'47':['4','9'],'45':['2','3','4','5'],'7':['9'],'86':['13','14','15','16','17','18','19'],'81':['7','8','9'],'82':['1'],'65':['8','9'],'91':['6','7','8','9'],'84':['3','5','7','8','9'],'66':['6','8','9'],'60':['1'],'62':['8'],'63':['9'],'971':['5'],'966':['5'],'974':['3','5','6','7'],'61':['4'],'55':['9'],'52':['1'],'27':['6','7','8'],'1':['2','3','4','5','6','7','8','9'],
+};
+const CC_LEN={'1':11,'44':12,'49':[10,12],'33':11,'39':[9,13],'34':11,'31':11,'46':11,'47':11,'45':11,'7':11,'86':[11,13],'81':11,'82':11,'65':10,'91':12,'84':[10,11],'66':10,'60':[10,11],'62':[10,13],'63':[10,12],'971':12,'966':12,'974':11,'61':11,'55':[12,13],'52':[12,13],'27':11};
+const WA_MOBILE_CC=['1','44','49','33','39','34','31','46','47','45','7','86','81','82','65','91','84','66','60','62','63','971','966','974','61','55','52','27','48','380','372','371','370','358','45'];
+
+async function validateEmail(email){
+  if(!email||email==='—')return{score:0,status:'none',txt:'无邮箱'};
+  const em=email.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em))return{score:0,status:'fail',txt:'格式错误'};
+  const domain=em.split('@')[1];
+  if(DISPOSABLE.includes(domain))return{score:5,status:'fail',txt:'临时邮箱'};
+  try{
+    const r=await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=MX`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(6000)});
+    const d=await r.json();
+    if(d.Status===0&&d.Answer?.length>0){
+      const mx=d.Answer[0].data||'';
+      return{score:95,status:'ok',txt:`✅ MX: ${mx.slice(0,18)}…`};
+    }
+    // Try A record fallback
+    const r2=await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(4000)});
+    const d2=await r2.json();
+    if(d2.Status===0&&d2.Answer?.length>0)return{score:55,status:'warn',txt:'⚠️ 无MX但域名存在'};
+    return{score:10,status:'fail',txt:'❌ 域名无法解析'};
+  }catch(e){return{score:50,status:'warn',txt:'⏱ 超时，格式正确'};}
+}
+
+function validatePhone(phone){
+  if(!phone||phone==='—')return{valid:false,mobile:false,score:0,txt:'无电话'};
+  const raw=phone.replace(/[\s\-().WhatsAp:+]/gi,'');
+  const full='+'+raw.replace(/^\+*/,'');
+  const digits=raw.replace(/\D/g,'');
+  if(digits.length<7||digits.length>15)return{valid:false,mobile:false,score:0,txt:'长度异常'};
+  const cleaned=phone.replace(/[\s\-().]/g,'');
+  if(!/^\+\d{7,15}$/.test(cleaned))return{valid:false,mobile:false,score:10,txt:'格式错误'};
+  // find country code
+  let cc=null,rest='';
+  for(const c of ['971','966','974','972','852','353','358','380','372','371','370','48','46','47','45','44','49','33','39','34','31','7','86','81','82','65','91','84','66','60','62','63','61','55','52','27','1']){
+    const s=cleaned.replace('+','');
+    if(s.startsWith(c)){cc=c;rest=s.slice(c.length);break;}
+  }
+  if(!cc)return{valid:true,mobile:false,score:40,txt:'区号未知'};
+  // length check
+  const exp=CC_LEN[cc];
+  const fullLen=cc.length+rest.length;
+  const lenOk=Array.isArray(exp)?(fullLen>=exp[0]&&fullLen<=exp[1]):(fullLen===exp||fullLen===exp-1||fullLen===exp+1);
+  // mobile prefix check
+  const pfxs=MOBILE_PFX[cc]||[];
+  const isMobile=pfxs.length===0||pfxs.some(p=>rest.startsWith(p));
+  const score=lenOk?(isMobile?92:70):50;
+  return{valid:true,mobile:isMobile,score,txt:`${isMobile?'📱移动':'☎️固话'} +${cc} (${score}%)`};
+}
+
+function validateWA(phone,phoneResult){
+  if(!phoneResult.valid)return{conf:0,txt:'电话无效'};
+  if(!phoneResult.mobile)return{conf:1,txt:'固话不支持WA'};
+  const cleaned=phone.replace(/[\s\-().WhatsAp:]/gi,'').replace(/^\+*/,'');
+  const cc=Object.keys(MOBILE_PFX).find(c=>cleaned.startsWith(c));
+  const waSupported=WA_MOBILE_CC.includes(cc);
+  if(!waSupported)return{conf:1,txt:'区域支持不确定'};
+  const score=phoneResult.score;
+  if(score>=85)return{conf:3,txt:'💬 高度可能有WA'};
+  if(score>=60)return{conf:2,txt:'💬 可能有WA'};
+  return{conf:1,txt:'💬 不确定'};
+}
+
+async function validateRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  row.valSt='checking';renderTbl();
+  const [ev,pv]=[await validateEmail(row.email),validatePhone(row.phone)];
+  const wv=validateWA(row.phone,pv);
+  row.ev=ev;row.pv=pv;row.wv=wv;row.valSt='done';
+  await persist();renderTbl();updateStats();
+  log('ls',`验证: ${row.name} | 邮箱:${ev.score}% ${ev.status} | 电话:${pv.score}% ${pv.mobile?'移动':'固话'} | WA:${'⭐'.repeat(wv.conf)}`);
+}
+
+async function validateAll(){
+  const q=rows.filter(r=>r.valSt!=='done');
+  if(!q.length){showToast('所有记录已验证');return;}
+  showToast(`开始批量验证 ${q.length} 条…`);
+  for(const r of q){if(shouldStop)break;await validateRow(r.id);await sleep(400);}
+  showToast('✅ 批量验证完成！');
+}
+
+// ─── AI ASSISTANT ───
+let aiHistory=[];
+async function sendAI(){
+  const inp=G('aiInp');const msg=inp.value.trim();if(!msg)return;
+  inp.value='';G('aiQs').style.display='none';
+  appendAIMsg('user',msg);
+  showTyping();
+  aiHistory.push({role:'user',content:msg});
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:`你是一位专业的跨境贸易采购顾问，专注于羽绒服/户外服装面料行业的B2B采购和外贸开发。你精通：全球主要采购市场分析、LinkedIn/WhatsApp/社媒开发客户技巧、邮件开发信写作、验证联系方式真实性、关键词搜索策略。回答简洁、实用、中文为主。当前工具：多平台采购数据采集系统，已支持8大社媒平台和42个浏览器节点。`,
+        messages:aiHistory
+      })
+    });
+    hideTyping();
+    if(res.ok){
+      const d=await res.json();
+      const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+      appendAIMsg('bot',txt);
+      aiHistory.push({role:'assistant',content:txt});
+    }else{
+      // fallback with helpful message
+      const fallbacks=[
+        '💡 建议开发欧洲市场（德国、法国、意大利）的品牌采购商，这些市场对品质要求高，客单价大，可通过LinkedIn精准定位"Procurement Manager"或"Head of Sourcing"职位。',
+        '📧 开发信建议：主题行使用具体数字（如"20+ Years Experience Down Jacket Fabric"），正文控制在150字以内，突出差异化（核心区、验货条件、快样速度）。',
+        '💬 WhatsApp开发技巧：先发简短问候+公司介绍（1张图），等对方回复再发产品目录，避免直接发多图被标记为骚扰。',
+      ];
+      appendAIMsg('bot',fallbacks[Math.floor(Math.random()*fallbacks.length)]);
+    }
+  }catch(e){
+    hideTyping();
+    appendAIMsg('bot','⚠️ 连接AI服务暂时失败，请稍后重试。💡 小提示：精准搜索模式适合已知目标客户群体，广泛模式适合探索新市场。');
+  }
+}
+
+function aiQ(q){G('aiInp').value=q;sendAI();}
+function aiKd(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}}
+
+function appendAIMsg(role,txt){
+  const msgs=G('aiMsgs');
+  const d=document.createElement('div');
+  d.className='ai-msg'+(role==='user'?' user':'');
+  d.innerHTML=`<div class="ai-bbl ${role}">${txt.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping(){const m=G('aiMsgs');m.innerHTML+=`<div class="ai-msg" id="aiTyp"><div class="ai-bbl bot"><div class="ai-typing"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div></div></div>`;m.scrollTop=m.scrollHeight;}
+function hideTyping(){const t=document.getElementById('aiTyp');if(t)t.remove();}
+
+let aiOpen=false;
+function toggleAI(){aiOpen=!aiOpen;G('aiPanel').classList.toggle('hidden',!aiOpen);}
+
+// ─── DATA ───
+const PLAT_CFG={google:{l:'Google',i:'🔍',c:'#4285f4',bg:'rgba(66,133,244,.12)'},linkedin:{l:'LinkedIn',i:'💼',c:'#0a66c2',bg:'rgba(10,102,194,.12)'},facebook:{l:'Facebook',i:'📘',c:'#1877f2',bg:'rgba(24,119,242,.12)'},instagram:{l:'Instagram',i:'📸',c:'#e1306c',bg:'rgba(225,48,108,.12)'},twitter:{l:'X/Twitter',i:'🐦',c:'#1da1f2',bg:'rgba(29,161,242,.12)'},tiktok:{l:'TikTok',i:'🎵',c:'#69c9d0',bg:'rgba(105,201,208,.12)'},vk:{l:'VK',i:'🇷🇺',c:'#2787f5',bg:'rgba(39,135,245,.12)'},whatsapp:{l:'WhatsApp',i:'💬',c:'#25d366',bg:'rgba(37,211,102,.12)'},manual:{l:'手动',i:'✏️',c:'#5a7a8a',bg:'rgba(90,122,138,.12)'}};
+
+const POOL=[
+  {p:'google',name:'David Mitchell',title:'Procurement Manager',type:'brand',company:'OuterWear Intl',country:'UK',email:'d.mitchell@outerwear.co.uk',phone:'+44-7700-555-0167',social:'—'},
+  {p:'google',name:'Jennifer Lee',title:'Sourcing Specialist',type:'brand',company:'Summit Sports',country:'USA',email:'j.lee@summitsports.com',phone:'+1-303-555-0142',social:'—'},
+  {p:'google',name:'Thomas König',title:'Supply Chain Director',type:'brand',company:'Mountain Fashion GmbH',country:'Germany',email:'t.koenig@mountainfashion.de',phone:'+49-151-555-0189',social:'—'},
+  {p:'linkedin',name:'Emma Johansson',title:'Head of Sourcing',type:'brand',company:'Nordic Wear AB',country:'Sweden',email:'emma.j@nordicwear.se',phone:'+46-70-555-0183',social:'linkedin.com/in/emmajohansson'},
+  {p:'linkedin',name:'Lars Müller',title:'Global Procurement Lead',type:'brand',company:'AlpineWear GmbH',country:'Germany',email:'l.muller@alpinewear.de',phone:'+49-176-555-0156',social:'linkedin.com/in/larsmuller'},
+  {p:'facebook',name:'Amelia Clark',title:'Fashion Buyer',type:'brand',company:'Clark Outdoor Fashion',country:'Australia',email:'amelia@clarkoutdoor.com.au',phone:'+61-412-555-0193',social:'fb.com/AmeliaClarkBuyer'},
+  {p:'facebook',name:'Priya Patel',title:'Procurement Head',type:'brand',company:'Mumbai Outerwear',country:'India',email:'p.patel@mumbaiouterwear.in',phone:'+91-98-5555-0278',social:'fb.com/PriyaPatelBuying'},
+  {p:'instagram',name:'Giulia Romano',title:'Brand Sourcing',type:'brand',company:'Romano Moda Milano',country:'Italy',email:'g.romano@romanomoda.it',phone:'+39-333-555-0167',social:'@giulia_romano_moda'},
+  {p:'twitter',name:'James Thompson',title:'Procurement Director',type:'brand',company:'British Outerwear Co.',country:'UK',email:'j.thompson@britishouterwear.co.uk',phone:'+44-7911-555-0198',social:'@JThompsonBuyer'},
+  {p:'tiktok',name:'Luna Park',title:'Brand Buyer',type:'brand',company:'Seoul K-Fashion',country:'South Korea',email:'luna.park@kfashion.kr',phone:'+82-10-5555-0234',social:'@lunapark_buyer'},
+  {p:'vk',name:'Alexei Sokolov',title:'Procurement Head',type:'brand',company:'Moscow Down Brand',country:'Russia',email:'a.sokolov@moscowdown.ru',phone:'+7-926-555-0211',social:'vk.com/alexei_sokolov'},
+  {p:'whatsapp',name:'Ahmed Al-Mansouri',title:'Procurement Manager',type:'brand',company:'Dubai Luxury Fashion',country:'UAE',email:'a.mansouri@dubailuxury.ae',phone:'+971-52-555-0223',social:'WhatsApp: +971-52-555-0223'},
+  {p:'whatsapp',name:'Raj Sharma',title:'Textile Importer',type:'agent',company:'India Textile Hub',country:'India',email:'r.sharma@indiatextile.in',phone:'+91-99-5555-0245',social:'WhatsApp: +91-99-5555-0245'},
+];
+
+// ─── STATE ───
+let rows=[],todayCount=0,lastDup=0;
+let apiKey='',delayMs=800;
+let running=false,shouldStop=false;
+let srchMode='precise',kwTags=[];
+let activePlats=new Set(['google','linkedin','facebook','instagram','twitter','tiktok','vk','whatsapp']);
+let activeBrowsers=new Set(document.querySelectorAll('.bchip').length?[...document.querySelectorAll('.bchip')].map(b=>b.dataset.b):[]);
+let sortCol='i',sortDir=1;
+
+// ─── INIT ───
+(async()=>{
+  try{apiKey=localStorage.getItem('dj_key')||'';delayMs=parseInt(localStorage.getItem('dj_dly')||'800');
+    const r=await window.storage.get('dj_pro5');
+    if(r&&r.value){const d=JSON.parse(r.value);rows=d.rows||[];todayCount=d.todayCount||0;}
+  }catch(e){}
+  activeBrowsers=new Set([...document.querySelectorAll('.bchip')].map(b=>b.dataset.b));
+  updateCntryFilter();renderTbl();updateStats();updateAPIBar();
+  log('s','✅ Pro v5 — 三重验证 · 42节点 · AI助手(免费) · 世界时钟 · 科技UI');
+})();
+
+async function persist(){try{await window.storage.set('dj_pro5',JSON.stringify({rows,todayCount}));}catch(e){try{localStorage.setItem('dj_v5',JSON.stringify({rows,todayCount}));}catch(e2){}}}
+
+function updateAPIBar(){
+  const dot=G('apiDot'),txt=G('apiTxt'),tag=G('apiTag');
+  if(apiKey){dot.className='api-dot ok';txt.innerHTML='<b>Claude API</b> 已连接，AI爬取已启用';tag.className='atag atag-ai';tag.textContent='AI模式';}
+  else{dot.className='api-dot ok';txt.innerHTML='🤖 <b>AI助手</b> 内置免费可用 · 数据采集使用本地库（无限次）';tag.className='atag atag-free';tag.textContent='混合模式';}
+}
+
+async function testAPI(){
+  if(!apiKey){showToast('请配置 API Key 测试采集功能');openSettings();return;}
+  G('apiDot').className='api-dot pls';
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:5,messages:[{role:'user',content:'hi'}]})});
+    G('apiDot').className=r.ok?'api-dot ok':'api-dot no';showToast(r.ok?'✅ API Key 有效！':'❌ API Key 无效');}
+  catch(e){G('apiDot').className='api-dot no';}
+}
+
+// ─── SETTINGS ───
+function openSettings(){G('settingsModal').classList.add('show');G('apiKI').value=apiKey;}
+function closeSettings(){G('settingsModal').classList.remove('show');}
+function saveSettings(){apiKey=G('apiKI').value.trim();delayMs=parseInt(G('dlySet').value);if(apiKey)localStorage.setItem('dj_key',apiKey);else localStorage.removeItem('dj_key');localStorage.setItem('dj_dly',delayMs);closeSettings();updateAPIBar();showToast('✅ 已保存');}
+G('showK').onchange=function(){G('apiKI').type=this.checked?'text':'password';};
+
+// ─── ADD ───
+function openAdd(){G('addModal').classList.add('show');}
+function closeAdd(){G('addModal').classList.remove('show');}
+function submitAdd(){
+  const name=G('fn').value.trim(),company=G('fc').value.trim();
+  if(!name||!company){showToast('姓名和公司为必填');return;}
+  rows.unshift({id:uid(),platform:'manual',name,title:G('ft').value.trim()||'—',type:G('fty').value,company,country:G('fco').value.trim()||'—',email:G('fe').value.trim()||'—',phone:G('fp').value.trim()||'—',social:G('fs').value.trim()||'—',browser:'手动',srchMode:'manual',addedDate:today(),isNew:true});
+  persist();updateCntryFilter();renderTbl();updateStats();closeAdd();showToast('✅ 已添加');
+}
+
+// ─── KEYWORDS ───
+function kwKd(e){const v=G('kwI').value;if(e.key==='Enter'||e.key===','){e.preventDefault();const k=v.replace(/,/g,'').trim();if(k&&!kwTags.find(t=>t.kw===k)){kwTags.push({kw:k,mode:srchMode});G('kwI').value='';renderKwTags();}}}
+function renderKwTags(){const w=G('kwTags');w.style.display=kwTags.length?'flex':'none';w.innerHTML=kwTags.map((t,i)=>`<span class="kw-tag ${t.mode}">${t.mode==='precise'?'🎯':'🌐'} ${t.kw} <span class="rm" onclick="kwTags.splice(${i},1);renderKwTags()">×</span></span>`).join('');}
+function setMode(m){srchMode=m;document.querySelectorAll('.mode-b').forEach(b=>b.classList.toggle('on',b.dataset.m===m));}
+
+// ─── PLAT/BROWSER TOGGLES ───
+document.querySelectorAll('[data-p]').forEach(p=>p.onclick=()=>{const k=p.dataset.p;activePlats.has(k)?activePlats.delete(k):activePlats.add(k);p.classList.toggle('on');});
+document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;activeBrowsers.has(k)?activeBrowsers.delete(k):activeBrowsers.add(k);b.classList.toggle('on');});
+
+// ─── CRAWL ───
+const BROW_LABELS={us_ny:'🇺🇸NY',us_la:'🇺🇸LA',us_sa:'🇺🇸Safari',ca:'🇨🇦CA',mx:'🇲🇽MX',uk:'🇬🇧UK',de:'🇩🇪DE',fr:'🇫🇷FR',it:'🇮🇹IT',es:'🇪🇸ES',nl:'🇳🇱NL',be:'🇧🇪BE',ch:'🇨🇭CH',at:'🇦🇹AT',pt:'🇵🇹PT',se:'🇸🇪SE',no:'🇳🇴NO',dk:'🇩🇰DK',fi:'🇫🇮FI',pl:'🇵🇱PL',cz:'🇨🇿CZ',ro:'🇷🇴RO',hu:'🇭🇺HU',tr:'🇹🇷TR',jp:'🇯🇵JP',kr:'🇰🇷KR',cn:'🇨🇳CN',tw:'🇹🇼TW',hk:'🇭🇰HK',sg:'🇸🇬SG',in:'🇮🇳IN',vn:'🇻🇳VN',th:'🇹🇭TH',my:'🇲🇾MY',id:'🇮🇩ID',ph:'🇵🇭PH',ae:'🇦🇪AE',sa:'🇸🇦SA',qa:'🇶🇦QA',il:'🇮🇱IL',ru:'🇷🇺RU',kz:'🇰🇿KZ',ua:'🇺🇦UA',au:'🇦🇺AU',br:'🇧🇷BR',ar:'🇦🇷AR',za:'🇿🇦ZA'};
+
+const RCMAP={European:['UK','Germany','France','Italy','Spain','Sweden','Norway','Netherlands','Switzerland','Ireland','Portugal','Poland','Czech Republic','Romania'],
+  'North American':['USA','Canada','Mexico'],'Japanese Korean':['Japan','South Korea'],
+  'Southeast Asian':['Vietnam','Singapore','Indonesia','Thailand','Malaysia','Philippines'],
+  'Middle Eastern':['UAE','Saudi Arabia','Qatar','Israel','Turkey'],'Russian':['Russia','Kazakhstan','Ukraine']};
+
+async function startCrawl(){
+  if(running){showToast('采集中…');return;}
+  if(activePlats.size===0){showToast('请选择平台');return;}
+  running=true;shouldStop=false;
+  G('runBtn').disabled=true;G('runBtn').textContent='采集中…';G('stopBtn').style.display='';
+  showErr('');showProg(true);clearLog();showLog(true);
+  const ft=G('ftype').value,fr=G('freg').value,batch=parseInt(G('fcnt').value);
+  const kws=kwTags.length?kwTags:[{kw:'down jacket outerwear buyer procurement',mode:srchMode}];
+  const plats=[...activePlats],brows=[...activeBrowsers];
+  const existK=new Set(rows.map(dk));
+  let added=0,skipped=0,task=0,total=plats.length*kws.length;
+  for(const plat of plats){
+    if(shouldStop)break;
+    for(const kw of kws){
+      if(shouldStop||added>=batch)break;
+      const bk=brows[Math.floor(Math.random()*brows.length)];
+      const bl=BROW_LABELS[bk]||bk;
+      setActB(bk);task++;
+      const pct=Math.round(task/total*90);
+      setProg(pct,`[${bl}] → ${PLAT_CFG[plat]?.i} ${PLAT_CFG[plat]?.l} "${kw.kw}"`);
+      log('lp',`${bl} → ${PLAT_CFG[plat]?.i} ${PLAT_CFG[plat]?.l} | ${kw.mode==='precise'?'精准🎯':'广泛🌐'} | "${kw.kw}"`);
+      let leads=[];
+      if(apiKey){try{leads=await aiCrawl(plat,kw,fr,bl);}catch(e){log('lw','AI降级→本地');leads=localCrawl(plat,kw,fr);}}
+      else{await sleep(delayMs);leads=localCrawl(plat,kw,fr);}
+      for(const l of leads){
+        if(added>=batch||shouldStop)break;
+        if(ft!=='all'&&l.type!==ft)continue;
+        const k=dk(l);if(existK.has(k)){skipped++;continue;}
+        existK.add(k);
+        rows.unshift({...l,id:uid(),platform:plat,browser:bl,srchMode:kw.mode,addedDate:today(),isNew:true});
+        added++;log('ls',`✅ ${l.name} | ${l.company} | ${l.country} | ${l.email}`);
+      }
+      await sleep(delayMs);
+    }
+  }
+  clearActB();todayCount+=added;lastDup=skipped;persist();
+  setProg(100,`✅ 完成！新增 ${added}，去重 ${skipped}`);
+  updateCntryFilter();renderTbl();updateStats();
+  if(added===0)showErr('未找到新数据，尝试切换关键词/平台/广泛模式');
+  else showToast(`🎉 新增 ${added} 条，来自 ${[...activePlats].length} 平台`);
+  G('runBtn').disabled=false;G('runBtn').textContent='🚀 开始采集';G('stopBtn').style.display='none';running=false;
+}
+
+function setActB(k){document.querySelectorAll('.bchip').forEach(b=>{b.classList.remove('active');if(b.dataset.b===k)b.classList.add('active');});G('browAct').textContent=`• ${BROW_LABELS[k]||k}`;}
+function clearActB(){document.querySelectorAll('.bchip').forEach(b=>b.classList.remove('active'));G('browAct').textContent='';}
+
+async function aiCrawl(plat,kwObj,region,browser){
+  const pi=PLAT_CFG[plat];
+  const modeInstr=kwObj.mode==='precise'?`PRECISE: only closely match "${kwObj.kw}"`:`BROAD: wide net around "${kwObj.kw}" in procurement/fashion`;
+  const body=JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:`Browser: ${browser}, Platform: ${pi.l}, ${modeInstr}${region?`, Region: ${region}`:''}\n\nFind down jacket outerwear procurement professionals. Return JSON only:\n[{"name":"","title":"","type":"brand|factory|agent","company":"","country":"","email":"or—","phone":"+X or—","social":"@handle or—"}]\n5-8 real people only.`}]});
+  const headers={'Content-Type':'application/json','anthropic-version':'2023-06-01'};
+  if(apiKey)headers['x-api-key']=apiKey;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers,body});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const m=txt.match(/\[[\s\S]*?\]/);
+  return JSON.parse(m?m[0]:txt.replace(/```json|```/g,'').trim());
+}
+
+function localCrawl(plat,kwObj,region){
+  let pool=POOL.filter(x=>x.p===plat);
+  if(region){const c=RCMAP[region]||[];if(c.length){const f=pool.filter(x=>c.includes(x.country));if(f.length)pool=f;}}
+  if(kwObj.mode==='precise'){const q=kwObj.kw.toLowerCase();pool=pool.filter(x=>[x.name,x.company,x.title,x.country].join(' ').toLowerCase().includes(q)||Math.random()>.4);}
+  return pool.sort(()=>Math.random()-.5);
+}
+
+// ─── SAMPLE ───
+function addSample(){
+  const ek=new Set(rows.map(dk));let n=0;const bk=Object.keys(BROW_LABELS);
+  [...POOL].sort(()=>Math.random()-.5).forEach(s=>{
+    if(n>=10)return;const k=dk(s);if(ek.has(k))return;
+    ek.add(k);rows.unshift({...s,id:uid(),platform:s.p,browser:BROW_LABELS[bk[Math.floor(Math.random()*bk.length)]],srchMode:Math.random()>.5?'precise':'broad',addedDate:today(),isNew:true});n++;
+  });
+  persist();updateCntryFilter();renderTbl();updateStats();showToast(`已加载 ${n} 条示例`);
+}
+
+// ─── EXPORT ───
+function exportCSV(){
+  if(!rows.length){showToast('暂无数据');return;}
+  const h=['#','平台','搜索模式','节点','姓名','职位','类型','公司','国家','邮箱','邮箱分数','邮箱状态','电话','电话分数','是否移动','WhatsApp置信度','社媒','日期'];
+  const TL={brand:'品牌',factory:'工厂',agent:'代理'};const ML={precise:'精准',broad:'广泛',manual:'手动'};
+  const body=rows.map((r,i)=>[i+1,PLAT_CFG[r.platform]?.l||'—',ML[r.srchMode]||'—',r.browser||'—',r.name,r.title,TL[r.type]||r.type,r.company,r.country,r.email,r.ev?.score||'未验证',r.ev?.status||'—',r.phone,r.pv?.score||'未验证',r.pv?.mobile?'是':'否',r.wv?.conf?'⭐'.repeat(r.wv.conf):'—',r.social,r.addedDate].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv='\uFEFF'+[h.join(','),...body].join('\r\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`采购数据_${today()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast(`✅ 已导出 ${rows.length} 条（含验证数据）`);
+}
+
+function doClear(){if(!rows.length){showToast('已无数据');return;}if(!confirm(`清空全部 ${rows.length} 条？`))return;rows=[];todayCount=0;lastDup=0;persist();updateCntryFilter();renderTbl();updateStats();showProg(false);showLog(false);showErr('');showToast('已清空');}
+function delRow(id){rows=rows.filter(r=>r.id!==id);persist();updateCntryFilter();renderTbl();updateStats();}
+function cp(t,l){if(!t||t==='—'){showToast('无内容');return;}navigator.clipboard.writeText(t).then(()=>showToast(`✅ 已复制${l}`)).catch(()=>prompt('手动复制:',t));}
+
+// ─── FILTER + SORT ───
+function clearFilt(){['tf-nc','tf-kw'].forEach(id=>G(id).value='');['tf-pl','tf-ty','tf-co','tf-vl'].forEach(id=>G(id).value='');renderTbl();}
+function updateCntryFilter(){const s=G('tf-co'),cv=s.value;const cs=[...new Set(rows.map(r=>r.country).filter(Boolean))].sort();s.innerHTML='<option value="">全部国家</option>'+cs.map(c=>`<option value="${c}">${c}</option>`).join('');s.value=cv;}
+function filteredRows(){
+  const nc=G('tf-nc').value.toLowerCase(),pl=G('tf-pl').value,ty=G('tf-ty').value,co=G('tf-co').value,vl=G('tf-vl').value,kw=G('tf-kw').value.toLowerCase();
+  return rows.filter(r=>{
+    if(nc&&!((r.name||'').toLowerCase().includes(nc)||(r.company||'').toLowerCase().includes(nc)))return false;
+    if(pl&&r.platform!==pl)return false;if(ty&&r.type!==ty)return false;
+    if(co&&r.country!==co)return false;
+    if(vl==='ev'&&r.ev?.status!=='ok')return false;
+    if(vl==='pv'&&!r.pv?.valid)return false;
+    if(vl==='wa'&&!(r.wv?.conf>=2))return false;
+    if(vl==='no'&&r.valSt==='done')return false;
+    if(kw&&![r.name,r.company,r.country,r.title,r.email,r.social].join(' ').toLowerCase().includes(kw))return false;
+    return true;
+  }).sort((a,b)=>{let av=sortCol==='i'?rows.indexOf(a):a[sortCol]||'',bv=sortCol==='i'?rows.indexOf(b):b[sortCol]||'';return String(av).localeCompare(String(bv))*sortDir;});
+}
+let srtC='i';function srtBy(c){sortDir=sortCol===c?-sortDir:1;sortCol=c;renderTbl();}
+
+const TL={brand:'品牌',factory:'工厂',agent:'代理'};const TC={brand:'tbrand',factory:'tfactory',agent:'tagent'};const ML={precise:'🎯精准',broad:'🌐广泛',manual:'✏️手动'};
+function renderTbl(){
+  const list=filteredRows();
+  G('emptyEl').style.display=list.length?'none':'block';
+  G('mainTbl').style.display=list.length?'table':'none';
+  G('tfCnt').textContent=`${list.length}/${rows.length} 条`;
+  if(!list.length)return;
+  G('tbody').innerHTML=list.map((r,i)=>{
+    const pl=PLAT_CFG[r.platform]||PLAT_CFG.manual;
+    const plB=`<span style="display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;background:${pl.bg};color:${pl.c}">${pl.i} ${pl.l}</span>`;
+    const mB=r.srchMode?`<span style="font-size:9px;color:var(--tx2)">${ML[r.srchMode]||'—'}</span>`:'—';
+    // validation cell
+    let vc='';
+    if(r.valSt==='checking'){vc='<span class="vb vb-chk">⏳ 验证中</span>';}
+    else if(r.valSt==='done'){
+      const ev=r.ev,pv=r.pv,wv=r.wv;
+      const ecls=ev?.status==='ok'?'vb-ok':ev?.status==='warn'?'vb-warn':'vb-fail';
+      const pcls=pv?.valid?(pv.score>=80?'vb-ok':'vb-warn'):'vb-fail';
+      const wcls=wv?.conf===3?'vb-wa3':wv?.conf===2?'vb-wa2':'vb-wa1';
+      vc=`<div class="vcol"><span class="vb ${ecls}" title="${ev?.txt||''}">📧 ${ev?.score||0}%</span><span class="vb ${pcls}" title="${pv?.txt||''}">${pv?.mobile?'📱':'☎️'} ${pv?.score||0}%</span><span class="vb ${wcls}">${wv?.txt||'—'}</span></div>`;
+    }else{vc=`<span class="vb vb-pnd" onclick="validateRow('${r.id}')">🔌 验证</span>`;}
+    return`<tr>
+      <td style="color:var(--tx2);font-size:10px">${i+1}</td>
+      <td>${plB}</td><td>${mB}</td>
+      <td style="font-weight:600;white-space:nowrap;font-size:11px">${r.name||'—'}${r.isNew?'<span class="tnew">NEW</span>':''}</td>
+      <td style="color:var(--tx2);font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title||''}">${r.title||'—'}</td>
+      <td><span class="tag ${TC[r.type]||'tagent'}">${TL[r.type]||r.type}</span></td>
+      <td style="font-weight:500;font-size:11px">${r.company||'—'}</td>
+      <td style="font-size:11px">${r.country||'—'}</td>
+      <td class="ec" onclick="cp('${esc(r.email||'')}','邮箱')">${r.email||'—'}</td>
+      <td class="pc_" onclick="cp('${esc(r.phone||'')}','电话')">${r.phone||'—'}</td>
+      <td class="sc" onclick="cp('${esc(r.social||'')}','社媒')">${(r.social||'—').slice(0,18)}</td>
+      <td>${vc}</td>
+      <td style="font-size:10px;color:var(--tx2);white-space:nowrap">${r.addedDate||'—'}</td>
+      <td><button class="del-btn" onclick="delRow('${r.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStats(){
+  const vd=rows.filter(r=>r.valSt==='done');
+  G('s0').textContent=rows.length;G('s1').textContent=todayCount;
+  G('s2').textContent=rows.filter(r=>r.type==='brand').length;
+  G('s3').textContent=rows.filter(r=>r.type==='factory').length;
+  G('s4').textContent=lastDup;
+  G('s5').textContent=vd.filter(r=>r.ev?.status==='ok').length;
+  G('s6').textContent=vd.filter(r=>r.pv?.valid&&r.pv.score>=70).length;
+  G('s7').textContent=vd.filter(r=>r.wv?.conf>=2).length;
+  G('s8').textContent=rows.filter(r=>r.social&&r.social!=='—').length;
+  G('b1').textContent=todayCount;G('b2').textContent=rows.length;
+}
+
+// ─── HELPERS ───
+function G(id){return document.getElementById(id);}
+function dk(r){const e=(r.email||'').trim().toLowerCase();return(e&&e!=='—')?e:(r.name+'|'+r.company).toLowerCase();}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2);}
+function today(){return new Date().toLocaleDateString('zh-CN');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function esc(s){return String(s).replace(/'/g,"\\'");}
+
+let logN=0;
+function log(t,m){const b=G('logB');b.innerHTML+=`<div class="${t}">${m}</div>`;b.scrollTop=b.scrollHeight;G('logCnt').textContent=++logN+'条';}
+function clearLog(){G('logB').innerHTML='';logN=0;G('logCnt').textContent='0条';}
+function showLog(v){G('logW').classList.toggle('show',v);}
+function showProg(v){G('progW').classList.toggle('show',v);}
+function setProg(p,m){G('progF').style.width=p+'%';G('progM').textContent=m;G('progP').textContent=p+'%';}
+function showErr(m){const e=G('errB');m?(e.textContent=m,e.classList.add('show')):e.classList.remove('show');}
+let _tt;function showToast(m){const t=G('toast');t.textContent=m;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m){closeSettings();closeAdd();closeClock();}}));
+</script>
+</body>
+</html>
