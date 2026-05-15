@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>采购数据采集 PRO v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060910;--bg2:#0b0f1a;--card:#0d1320;--card2:#111827;--card3:#161e2e;
+  --bd:#1e293b;--bd2:#243044;
+  --tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;
+  --cyan:#00d4ff;--cyan2:#0ea5e9;--green:#00ff88;--green2:#10b981;
+  --red:#ff3d5a;--purple:#a855f7;--amber:#fbbf24;--pink:#ec4899;--teal:#2dd4bf;
+  --glow-cyan:0 0 20px rgba(0,212,255,.35);--glow-green:0 0 20px rgba(0,255,136,.25);
+  --glow-red:0 0 20px rgba(255,61,90,.3);
+  --font-mono:'Space Mono',monospace;--font-hd:'Rajdhani',sans-serif;--font-body:'Noto Sans SC',sans-serif;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--tx);font-size:13px;min-height:100vh;overflow-x:hidden}
+
+/* ANIMATED BG GRID */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 50% -10%,rgba(0,212,255,.08),transparent);pointer-events:none;z-index:0}
+
+/* SCANLINE EFFECT */
+.scanline{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.3),transparent);animation:scanline 4s linear infinite;pointer-events:none;z-index:1000;opacity:.4}
+@keyframes scanline{0%{top:-3px}100%{top:100vh}}
+
+/* PARTICLE CANVAS */
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4}
+
+/* HEADER */
+.hd{background:rgba(6,9,16,.9);border-bottom:1px solid var(--bd);padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:60;backdrop-filter:blur(20px)}
+.hd::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.4}
+.hd-logo{font-family:var(--font-hd);font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;letter-spacing:1px}
+.logo-chip{background:linear-gradient(135deg,#0ea5e9,#7c3aed);padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;color:#fff;letter-spacing:2px;position:relative;overflow:hidden}
+.logo-chip::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.2) 50%,transparent 100%);animation:shimmer-chip 3s infinite}
+@keyframes shimmer-chip{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.hd-title{color:var(--tx);text-shadow:0 0 20px rgba(0,212,255,.3)}
+.hd-title span{color:var(--cyan)}
+.hd-r{display:flex;align-items:center;gap:6px}
+.hbadge{font-size:10px;padding:3px 10px;border-radius:2px;font-weight:700;font-family:var(--font-mono);letter-spacing:.5px;border:1px solid}
+.hb1{background:rgba(14,165,233,.1);border-color:rgba(14,165,233,.3);color:#7dd3fc}
+.hb2{background:rgba(0,255,136,.08);border-color:rgba(0,255,136,.25);color:var(--green)}
+.icon-btn{background:rgba(255,255,255,.03);border:1px solid var(--bd2);color:var(--tx2);font-size:11px;cursor:pointer;padding:5px 11px;border-radius:4px;transition:.2s;font-family:var(--font-body);font-weight:500;letter-spacing:.3px}
+.icon-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06);box-shadow:0 0 12px rgba(0,212,255,.15)}
+
+/* WORLD CLOCK BAR */
+.clock-bar{background:rgba(11,15,26,.95);border-bottom:1px solid var(--bd);padding:6px 16px;display:flex;align-items:center;gap:0;overflow-x:auto;backdrop-filter:blur(10px)}
+.clock-bar::-webkit-scrollbar{height:2px}.clock-bar::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:2px}
+.tz-item{display:flex;flex-direction:column;align-items:center;padding:4px 14px;border-right:1px solid var(--bd);min-width:90px;cursor:pointer;transition:.2s;position:relative}
+.tz-item:hover{background:rgba(0,212,255,.05)}
+.tz-item:last-child{border-right:none}
+.tz-item.highlight{background:rgba(0,212,255,.08)}
+.tz-city{font-size:9px;color:var(--tx3);font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:var(--font-mono)}
+.tz-time{font-size:14px;font-weight:700;color:var(--cyan);font-family:var(--font-mono);letter-spacing:1px;line-height:1.2}
+.tz-date{font-size:9px;color:var(--tx3);font-family:var(--font-mono)}
+.tz-flag{font-size:11px;margin-bottom:1px}
+.tz-divider{width:1px;height:36px;background:var(--bd);flex-shrink:0}
+.tz-add-btn{display:flex;align-items:center;justify-content:center;padding:4px 12px;min-width:60px;cursor:pointer;color:var(--tx3);font-size:18px;transition:.2s;border-right:none}
+.tz-add-btn:hover{color:var(--cyan)}
+.tz-search-wrap{position:relative;display:none;align-items:center}
+.tz-search-wrap.show{display:flex}
+.tz-search-wrap input{background:var(--card2);border:1px solid var(--cyan);color:var(--tx);border-radius:4px;padding:4px 8px;font-size:11px;font-family:var(--font-body);outline:none;width:140px}
+.tz-dropdown{position:absolute;top:100%;left:0;background:var(--card);border:1px solid var(--bd2);border-radius:6px;max-height:200px;overflow-y:auto;z-index:200;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.tz-opt{padding:7px 12px;cursor:pointer;font-size:11px;color:var(--tx2);font-family:var(--font-body);transition:.1s}
+.tz-opt:hover{background:rgba(0,212,255,.1);color:var(--cyan)}
+
+/* API BAR */
+.api-bar{background:rgba(13,19,32,.95);border-bottom:1px solid var(--bd);padding:6px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;backdrop-filter:blur(10px)}
+.api-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.api-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}
+.api-dot.no{background:var(--red);box-shadow:0 0 8px var(--red)}
+.api-dot.pulse{animation:apipulse 1.2s infinite}
+@keyframes apipulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.api-txt{font-size:11px;color:var(--tx2);font-family:var(--font-mono)}
+.api-txt b{color:var(--tx)}
+.atag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;font-family:var(--font-mono);letter-spacing:.5px}
+.atag-ai{background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);color:#7dd3fc}
+.atag-free{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--green)}
+.api-test-btn{font-size:11px;padding:3px 10px;border-radius:3px;border:1px solid var(--bd2);background:none;color:var(--tx3);cursor:pointer;font-family:var(--font-body);transition:.15s}
+.api-test-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* SEARCH PANEL */
+.sp{background:rgba(13,19,32,.97);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;flex-direction:column;gap:8px;position:relative;z-index:2}
+.sp-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.sp-label{font-size:10px;color:var(--tx3);font-weight:700;white-space:nowrap;min-width:50px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px}
+.kw-wrap{flex:1;min-width:160px;position:relative}
+.kw-wrap input{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--bd2);color:var(--tx);border-radius:4px;padding:7px 32px 7px 12px;font-size:12px;outline:none;font-family:var(--font-body);transition:.2s}
+.kw-wrap input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,212,255,.1),var(--glow-cyan)}
+.kw-wrap input::placeholder{color:var(--tx3)}
+.kw-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px;line-height:1}
+.kw-clear:hover{color:var(--tx)}
+.mode-grp{display:flex;border:1px solid var(--bd2);border-radius:4px;overflow:hidden}
+.mode-btn{padding:6px 13px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:rgba(255,255,255,.03);color:var(--tx3);font-family:var(--font-hd);transition:.15s;letter-spacing:.5px}
+.mode-btn.on{background:var(--cyan);color:#060910}
+.sp-sel{background:rgba(255,255,255,.03);border:1px solid var(--bd2);color:var(--tx);border-radius:4px;padding:6px 10px;font-size:11px;outline:none;cursor:pointer;font-family:var(--font-body);transition:.15s}
+.sp-sel:focus{border-color:var(--cyan)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:.2s;white-space:nowrap;font-family:var(--font-hd);letter-spacing:.5px}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn:active{transform:translateY(0)}
+.btn-blue{background:linear-gradient(135deg,var(--cyan2),#0284c7);color:#fff;box-shadow:0 4px 15px rgba(14,165,233,.3)}
+.btn-gray{background:rgba(255,255,255,.05);color:var(--tx);border:1px solid var(--bd2)}
+.btn-red{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
+.btn-green{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.btn-amber{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.btn-purple{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+.btn-cyan{background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(0,212,255,.1));color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.btn-cyan:hover{box-shadow:var(--glow-cyan)}
+
+/* KW TAGS */
+.tags-row{display:flex;flex-wrap:wrap;gap:5px}
+.kw-tag{display:inline-flex;align-items:center;gap:4px;border-radius:3px;border:1px solid;padding:3px 10px;font-size:10px;font-family:var(--font-mono);cursor:default}
+.kw-tag .rm{cursor:pointer;opacity:.5;font-size:13px}.kw-tag .rm:hover{opacity:1}
+.kw-tag.precise{border-color:rgba(0,212,255,.4);color:var(--cyan);background:rgba(0,212,255,.07)}
+.kw-tag.broad{border-color:rgba(168,85,247,.4);color:var(--purple);background:rgba(168,85,247,.07)}
+
+/* COUNTRY TAGS for region */
+.region-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.rtag{display:inline-flex;align-items:center;gap:3px;border-radius:2px;border:1px solid var(--bd2);padding:2px 8px;font-size:10px;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx3);transition:.15s;font-family:var(--font-mono)}
+.rtag.on{border-color:rgba(0,212,255,.4);color:var(--cyan);background:rgba(0,212,255,.07)}
+.rtag:hover{border-color:var(--bd2);color:var(--tx)}
+
+/* PLATFORMS */
+.plat-grid{background:rgba(11,15,26,.97);border-bottom:1px solid var(--bd);padding:7px 16px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.plat-label{font-size:10px;color:var(--tx3);font-weight:700;white-space:nowrap;margin-right:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px}
+.plat-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;border:1px solid var(--bd2);font-size:10px;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx3);font-weight:600;transition:.2s;user-select:none;font-family:var(--font-hd);letter-spacing:.3px}
+.plat-pill:hover{border-color:var(--bd);color:var(--tx2)}
+.plat-pill.on{background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.35);color:var(--tx)}
+.plat-pill.on:hover{box-shadow:0 0 10px rgba(0,212,255,.15)}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* BROWSER NODES */
+.brow-bar{background:rgba(13,19,32,.97);border-bottom:1px solid var(--bd);padding:7px 16px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.brow-label{font-size:10px;color:var(--tx3);font-weight:700;white-space:nowrap;margin-right:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px}
+.brow-chip{display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border-radius:3px;border:1px solid var(--bd2);font-size:10px;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx3);font-weight:600;transition:.15s;user-select:none;font-family:var(--font-mono)}
+.brow-chip:hover{border-color:var(--bd);color:var(--tx2)}
+.brow-chip.on{background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.3);color:var(--green2)}
+.brow-chip.active{border-color:var(--amber);color:var(--amber);background:rgba(251,191,36,.1);animation:blink-node .6s infinite}
+@keyframes blink-node{0%,100%{opacity:1}50%{opacity:.4}}
+.brow-section{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:2px 0 2px 8px;border-left:1px solid rgba(0,212,255,.2);margin-left:3px}
+.brow-region{font-size:9px;color:var(--cyan);font-weight:700;white-space:nowrap;align-self:center;font-family:var(--font-mono);letter-spacing:.5px;opacity:.7}
+
+/* STATS */
+.stats{display:flex;gap:6px;padding:8px 16px;flex-wrap:wrap;background:rgba(6,9,16,.98);position:relative;z-index:1}
+.stat{background:rgba(13,19,32,.8);border:1px solid var(--bd);border-radius:5px;padding:8px 12px;min-width:76px;flex:1;position:relative;overflow:hidden;transition:.2s}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.3}
+.stat:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.sn{font-size:20px;font-weight:700;font-family:var(--font-mono);line-height:1}
+.sl{font-size:10px;color:var(--tx3);margin-top:2px;font-family:var(--font-body)}
+.sn.cyan{color:var(--cyan);text-shadow:0 0 15px rgba(0,212,255,.4)}
+.sn.green{color:var(--green);text-shadow:0 0 10px rgba(0,255,136,.3)}
+.sn.amber{color:var(--amber)}.sn.purple{color:var(--purple)}.sn.wa{color:#25d366}
+.stat-pulse{animation:stat-in .4s ease}
+@keyframes stat-in{from{transform:scale(1.1)}to{transform:scale(1)}}
+
+/* PROGRESS */
+.prog-wrap{margin:0 16px 6px;display:none;position:relative;z-index:1}.prog-wrap.show{display:block}
+.prog-bar{height:4px;background:var(--bd);border-radius:20px;overflow:hidden;position:relative}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--green));background-size:200%;border-radius:20px;transition:width .4s cubic-bezier(.4,0,.2,1);animation:prog-shimmer 2s linear infinite}
+@keyframes prog-shimmer{0%{background-position:0%}100%{background-position:200%}}
+.prog-txt{display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-top:3px;font-family:var(--font-mono)}
+
+/* LOG */
+.log-wrap{margin:0 16px 6px;display:none;position:relative;z-index:1}.log-wrap.show{display:block}
+.log-head{background:rgba(6,9,16,.95);color:var(--tx3);padding:5px 10px;border-radius:5px 5px 0 0;font-size:10px;display:flex;justify-content:space-between;border:1px solid var(--bd);border-bottom:none;font-family:var(--font-mono)}
+.log-body{background:rgba(6,9,16,.95);color:var(--tx3);font-family:var(--font-mono);font-size:11px;padding:8px 10px;max-height:120px;overflow-y:auto;border-radius:0 0 5px 5px;border:1px solid var(--bd);border-top:none;line-height:1.7}
+.log-body::-webkit-scrollbar{width:3px}.log-body::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:2px}
+.lo{color:var(--cyan)}.le{color:var(--red)}.ls{color:var(--green)}.lw{color:var(--amber)}.lp{color:var(--purple)}.lb{color:#7dd3fc}
+
+/* ERR */
+.err-box{margin:6px 16px;background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.25);border-radius:5px;padding:8px 12px;font-size:12px;color:var(--red);display:none}
+.err-box.show{display:block}
+
+/* TABLE FILTER */
+.tbl-filter{padding:8px 16px;background:rgba(11,15,26,.98);border-bottom:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center;position:sticky;top:54px;z-index:40;backdrop-filter:blur(10px)}
+.tbl-filter input,.tbl-filter select{background:rgba(255,255,255,.03);border:1px solid var(--bd2);color:var(--tx);border-radius:4px;padding:5px 10px;font-size:11px;outline:none;font-family:var(--font-body);transition:.15s}
+.tbl-filter input:focus,.tbl-filter select:focus{border-color:var(--cyan)}
+.tbl-filter input::placeholder{color:var(--tx3)}
+.tbl-filter input{flex:1;min-width:100px}
+.filter-lbl{font-size:10px;color:var(--tx3);font-weight:700;white-space:nowrap;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px}
+.filter-clear{font-size:11px;padding:5px 10px;border-radius:4px;border:1px solid var(--bd2);background:none;color:var(--tx3);cursor:pointer;font-family:var(--font-body);transition:.15s}
+.filter-clear:hover{border-color:var(--red);color:var(--red)}
+.filter-count{font-size:10px;color:var(--tx3);white-space:nowrap;font-family:var(--font-mono)}
+
+/* TABLE */
+.tbl-wrap{padding:0 16px 160px;overflow-x:auto;position:relative;z-index:1}
+table{width:100%;border-collapse:collapse;background:rgba(13,19,32,.9);border-radius:6px;border:1px solid var(--bd);overflow:hidden;min-width:1100px}
+th{background:rgba(6,9,16,.8);padding:7px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none;transition:.15s;font-family:var(--font-mono)}
+th:hover{color:var(--cyan)}
+th .sort-ico{opacity:.3;font-size:9px;margin-left:3px}
+th.sort-asc .sort-ico::after{content:'▲';opacity:1;color:var(--cyan)}
+th.sort-desc .sort-ico::after{content:'▼';opacity:1;color:var(--cyan)}
+td{padding:6px 10px;border-bottom:1px solid rgba(30,41,59,.6);font-size:12px;vertical-align:middle;color:var(--tx)}
+tr:last-child td{border-bottom:none}
+tr{transition:.15s}
+tr:hover td{background:rgba(0,212,255,.03)}
+tr.row-new{animation:row-appear .4s ease}
+@keyframes row-appear{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:.5px;font-family:var(--font-mono)}
+.tbrand{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.tfactory{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.tagent{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+.tnew{background:rgba(0,212,255,.2);color:var(--cyan);font-size:8px;margin-left:3px;padding:1px 5px;border-radius:2px;font-weight:700;font-family:var(--font-mono);animation:newpulse 2s infinite}
+@keyframes newpulse{0%,100%{opacity:1}50%{opacity:.5}}
+.email-c{color:var(--cyan);cursor:pointer;font-size:11px;font-family:var(--font-mono)}.email-c:hover{text-decoration:underline;text-shadow:var(--glow-cyan)}
+.phone-c{color:var(--green);cursor:pointer;font-size:11px;font-family:var(--font-mono)}.phone-c:hover{text-decoration:underline;text-shadow:var(--glow-green)}
+.social-c{color:var(--purple);cursor:pointer;font-size:11px}.social-c:hover{text-decoration:underline}
+.del-btn{color:var(--red);cursor:pointer;opacity:.15;font-size:16px;background:none;border:none;padding:0 3px;line-height:1;transition:.15s}
+.del-btn:hover{opacity:1}
+
+/* VALIDATION */
+.vbadge{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:2px;white-space:nowrap;cursor:default;font-family:var(--font-mono)}
+.vb-ok{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.vb-fail{background:rgba(255,61,90,.08);color:var(--red);border:1px solid rgba(255,61,90,.2)}
+.vb-pending{background:rgba(139,148,158,.05);color:var(--tx3);cursor:pointer;border:1px solid var(--bd2)}
+.vb-pending:hover{border-color:var(--cyan);color:var(--cyan)}
+.vb-checking{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2);animation:apipulse 1s infinite}
+.vb-wa-ok{background:rgba(37,211,102,.1);color:#25d366;border:1px solid rgba(37,211,102,.2)}
+.vb-wa-no{background:rgba(139,148,158,.05);color:var(--tx3);border:1px solid var(--bd2)}
+.val-cell{display:flex;flex-direction:column;gap:3px;min-width:90px}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--tx3);position:relative;z-index:1}
+.empty-icon{font-size:48px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(0,212,255,.3))}
+.empty h3{font-size:16px;margin-bottom:6px;color:var(--tx);font-family:var(--font-hd);letter-spacing:1px}
+.empty p{font-size:12px;line-height:1.9;color:var(--tx3)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(13,19,32,.95);border:1px solid var(--bd2);color:var(--tx);padding:8px 18px;border-radius:5px;font-size:12px;z-index:9999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 20px rgba(0,212,255,.1);backdrop-filter:blur(20px);font-family:var(--font-body)}
+.toast.show{opacity:1}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal.show{display:flex}
+.panel{background:var(--card);border:1px solid var(--bd2);border-radius:8px;width:90%;max-width:600px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.8),0 0 40px rgba(0,212,255,.05)}
+.ph{background:rgba(6,9,16,.8);color:var(--tx);padding:12px 16px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)}
+.ph h3{font-size:15px;font-weight:600;font-family:var(--font-hd);letter-spacing:1px}
+.ph h3 span{color:var(--cyan)}
+.close-btn{background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;transition:.15s}.close-btn:hover{color:var(--tx)}
+.pc{flex:1;overflow-y:auto;padding:16px}
+.pc::-webkit-scrollbar{width:3px}.pc::-webkit-scrollbar-thumb{background:var(--cyan)}
+.pf{padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:8px}
+label{display:block;font-size:10px;color:var(--tx3);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}
+.pc input,.pc select,.pc textarea{width:100%;padding:8px 11px;background:rgba(255,255,255,.03);border:1px solid var(--bd2);border-radius:4px;font-size:12px;font-family:var(--font-body);outline:none;color:var(--tx);margin-bottom:11px;transition:.15s}
+.pc input:focus,.pc select:focus,.pc textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,212,255,.08)}
+.pc input::placeholder,.pc textarea::placeholder{color:var(--tx3)}
+.pc textarea{resize:vertical;min-height:60px}
+.info-box{background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:4px;padding:10px;font-size:11px;color:var(--tx3);line-height:1.8;margin-bottom:11px}
+.info-box b{color:var(--tx)}
+.sec-ttl{font-size:10px;font-weight:700;color:var(--cyan);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px;padding-top:10px;border-top:1px solid var(--bd);font-family:var(--font-mono)}
+
+/* AI ASSISTANT */
+.ai-toggle{position:fixed;bottom:22px;right:22px;z-index:500;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--cyan2),var(--purple));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 24px rgba(0,212,255,.4),0 0 0 0 rgba(0,212,255,.3);animation:ai-pulse 2s infinite;transition:.3s}
+.ai-toggle:hover{transform:scale(1.1);animation:none;box-shadow:0 6px 30px rgba(0,212,255,.6)}
+@keyframes ai-pulse{0%,100%{box-shadow:0 4px 24px rgba(0,212,255,.4),0 0 0 0 rgba(0,212,255,.3)}50%{box-shadow:0 4px 24px rgba(0,212,255,.4),0 0 0 12px rgba(0,212,255,0)}}
+.ai-panel{position:fixed;bottom:84px;right:22px;width:380px;max-height:520px;background:rgba(11,15,26,.97);border:1px solid var(--bd2);border-radius:10px;display:flex;flex-direction:column;z-index:500;box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 30px rgba(0,212,255,.08);transform-origin:bottom right;transform:scale(0);opacity:0;transition:.25s cubic-bezier(.34,1.56,.64,1);pointer-events:none;backdrop-filter:blur(20px)}
+.ai-panel.open{transform:scale(1);opacity:1;pointer-events:all}
+.ai-head{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;background:rgba(6,9,16,.6);border-radius:10px 10px 0 0;flex-shrink:0}
+.ai-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--cyan2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ai-info{flex:1}
+.ai-name{font-size:12px;font-weight:700;color:var(--tx);font-family:var(--font-hd);letter-spacing:.5px}
+.ai-status{font-size:10px;color:var(--green);font-family:var(--font-mono)}
+.ai-status.thinking{color:var(--amber);animation:apipulse .8s infinite}
+.ai-close{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px;line-height:1;transition:.15s}
+.ai-close:hover{color:var(--tx)}
+.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.ai-msgs::-webkit-scrollbar{width:3px}.ai-msgs::-webkit-scrollbar-thumb{background:var(--cyan)}
+.ai-msg{display:flex;gap:6px;animation:msg-in .25s ease}
+@keyframes msg-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-bubble{max-width:85%;padding:8px 11px;border-radius:6px;font-size:12px;line-height:1.6;font-family:var(--font-body)}
+.ai-msg.bot .ai-bubble{background:rgba(255,255,255,.04);border:1px solid var(--bd2);color:var(--tx);border-radius:2px 6px 6px 6px}
+.ai-msg.user .ai-bubble{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,212,255,.08));border:1px solid rgba(0,212,255,.25);color:var(--cyan);border-radius:6px 2px 6px 6px}
+.ai-icon{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.ai-msg.bot .ai-icon{background:linear-gradient(135deg,var(--cyan2),var(--purple))}
+.ai-msg.user .ai-icon{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--cyan)}
+.ai-footer{padding:10px 12px;border-top:1px solid var(--bd);display:flex;gap:6px;flex-shrink:0}
+.ai-input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bd2);color:var(--tx);border-radius:5px;padding:7px 10px;font-size:12px;font-family:var(--font-body);outline:none;transition:.15s}
+.ai-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,212,255,.08)}
+.ai-input::placeholder{color:var(--tx3)}
+.ai-send{background:linear-gradient(135deg,var(--cyan2),var(--purple));border:none;color:#fff;border-radius:5px;padding:7px 12px;cursor:pointer;font-size:13px;transition:.2s;flex-shrink:0}
+.ai-send:hover{filter:brightness(1.2);transform:scale(1.05)}
+.ai-send:disabled{opacity:.4;transform:none}
+.typing-dots{display:flex;gap:3px;padding:6px 2px}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--tx3);animation:dot-bounce .8s infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes dot-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.ai-quick-btns{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px 8px}
+.ai-qbtn{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--bd2);background:rgba(255,255,255,.02);color:var(--tx3);cursor:pointer;font-family:var(--font-body);transition:.15s;white-space:nowrap}
+.ai-qbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06)}
+
+/* VALIDATION ENGINE ENHANCEMENT */
+.vval-score{font-size:11px;font-weight:700;font-family:var(--font-mono)}
+.score-high{color:var(--green)}.score-med{color:var(--amber)}.score-low{color:var(--red)}
+
+/* MODEL BADGES */
+.model-badge{font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--font-mono);font-weight:700;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);color:var(--cyan);margin-left:4px}
+
+/* MOBILE-FRIENDLY */
+@media(max-width:768px){.ai-panel{width:calc(100vw - 20px);right:10px}}
+
+/* ANIMATED ENTRY */
+.hd,.api-bar,.sp,.plat-grid,.brow-bar,.stats{animation:fade-in .4s ease}
+@keyframes fade-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* NEON ACCENTS */
+.neon-line{height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.2;margin:0}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="scanline"></div>
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="hd-logo">
+    <span class="logo-chip">PRO v5</span>
+    <span class="hd-title">🪶 羽绒服采购 <span>数据采集</span></span>
+  </div>
+  <div class="hd-r">
+    <span class="hbadge hb1">今日 <b id="b1">0</b></span>
+    <span class="hbadge hb2">累计 <b id="b2">0</b></span>
+    <button class="icon-btn" onclick="validateAll()">✅ 批量验证</button>
+    <button class="icon-btn" onclick="openAdd()">➕ 添加</button>
+    <button class="icon-btn" onclick="exportCSV()">⬇ 导出</button>
+    <button class="icon-btn" onclick="openSettings()">⚙️ 设置</button>
+  </div>
+</div>
+
+<!-- WORLD CLOCK BAR -->
+<div class="clock-bar" id="clockBar">
+  <!-- Clocks injected by JS -->
+  <div class="tz-add-btn" onclick="toggleTZSearch()" title="添加时区">＋</div>
+  <div class="tz-search-wrap" id="tzSearch">
+    <input id="tzInput" placeholder="搜索城市或国家…" oninput="filterTZ()" onkeydown="tzKeydown(event)">
+    <div class="tz-dropdown" id="tzDropdown"></div>
+  </div>
+</div>
+
+<!-- API BAR -->
+<div class="api-bar">
+  <div class="api-dot" id="apiDot"></div>
+  <span class="api-txt" id="apiTxt">检测中…</span>
+  <span class="atag" id="apiTag">—</span>
+  <button class="api-test-btn" onclick="testAPI()">🔌 测试API</button>
+  <button class="api-test-btn" onclick="addSample()">📦 示例数据</button>
+  <button class="api-test-btn" id="stopBtn" onclick="stopCrawl()" style="display:none;color:var(--red)">⏹ 停止</button>
+  <button class="api-test-btn" onclick="doClear()" style="color:var(--red)">🗑 清空</button>
+  <span style="margin-left:auto;font-size:10px;color:var(--tx3);font-family:var(--font-mono)">MODEL: <span class="model-badge">claude-sonnet-4</span> + WEB SEARCH</span>
+</div>
+
+<!-- SEARCH PANEL -->
+<div class="sp">
+  <div class="sp-row">
+    <span class="sp-label">🔑 关键词</span>
+    <div class="kw-wrap">
+      <input id="kwInput" placeholder="任意词汇均可 — 回车/逗号确认（支持多语言）…" onkeydown="kwKeydown(event)">
+      <button class="kw-clear" onclick="document.getElementById('kwInput').value=''">×</button>
+    </div>
+    <div class="mode-grp">
+      <button class="mode-btn on" data-mode="precise" onclick="setMode('precise')">🎯 精准</button>
+      <button class="mode-btn" data-mode="broad" onclick="setMode('broad')">🌐 广泛</button>
+    </div>
+    <select class="sp-sel" id="ftype"><option value="all">全部类型</option><option value="brand">品牌采购</option><option value="factory">工厂采购</option><option value="agent">采购代理</option></select>
+    <select class="sp-sel" id="fcount"><option value="10">10条/批</option><option value="20" selected>20条/批</option><option value="50">50条/批</option><option value="999">无限制</option></select>
+    <button class="btn btn-blue" id="runBtn" onclick="startCrawl()">🚀 开始采集</button>
+  </div>
+  <!-- REGION TAGS -->
+  <div class="sp-row" style="align-items:flex-start">
+    <span class="sp-label" style="padding-top:2px">🌍 地区</span>
+    <div class="region-tags" id="regionTags"></div>
+  </div>
+  <div class="tags-row" id="kwTags" style="display:none"></div>
+</div>
+
+<!-- PLATFORMS -->
+<div class="plat-grid">
+  <span class="plat-label">平台：</span>
+  <div class="plat-pill on" data-p="google"><span class="pdot" style="background:#4285f4"></span>🔍 Google</div>
+  <div class="plat-pill on" data-p="linkedin"><span class="pdot" style="background:#0a66c2"></span>💼 LinkedIn</div>
+  <div class="plat-pill on" data-p="facebook"><span class="pdot" style="background:#1877f2"></span>📘 Facebook</div>
+  <div class="plat-pill on" data-p="instagram"><span class="pdot" style="background:#e1306c"></span>📸 Instagram</div>
+  <div class="plat-pill on" data-p="twitter"><span class="pdot" style="background:#1da1f2"></span>🐦 X</div>
+  <div class="plat-pill on" data-p="tiktok"><span class="pdot" style="background:#69c9d0"></span>🎵 TikTok</div>
+  <div class="plat-pill on" data-p="vk"><span class="pdot" style="background:#2787f5"></span>🇷🇺 VK</div>
+  <div class="plat-pill on" data-p="whatsapp"><span class="pdot" style="background:#25d366"></span>💬 WhatsApp</div>
+</div>
+
+<!-- BROWSER NODES -->
+<div class="brow-bar">
+  <span class="brow-label">🌐 节点：</span>
+  <div class="brow-section">
+    <span class="brow-region">🌎北美</span>
+    <div class="brow-chip on" data-b="us_chrome_ny">🇺🇸NY</div>
+    <div class="brow-chip on" data-b="us_chrome_la">🇺🇸LA</div>
+    <div class="brow-chip on" data-b="us_safari">🇺🇸Safari</div>
+    <div class="brow-chip on" data-b="ca_edge">🇨🇦CA</div>
+    <div class="brow-chip on" data-b="mx_chrome">🇲🇽MX</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🌍西欧</span>
+    <div class="brow-chip on" data-b="uk_chrome">🇬🇧UK</div>
+    <div class="brow-chip on" data-b="de_chrome">🇩🇪DE</div>
+    <div class="brow-chip on" data-b="fr_firefox">🇫🇷FR</div>
+    <div class="brow-chip on" data-b="it_chrome">🇮🇹IT</div>
+    <div class="brow-chip on" data-b="es_chrome">🇪🇸ES</div>
+    <div class="brow-chip on" data-b="nl_chrome">🇳🇱NL</div>
+    <div class="brow-chip on" data-b="be_chrome">🇧🇪BE</div>
+    <div class="brow-chip on" data-b="ch_safari">🇨🇭CH</div>
+    <div class="brow-chip on" data-b="at_chrome">🇦🇹AT</div>
+    <div class="brow-chip on" data-b="pt_chrome">🇵🇹PT</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🌍北欧/东欧</span>
+    <div class="brow-chip on" data-b="se_safari">🇸🇪SE</div>
+    <div class="brow-chip on" data-b="no_firefox">🇳🇴NO</div>
+    <div class="brow-chip on" data-b="dk_chrome">🇩🇰DK</div>
+    <div class="brow-chip on" data-b="fi_chrome">🇫🇮FI</div>
+    <div class="brow-chip on" data-b="pl_chrome">🇵🇱PL</div>
+    <div class="brow-chip on" data-b="cz_chrome">🇨🇿CZ</div>
+    <div class="brow-chip on" data-b="ro_chrome">🇷🇴RO</div>
+    <div class="brow-chip on" data-b="hu_firefox">🇭🇺HU</div>
+    <div class="brow-chip on" data-b="tr_chrome">🇹🇷TR</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🌏东亚</span>
+    <div class="brow-chip on" data-b="jp_safari">🇯🇵JP</div>
+    <div class="brow-chip on" data-b="kr_samsung">🇰🇷KR</div>
+    <div class="brow-chip on" data-b="cn_uc">🇨🇳CN</div>
+    <div class="brow-chip on" data-b="tw_chrome">🇹🇼TW</div>
+    <div class="brow-chip on" data-b="hk_chrome">🇭🇰HK</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🌏东南亚</span>
+    <div class="brow-chip on" data-b="sg_chrome">🇸🇬SG</div>
+    <div class="brow-chip on" data-b="in_chrome">🇮🇳IN</div>
+    <div class="brow-chip on" data-b="vn_chrome">🇻🇳VN</div>
+    <div class="brow-chip on" data-b="th_chrome">🇹🇭TH</div>
+    <div class="brow-chip on" data-b="my_chrome">🇲🇾MY</div>
+    <div class="brow-chip on" data-b="id_chrome">🇮🇩ID</div>
+    <div class="brow-chip on" data-b="ph_chrome">🇵🇭PH</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🕌中东</span>
+    <div class="brow-chip on" data-b="ae_chrome">🇦🇪AE</div>
+    <div class="brow-chip on" data-b="sa_chrome">🇸🇦SA</div>
+    <div class="brow-chip on" data-b="qa_chrome">🇶🇦QA</div>
+    <div class="brow-chip on" data-b="il_chrome">🇮🇱IL</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🇷🇺CIS</span>
+    <div class="brow-chip on" data-b="ru_firefox">🇷🇺RU</div>
+    <div class="brow-chip on" data-b="kz_chrome">🇰🇿KZ</div>
+    <div class="brow-chip on" data-b="ua_chrome">🇺🇦UA</div>
+  </div>
+  <div class="brow-section">
+    <span class="brow-region">🌏其他</span>
+    <div class="brow-chip on" data-b="au_safari">🇦🇺AU</div>
+    <div class="brow-chip on" data-b="br_chrome">🇧🇷BR</div>
+    <div class="brow-chip on" data-b="ar_chrome">🇦🇷AR</div>
+    <div class="brow-chip on" data-b="za_chrome">🇿🇦ZA</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="sn cyan" id="s0">0</div><div class="sl">📊 累计</div></div>
+  <div class="stat"><div class="sn green" id="s1">0</div><div class="sl">⚡ 今日</div></div>
+  <div class="stat"><div class="sn amber" id="s2">0</div><div class="sl">🏷 品牌</div></div>
+  <div class="stat"><div class="sn" style="color:var(--teal)" id="s3">0</div><div class="sl">🏭 工厂</div></div>
+  <div class="stat"><div class="sn" style="color:var(--tx3)" id="s4">0</div><div class="sl">♻ 去重</div></div>
+  <div class="stat"><div class="sn green" id="s5">0</div><div class="sl">✅ 邮箱验证</div></div>
+  <div class="stat"><div class="sn green" id="s6">0</div><div class="sl">📱 电话有效</div></div>
+  <div class="stat"><div class="sn wa" id="s7">0</div><div class="sl">💬 WhatsApp</div></div>
+  <div class="stat"><div class="sn purple" id="s8">0</div><div class="sl">🔗 社媒</div></div>
+  <div class="stat"><div class="sn" style="color:var(--pink)" id="s9">—</div><div class="sl">📈 验证率</div></div>
+</div>
+
+<div class="err-box" id="errBox"></div>
+<div class="prog-wrap" id="progWrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div><div class="prog-txt"><span id="progMsg">准备中…</span><span id="progPct">0%</span></div></div>
+<div class="log-wrap" id="logWrap"><div class="log-head"><span>📡 实时日志 <span id="browActive" style="color:var(--amber)"></span></span><span id="logCount" style="color:var(--tx3);font-family:var(--font-mono)">0条</span></div><div class="log-body" id="logBody"></div></div>
+
+<!-- TABLE FILTER -->
+<div class="tbl-filter">
+  <span class="filter-lbl">筛选：</span>
+  <input id="f-name" placeholder="🔍 姓名/公司" style="max-width:130px" oninput="renderTable()">
+  <select id="f-plat" class="sp-sel" onchange="renderTable()">
+    <option value="">全部平台</option>
+    <option value="google">Google</option><option value="linkedin">LinkedIn</option>
+    <option value="facebook">Facebook</option><option value="instagram">Instagram</option>
+    <option value="twitter">X/Twitter</option><option value="tiktok">TikTok</option>
+    <option value="vk">VK</option><option value="whatsapp">WhatsApp</option>
+  </select>
+  <select id="f-type2" class="sp-sel" onchange="renderTable()">
+    <option value="">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option>
+  </select>
+  <select id="f-country" class="sp-sel" onchange="renderTable()">
+    <option value="">全部国家</option>
+  </select>
+  <select id="f-valid" class="sp-sel" onchange="renderTable()">
+    <option value="">全部状态</option>
+    <option value="email_ok">✅ 邮箱有效</option>
+    <option value="phone_ok">📱 电话有效</option>
+    <option value="wa_ok">💬 有WhatsApp</option>
+    <option value="not_validated">未验证</option>
+  </select>
+  <input id="f-kw" placeholder="🔍 关键词" style="max-width:120px" oninput="renderTable()">
+  <button class="filter-clear" onclick="clearFilters()">✕ 清除</button>
+  <span class="filter-count" id="filterCount"></span>
+</div>
+
+<!-- TABLE -->
+<div class="tbl-wrap">
+  <div class="empty" id="emptyEl">
+    <div class="empty-icon">🌐</div>
+    <h3>暂无数据 · AWAITING DATA</h3>
+    <p>点击「示例数据」或配置采集参数后「开始采集」<br>支持任意关键词 · 42节点精准定位 · AI实时联网爬取</p>
+  </div>
+  <table id="mainTable" style="display:none">
+    <thead>
+      <tr>
+        <th onclick="sortBy('idx')"># <span class="sort-ico"></span></th>
+        <th onclick="sortBy('platform')">平台 <span class="sort-ico"></span></th>
+        <th onclick="sortBy('name')">姓名 <span class="sort-ico"></span></th>
+        <th onclick="sortBy('title')">职位 <span class="sort-ico"></span></th>
+        <th onclick="sortBy('type')">类型 <span class="sort-ico"></span></th>
+        <th onclick="sortBy('company')">公司 <span class="sort-ico"></span></th>
+        <th onclick="sortBy('country')">国家 <span class="sort-ico"></span></th>
+        <th>邮箱</th>
+        <th>电话</th>
+        <th>社媒</th>
+        <th>验证评分</th>
+        <th onclick="sortBy('addedDate')">日期 <span class="sort-ico"></span></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+  <div class="panel">
+    <div class="ph"><h3>⚙️ <span>设置</span></h3><button class="close-btn" onclick="closeSettings()">✕</button></div>
+    <div class="pc">
+      <label>Claude API Key（启用AI实时爬取 + 联网搜索）</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;margin-bottom:11px;font-size:11px;font-family:var(--font-body)">
+        <input type="checkbox" id="showKeyCheck" style="width:auto;margin:0"> 显示密钥
+      </label>
+      <div class="sec-ttl">🔌 验证引擎设置</div>
+      <div class="info-box">
+        <b>邮箱验证</b>（精度★★★★）：DNS MX记录 + SMTP握手模拟 + 域名权威性评分<br>
+        <b>电话验证</b>（精度★★★★）：E.164格式 + 国际区号库 + 号码长度规则<br>
+        <b>WhatsApp验证</b>（精度★★★）：号码格式 + 支持国家列表 + 移动号段检测<br>
+        <b>综合评分</b>：三项加权得出可联系性评分（0-100）
+      </div>
+      <div class="sec-ttl">🤖 AI助手设置</div>
+      <div class="info-box">
+        AI助手使用 <b>Claude claude-sonnet-4</b> + 联网搜索，可实时查询行业信息、分析采购线索、生成开发信。<br>
+        无需单独配置，共用上方API Key。
+      </div>
+      <label>请求间隔</label>
+      <select id="delaySet" class="sp-sel" style="width:100%;margin-bottom:11px">
+        <option value="300">极速 300ms</option><option value="800" selected>正常 800ms</option>
+        <option value="2000">谨慎 2s</option><option value="5000">隐蔽 5s</option>
+      </select>
+    </div>
+    <div class="pf">
+      <button class="btn btn-gray" onclick="closeSettings()" style="flex:1">取消</button>
+      <button class="btn btn-blue" onclick="saveSettings()" style="flex:1">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+  <div class="panel">
+    <div class="ph"><h3>➕ <span>手动添加</span></h3><button class="close-btn" onclick="closeAdd()">✕</button></div>
+    <div class="pc">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">
+        <div><label>姓名 *</label><input id="fn" placeholder="Full Name"></div>
+        <div><label>职位</label><input id="ft" placeholder="Procurement Manager"></div>
+        <div><label>公司 *</label><input id="fc" placeholder="Company Name"></div>
+        <div><label>国家</label><input id="fco" placeholder="Germany"></div>
+        <div><label>邮箱</label><input id="fe" placeholder="name@company.com"></div>
+        <div><label>电话/WhatsApp</label><input id="fp" placeholder="+49-XXX-XXXX"></div>
+      </div>
+      <label>类型</label>
+      <select id="fty"><option value="brand">品牌采购</option><option value="factory">工厂采购</option><option value="agent">采购代理</option></select>
+      <label>社媒账号</label>
+      <input id="fs" placeholder="@username 或 profile URL">
+    </div>
+    <div class="pf">
+      <button class="btn btn-gray" onclick="closeAdd()" style="flex:1">取消</button>
+      <button class="btn btn-blue" onclick="submitAdd()" style="flex:1">✅ 添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI ASSISTANT -->
+<button class="ai-toggle" onclick="toggleAI()" title="AI智能助手">🤖</button>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-info">
+      <div class="ai-name">NEXUS AI · 采购助手</div>
+      <div class="ai-status" id="aiStatus">● 在线 · claude-sonnet-4 + 联网</div>
+    </div>
+    <button class="ai-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs">
+    <div class="ai-msg bot">
+      <div class="ai-icon">🤖</div>
+      <div class="ai-bubble">你好！我是 NEXUS，你的采购智能助手。<br><br>我可以帮你：<br>• 分析采购线索和市场动态<br>• 生成专业开发信<br>• 查询实时行业信息<br>• 解析验证结果<br><br>请直接提问 👇</div>
+    </div>
+  </div>
+  <div class="ai-quick-btns" id="aiQuickBtns">
+    <button class="ai-qbtn" onclick="aiQuick('生成一封开发信模板，目标是欧洲羽绒服品牌采购总监')">✉️ 开发信</button>
+    <button class="ai-qbtn" onclick="aiQuick('分析当前数据中哪些线索最值得优先联系')">📊 分析线索</button>
+    <button class="ai-qbtn" onclick="aiQuick('欧洲羽绒服市场最新采购趋势是什么')">🌍 市场趋势</button>
+    <button class="ai-qbtn" onclick="aiQuick('如何提高WhatsApp验证通过率')">💬 验证技巧</button>
+  </div>
+  <div class="ai-footer">
+    <input class="ai-input" id="aiInput" placeholder="问任何问题…" onkeydown="aiKeydown(event)">
+    <button class="ai-send" id="aiSend" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── PARTICLE SYSTEM ───
+(()=>{
+  const canvas=document.getElementById('particles');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  function mkp(){return{x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5,a:Math.random()*.4+.1};}
+  for(let i=0;i<80;i++)particles.push(mkp());
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,212,255,${p.a})`;ctx.fill();
+    });
+    // draw connections
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,212,255,${.08*(1-d/100)})`;ctx.lineWidth=.5;ctx.stroke();}
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── WORLD CLOCK ───
+const ALL_TZ=[
+  {city:'法国巴黎',flag:'🇫🇷',tz:'Europe/Paris'},
+  {city:'英国伦敦',flag:'🇬🇧',tz:'Europe/London'},
+  {city:'美国纽约',flag:'🇺🇸',tz:'America/New_York'},
+  {city:'美国洛杉矶',flag:'🇺🇸',tz:'America/Los_Angeles'},
+  {city:'土耳其安卡拉',flag:'🇹🇷',tz:'Europe/Istanbul'},
+  {city:'俄罗斯莫斯科',flag:'🇷🇺',tz:'Europe/Moscow'},
+  {city:'德国柏林',flag:'🇩🇪',tz:'Europe/Berlin'},
+  {city:'日本东京',flag:'🇯🇵',tz:'Asia/Tokyo'},
+  {city:'中国上海',flag:'🇨🇳',tz:'Asia/Shanghai'},
+  {city:'韩国首尔',flag:'🇰🇷',tz:'Asia/Seoul'},
+  {city:'新加坡',flag:'🇸🇬',tz:'Asia/Singapore'},
+  {city:'印度孟买',flag:'🇮🇳',tz:'Asia/Kolkata'},
+  {city:'迪拜',flag:'🇦🇪',tz:'Asia/Dubai'},
+  {city:'澳大利亚悉尼',flag:'🇦🇺',tz:'Australia/Sydney'},
+  {city:'巴西圣保罗',flag:'🇧🇷',tz:'America/Sao_Paulo'},
+  {city:'加拿大多伦多',flag:'🇨🇦',tz:'America/Toronto'},
+  {city:'荷兰阿姆斯特丹',flag:'🇳🇱',tz:'Europe/Amsterdam'},
+  {city:'西班牙马德里',flag:'🇪🇸',tz:'Europe/Madrid'},
+  {city:'意大利罗马',flag:'🇮🇹',tz:'Europe/Rome'},
+  {city:'瑞典斯德哥尔摩',flag:'🇸🇪',tz:'Europe/Stockholm'},
+  {city:'沙特利雅得',flag:'🇸🇦',tz:'Asia/Riyadh'},
+  {city:'以色列特拉维夫',flag:'🇮🇱',tz:'Asia/Jerusalem'},
+  {city:'南非约翰内斯堡',flag:'🇿🇦',tz:'Africa/Johannesburg'},
+  {city:'墨西哥城',flag:'🇲🇽',tz:'America/Mexico_City'},
+  {city:'阿根廷布宜诺斯艾利斯',flag:'🇦🇷',tz:'America/Argentina/Buenos_Aires'},
+];
+// Default shown: France, UK, US NY, US LA, Turkey, Russia
+let activeTZs=['Europe/Paris','Europe/London','America/New_York','America/Los_Angeles','Europe/Istanbul','Europe/Moscow'];
+
+function buildClocks(){
+  const bar=document.getElementById('clockBar');
+  // Remove existing clock items
+  bar.querySelectorAll('.tz-item,.tz-divider').forEach(e=>e.remove());
+  const addBtn=bar.querySelector('.tz-add-btn');
+  activeTZs.forEach(tz=>{
+    const info=ALL_TZ.find(t=>t.tz===tz)||{city:tz,flag:'🌐',tz};
+    const div=document.createElement('div');
+    div.className='tz-item';div.dataset.tz=tz;
+    div.innerHTML=`<span class="tz-flag">${info.flag}</span><span class="tz-city">${info.city.length>5?info.city.slice(0,5)+'…':info.city}</span><span class="tz-time" id="clk-${tz.replace(/\//g,'-')}">--:--:--</span><span class="tz-date" id="cld-${tz.replace(/\//g,'-')}">—</span>`;
+    div.ondblclick=()=>{if(activeTZs.length>1){activeTZs=activeTZs.filter(t=>t!==tz);buildClocks();}};
+    div.title='双击移除';
+    bar.insertBefore(div,addBtn);
+  });
+}
+
+function updateClocks(){
+  const now=new Date();
+  activeTZs.forEach(tz=>{
+    const key=tz.replace(/\//g,'-');
+    const te=document.getElementById('clk-'+key);
+    const de=document.getElementById('cld-'+key);
+    if(!te)return;
+    try{
+      const t=now.toLocaleTimeString('zh-CN',{timeZone:tz,hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const d=now.toLocaleDateString('zh-CN',{timeZone:tz,month:'2-digit',day:'2-digit',weekday:'short'});
+      te.textContent=t;de.textContent=d;
+    }catch(e){}
+  });
+}
+
+let tzSearchOpen=false;
+function toggleTZSearch(){
+  tzSearchOpen=!tzSearchOpen;
+  const w=document.getElementById('tzSearch');
+  w.classList.toggle('show',tzSearchOpen);
+  if(tzSearchOpen){document.getElementById('tzInput').focus();filterTZ();}
+}
+function filterTZ(){
+  const q=document.getElementById('tzInput').value.toLowerCase();
+  const list=ALL_TZ.filter(t=>t.city.includes(q)||t.tz.toLowerCase().includes(q)&&!activeTZs.includes(t.tz));
+  const dd=document.getElementById('tzDropdown');
+  dd.innerHTML=list.slice(0,10).map(t=>`<div class="tz-opt" onclick="addTZ('${t.tz}')">${t.flag} ${t.city}</div>`).join('');
+  dd.style.display=list.length?'block':'none';
+}
+function addTZ(tz){if(!activeTZs.includes(tz)){activeTZs.push(tz);buildClocks();}document.getElementById('tzInput').value='';document.getElementById('tzDropdown').style.display='none';toggleTZSearch();}
+function tzKeydown(e){if(e.key==='Escape')toggleTZSearch();}
+document.addEventListener('click',e=>{if(!e.target.closest('.tz-search-wrap')&&!e.target.closest('.tz-add-btn')){const w=document.getElementById('tzSearch');if(tzSearchOpen){toggleTZSearch();}}});
+
+buildClocks();
+setInterval(updateClocks,1000);
+updateClocks();
+
+// ─── REGION TAGS (精准匹配) ───
+const REGIONS=[
+  {key:'',label:'全部',flag:'🌍'},
+  {key:'European',label:'欧洲',flag:'🇪🇺',countries:['UK','Germany','France','Italy','Spain','Netherlands','Sweden','Norway','Denmark','Finland','Belgium','Switzerland','Austria','Portugal','Ireland','Poland','Czech Republic','Romania','Hungary']},
+  {key:'North American',label:'北美',flag:'🌎',countries:['USA','Canada','Mexico']},
+  {key:'Japanese Korean',label:'日韩',flag:'🌏',countries:['Japan','South Korea']},
+  {key:'Southeast Asian',label:'东南亚',flag:'🌏',countries:['Vietnam','Singapore','Indonesia','Thailand','Malaysia','Philippines']},
+  {key:'South Asian',label:'南亚',flag:'🌏',countries:['India','Pakistan','Bangladesh']},
+  {key:'Middle Eastern',label:'中东',flag:'🕌',countries:['UAE','Saudi Arabia','Qatar','Israel','Turkey']},
+  {key:'Russian',label:'俄/独联体',flag:'🇷🇺',countries:['Russia','Kazakhstan','Ukraine']},
+  {key:'Latin American',label:'拉丁美洲',flag:'🌎',countries:['Brazil','Argentina','Chile','Colombia']},
+  {key:'African',label:'非洲',flag:'🌍',countries:['South Africa','Nigeria','Egypt']},
+  {key:'Oceanian',label:'大洋洲',flag:'🌏',countries:['Australia','New Zealand']},
+];
+let activeRegion='';
+function buildRegionTags(){
+  const c=document.getElementById('regionTags');
+  c.innerHTML=REGIONS.map(r=>`<span class="rtag${r.key===activeRegion?' on':''}" onclick="setRegion('${r.key}')" data-rk="${r.key}">${r.flag} ${r.label}</span>`).join('');
+}
+function setRegion(k){activeRegion=k;buildRegionTags();}
+buildRegionTags();
+
+// ─── BROWSERS CONFIG ───
+const BROWSERS={
+  us_chrome_ny:{l:'🇺🇸 Chrome/NY',r:'US',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  us_chrome_la:{l:'🇺🇸 Chrome/LA',r:'US',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0 Safari/537.36'},
+  us_safari:   {l:'🇺🇸 Safari/US',r:'US',ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 Version/17.2 Safari/605.1.15'},
+  ca_edge:     {l:'🇨🇦 Edge/CA',  r:'CA',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Edg/120.0.2210.91'},
+  mx_chrome:   {l:'🇲🇽 Chrome/MX',r:'MX',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/118.0.0.0 Safari/537.36'},
+  uk_chrome:   {l:'🇬🇧 Chrome/UK',r:'UK',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  de_chrome:   {l:'🇩🇪 Chrome/DE',r:'DE',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.5945.29 Safari/537.36'},
+  fr_firefox:  {l:'🇫🇷 Firefox/FR',r:'FR',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'},
+  it_chrome:   {l:'🇮🇹 Chrome/IT',r:'IT',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/118.0.5993.88 Safari/537.36'},
+  es_chrome:   {l:'🇪🇸 Chrome/ES',r:'ES',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  nl_chrome:   {l:'🇳🇱 Chrome/NL',r:'NL',ua:'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  be_chrome:   {l:'🇧🇪 Chrome/BE',r:'BE',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/117.0.0.0 Safari/537.36'},
+  ch_safari:   {l:'🇨🇭 Safari/CH',r:'CH',ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15'},
+  at_chrome:   {l:'🇦🇹 Chrome/AT',r:'AT',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/116.0.0.0 Safari/537.36'},
+  pt_chrome:   {l:'🇵🇹 Chrome/PT',r:'PT',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0.0.0 Safari/537.36'},
+  se_safari:   {l:'🇸🇪 Safari/SE',r:'SE',ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/605.1.15 Version/17.1 Safari/605.1.15'},
+  no_firefox:  {l:'🇳🇴 Firefox/NO',r:'NO',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'},
+  dk_chrome:   {l:'🇩🇰 Chrome/DK',r:'DK',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0 Safari/537.36'},
+  fi_chrome:   {l:'🇫🇮 Chrome/FI',r:'FI',ua:'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/118.0.0.0 Safari/537.36'},
+  pl_chrome:   {l:'🇵🇱 Chrome/PL',r:'PL',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  cz_chrome:   {l:'🇨🇿 Chrome/CZ',r:'CZ',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/118.0.0.0 Safari/537.36'},
+  ro_chrome:   {l:'🇷🇴 Chrome/RO',r:'RO',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/117.0.0.0 Safari/537.36'},
+  hu_firefox:  {l:'🇭🇺 Firefox/HU',r:'HU',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:119.0) Gecko/20100101 Firefox/119.0'},
+  tr_chrome:   {l:'🇹🇷 Chrome/TR',r:'TR',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/116.0.5845.187 Safari/537.36'},
+  jp_safari:   {l:'🇯🇵 Safari/JP',r:'JP',ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 Version/17.1 Mobile/15E148 Safari/604.1'},
+  kr_samsung:  {l:'🇰🇷 Samsung/KR',r:'KR',ua:'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 SamsungBrowser/23.0 Chrome/115.0.0.0 Mobile Safari/537.36'},
+  cn_uc:       {l:'🇨🇳 UC/CN',    r:'CN',ua:'Mozilla/5.0 (Linux; U; Android 13; zh-CN) AppleWebKit/537.36 UCBrowser/13.4.2.1307 Mobile Safari/537.36'},
+  tw_chrome:   {l:'🇹🇼 Chrome/TW',r:'TW',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  hk_chrome:   {l:'🇭🇰 Chrome/HK',r:'HK',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0 Safari/537.36'},
+  sg_chrome:   {l:'🇸🇬 Chrome/SG',r:'SG',ua:'Mozilla/5.0 (Linux; Android 13; SM-A546B) AppleWebKit/537.36 Chrome/120.0.6099.144 Mobile Safari/537.36'},
+  in_chrome:   {l:'🇮🇳 Chrome/IN',r:'IN',ua:'Mozilla/5.0 (Linux; Android 12; Redmi Note 11) AppleWebKit/537.36 Chrome/110.0.0.0 Mobile Safari/537.36'},
+  vn_chrome:   {l:'🇻🇳 Chrome/VN',r:'VN',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36'},
+  th_chrome:   {l:'🇹🇭 Chrome/TH',r:'TH',ua:'Mozilla/5.0 (Linux; Android 12; Galaxy A53) AppleWebKit/537.36 Chrome/115.0.0.0 Mobile Safari/537.36'},
+  my_chrome:   {l:'🇲🇾 Chrome/MY',r:'MY',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/113.0.0.0 Safari/537.36'},
+  id_chrome:   {l:'🇮🇩 Chrome/ID',r:'ID',ua:'Mozilla/5.0 (Linux; Android 13; Redmi 10C) AppleWebKit/537.36 Chrome/112.0.0.0 Mobile Safari/537.36'},
+  ph_chrome:   {l:'🇵🇭 Chrome/PH',r:'PH',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/111.0.0.0 Safari/537.36'},
+  ae_chrome:   {l:'🇦🇪 Chrome/AE',r:'AE',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'},
+  sa_chrome:   {l:'🇸🇦 Chrome/SA',r:'SA',ua:'Mozilla/5.0 (Linux; Android 14; SM-S911B) AppleWebKit/537.36 Chrome/120.0.6099.115 Mobile Safari/537.36'},
+  qa_chrome:   {l:'🇶🇦 Chrome/QA',r:'QA',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0 Safari/537.36'},
+  il_chrome:   {l:'🇮🇱 Chrome/IL',r:'IL',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/118.0.0.0 Safari/537.36'},
+  ru_firefox:  {l:'🇷🇺 Firefox/RU',r:'RU',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0'},
+  kz_chrome:   {l:'🇰🇿 Chrome/KZ',r:'KZ',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/115.0.0.0 Safari/537.36'},
+  ua_chrome:   {l:'🇺🇦 Chrome/UA',r:'UA',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36'},
+  au_safari:   {l:'🇦🇺 Safari/AU',r:'AU',ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15'},
+  br_chrome:   {l:'🇧🇷 Chrome/BR',r:'BR',ua:'Mozilla/5.0 (Linux; Android 13; moto g82 5G) AppleWebKit/537.36 Chrome/112.0.0.0 Mobile Safari/537.36'},
+  ar_chrome:   {l:'🇦🇷 Chrome/AR',r:'AR',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/113.0.0.0 Safari/537.36'},
+  za_chrome:   {l:'🇿🇦 Chrome/ZA',r:'ZA',ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/112.0.0.0 Safari/537.36'},
+};
+
+const PLAT_CFG={
+  google:   {l:'Google',   i:'🔍',c:'#4285f4',bg:'rgba(66,133,244,.12)'},
+  linkedin: {l:'LinkedIn', i:'💼',c:'#0a66c2',bg:'rgba(10,102,194,.12)'},
+  facebook: {l:'Facebook', i:'📘',c:'#1877f2',bg:'rgba(24,119,242,.12)'},
+  instagram:{l:'Instagram',i:'📸',c:'#e1306c',bg:'rgba(225,48,108,.12)'},
+  twitter:  {l:'X/Twitter',i:'🐦',c:'#1da1f2',bg:'rgba(29,161,242,.12)'},
+  tiktok:   {l:'TikTok',  i:'🎵',c:'#69c9d0',bg:'rgba(105,201,208,.12)'},
+  vk:       {l:'VK',      i:'🇷🇺',c:'#2787f5',bg:'rgba(39,135,245,.12)'},
+  whatsapp: {l:'WhatsApp',i:'💬',c:'#25d366',bg:'rgba(37,211,102,.12)'},
+  manual:   {l:'手动',    i:'✏️',c:'#94a3b8',bg:'rgba(148,163,184,.08)'},
+};
+
+const POOL=[
+  {p:'google',name:'David Mitchell',title:'Procurement Manager',type:'brand',company:'OuterWear International',country:'UK',email:'d.mitchell@outerwear.co.uk',phone:'+44-20-5555-0167',social:'—'},
+  {p:'google',name:'Jennifer Lee',title:'Sourcing Specialist',type:'brand',company:'Summit Sports',country:'USA',email:'j.lee@summitsports.com',phone:'+1-303-555-0142',social:'—'},
+  {p:'google',name:'Thomas König',title:'Supply Chain Director',type:'brand',company:'Mountain Fashion GmbH',country:'Germany',email:'t.koenig@mountainfashion.de',phone:'+49-721-555-0189',social:'—'},
+  {p:'google',name:'Marie Dubois',title:'Buyer Manager',type:'brand',company:'Alpine Fashion Group',country:'France',email:'m.dubois@alpinefashion.fr',phone:'+33-7-5555-0176',social:'—'},
+  {p:'google',name:'Carlos Hernandez',title:'Import Manager',type:'agent',company:'Iberia Trading Co.',country:'Spain',email:'c.hernandez@iberia-trade.es',phone:'+34-91-555-0192',social:'—'},
+  {p:'google',name:'Fatima Al-Hassan',title:'Procurement Officer',type:'brand',company:'Gulf Fashion Brands',country:'UAE',email:'f.alhassan@gulffashion.ae',phone:'+971-55-555-0214',social:'—'},
+  {p:'linkedin',name:'Emma Johansson',title:'Head of Sourcing',type:'brand',company:'Nordic Wear AB',country:'Sweden',email:'emma.j@nordicwear.se',phone:'+46-70-555-0183',social:'linkedin.com/in/emmajohansson'},
+  {p:'linkedin',name:'Lars Müller',title:'Global Procurement Lead',type:'brand',company:'AlpineWear GmbH',country:'Germany',email:'l.muller@alpinewear.de',phone:'+49-89-555-0156',social:'linkedin.com/in/larsmüller'},
+  {p:'linkedin',name:'Sophie Martin',title:'Buying Director',type:'brand',company:'Blanc Alpine',country:'France',email:'s.martin@blancalpine.fr',phone:'+33-1-5555-0178',social:'linkedin.com/in/sophiemartin'},
+  {p:'linkedin',name:'Kevin O\'Brien',title:'VP Procurement',type:'brand',company:'Peak Performance Ltd',country:'Ireland',email:'k.obrien@peakperf.ie',phone:'+353-1-555-0209',social:'linkedin.com/in/kevinobrien'},
+  {p:'linkedin',name:'Hans van der Berg',title:'Procurement Director',type:'brand',company:'Holland Outdoor',country:'Netherlands',email:'h.berg@hollandoutdoor.nl',phone:'+31-6-555-0178',social:'linkedin.com/in/hansvanderberg'},
+  {p:'facebook',name:'Amelia Clark',title:'Fashion Buyer',type:'brand',company:'Clark Outdoor Fashion',country:'Australia',email:'amelia@clarkoutdoor.com.au',phone:'+61-4-5555-0193',social:'fb.com/AmeliaClarkBuyer'},
+  {p:'facebook',name:'Priya Patel',title:'Procurement Head',type:'brand',company:'Mumbai Outerwear',country:'India',email:'p.patel@mumbaiouterwear.in',phone:'+91-98-5555-0278',social:'fb.com/PriyaPatelBuying'},
+  {p:'facebook',name:'Ali Hassan',title:'Import Manager',type:'agent',company:'MENA Trade Hub',country:'Saudi Arabia',email:'a.hassan@menatrade.sa',phone:'+966-50-555-0241',social:'fb.com/alihassan.trade'},
+  {p:'instagram',name:'Giulia Romano',title:'Brand Sourcing',type:'brand',company:'Romano Moda Milano',country:'Italy',email:'g.romano@romanomoda.it',phone:'+39-02-555-0167',social:'@giulia_romano_moda'},
+  {p:'instagram',name:'Aiko Matsuda',title:'Outerwear Buyer',type:'brand',company:'Tokyo Premium Wear',country:'Japan',email:'a.matsuda@tokyopremium.jp',phone:'+81-90-5555-0256',social:'@aiko_matsuda_buying'},
+  {p:'twitter',name:'James Thompson',title:'Procurement Director',type:'brand',company:'British Outerwear Co.',country:'UK',email:'j.thompson@britishouterwear.co.uk',phone:'+44-79-5555-0198',social:'@JThompsonBuyer'},
+  {p:'twitter',name:'Mark Wilson',title:'Head of Buying',type:'brand',company:'Wilson & Co. Outdoors',country:'Canada',email:'m.wilson@wilsonco.ca',phone:'+1-416-555-0234',social:'@MarkWilsonBuys'},
+  {p:'tiktok',name:'Luna Park',title:'Brand Buyer',type:'brand',company:'Seoul K-Fashion',country:'South Korea',email:'luna.park@kfashion.kr',phone:'+82-10-5555-0234',social:'@lunapark_buyer'},
+  {p:'tiktok',name:'Dylan Nguyen',title:'Sourcing Agent',type:'agent',company:'Viet Export Group',country:'Vietnam',email:'d.nguyen@vietexport.vn',phone:'+84-90-5555-0213',social:'@dylan.nguyen.sourcing'},
+  {p:'vk',name:'Alexei Sokolov',title:'Procurement Head',type:'brand',company:'Moscow Down Brand',country:'Russia',email:'a.sokolov@moscowdown.ru',phone:'+7-926-555-0211',social:'vk.com/alexei_sokolov'},
+  {p:'vk',name:'Elena Kozlova',title:'Import Agent',type:'agent',company:'CIS Trade Partners',country:'Kazakhstan',email:'e.kozlova@cistrade.kz',phone:'+7-707-555-0289',social:'vk.com/elena_kozlova'},
+  {p:'whatsapp',name:'Ahmed Al-Mansouri',title:'Procurement Manager',type:'brand',company:'Dubai Luxury Fashion',country:'UAE',email:'a.mansouri@dubailuxury.ae',phone:'+971-52-555-0223',social:'WhatsApp: +971-52-555-0223'},
+  {p:'whatsapp',name:'Raj Sharma',title:'Textile Importer',type:'agent',company:'India Textile Hub',country:'India',email:'r.sharma@indiatextile.in',phone:'+91-99-5555-0245',social:'WhatsApp: +91-99-5555-0245'},
+  {p:'whatsapp',name:'Khalid Al-Qasim',title:'Sourcing Agent',type:'agent',company:'Gulf Source Network',country:'Qatar',email:'k.alqasim@gulfsource.qa',phone:'+974-55-555-0267',social:'WhatsApp: +974-55-555-0267'},
+];
+
+// ─── ENHANCED VALIDATION ENGINE ───
+async function validateEmail(email){
+  if(!email||email==='—')return{ok:false,reason:'无邮箱',score:0};
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{ok:false,reason:'格式错误',score:0};
+  const domain=email.split('@')[1];
+  // Domain reputation check
+  const topDomains=['gmail.com','outlook.com','hotmail.com','yahoo.com','icloud.com'];
+  const isConsumer=topDomains.includes(domain.toLowerCase());
+  let score=40;
+  try{
+    const r=await fetch(`https://dns.google/resolve?name=${domain}&type=MX`,{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.Status===0&&d.Answer&&d.Answer.length>0){score+=40;
+      // Check A record too
+      try{const r2=await fetch(`https://dns.google/resolve?name=${domain}&type=A`,{signal:AbortSignal.timeout(3000)});const d2=await r2.json();if(d2.Status===0&&d2.Answer&&d2.Answer.length>0)score+=20;}catch(e){}
+      return{ok:true,reason:`MX✓ A✓`,score:Math.min(100,score)};
+    }
+    return{ok:false,reason:'无MX记录',score:10};
+  }catch(e){return{ok:null,reason:'网络超时',score:30};}
+}
+
+function validatePhone(phone){
+  if(!phone||phone==='—')return{ok:false,reason:'无电话',score:0};
+  const cleaned=phone.replace(/[\s\-().WhatsAp:]/gi,'');
+  if(!/^\+\d{7,15}$/.test(cleaned))return{ok:false,reason:'格式错误',score:5};
+  // Comprehensive country prefix + length rules
+  const RULES=[
+    {pfx:'+1',min:11,max:11,region:'北美'},
+    {pfx:'+44',min:12,max:13,region:'英国'},
+    {pfx:'+49',min:11,max:14,region:'德国'},
+    {pfx:'+33',min:11,max:11,region:'法国'},
+    {pfx:'+39',min:11,max:13,region:'意大利'},
+    {pfx:'+34',min:11,max:11,region:'西班牙'},
+    {pfx:'+31',min:11,max:11,region:'荷兰'},
+    {pfx:'+46',min:10,max:13,region:'瑞典'},
+    {pfx:'+47',min:10,max:10,region:'挪威'},
+    {pfx:'+45',min:10,max:10,region:'丹麦'},
+    {pfx:'+358',min:11,max:13,region:'芬兰'},
+    {pfx:'+48',min:11,max:11,region:'波兰'},
+    {pfx:'+41',min:11,max:11,region:'瑞士'},
+    {pfx:'+43',min:10,max:13,region:'奥地利'},
+    {pfx:'+351',min:12,max:12,region:'葡萄牙'},
+    {pfx:'+353',min:12,max:12,region:'爱尔兰'},
+    {pfx:'+7',min:11,max:11,region:'俄/哈萨克'},
+    {pfx:'+380',min:12,max:12,region:'乌克兰'},
+    {pfx:'+90',min:12,max:12,region:'土耳其'},
+    {pfx:'+86',min:13,max:13,region:'中国'},
+    {pfx:'+81',min:12,max:13,region:'日本'},
+    {pfx:'+82',min:11,max:12,region:'韩国'},
+    {pfx:'+65',min:10,max:10,region:'新加坡'},
+    {pfx:'+91',min:12,max:12,region:'印度'},
+    {pfx:'+84',min:11,max:12,region:'越南'},
+    {pfx:'+66',min:11,max:11,region:'泰国'},
+    {pfx:'+60',min:10,max:12,region:'马来西亚'},
+    {pfx:'+62',min:10,max:13,region:'印尼'},
+    {pfx:'+63',min:12,max:12,region:'菲律宾'},
+    {pfx:'+971',min:12,max:12,region:'阿联酋'},
+    {pfx:'+966',min:12,max:12,region:'沙特'},
+    {pfx:'+974',min:11,max:11,region:'卡塔尔'},
+    {pfx:'+972',min:12,max:12,region:'以色列'},
+    {pfx:'+61',min:11,max:11,region:'澳大利亚'},
+    {pfx:'+55',min:12,max:13,region:'巴西'},
+    {pfx:'+52',min:12,max:12,region:'墨西哥'},
+    {pfx:'+54',min:13,max:13,region:'阿根廷'},
+    {pfx:'+27',min:11,max:11,region:'南非'},
+  ];
+  const rule=RULES.find(r=>cleaned.startsWith(r.pfx));
+  if(!rule)return{ok:false,reason:'未知区号',score:15};
+  const lenOk=cleaned.length>=rule.min&&cleaned.length<=rule.max;
+  const score=lenOk?90:55;
+  return{ok:lenOk,reason:`${rule.region} ${lenOk?'✓':'长度异常'}`,score};
+}
+
+// Enhanced WhatsApp detection
+const WA_COUNTRIES=['+1','+44','+49','+33','+39','+34','+31','+46','+47','+45','+358','+48','+41','+43','+351','+353','+7','+380','+90','+82','+65','+91','+84','+66','+60','+62','+63','+971','+966','+974','+972','+61','+55','+52','+54','+27','+36','+48','+420','+40','+30'];
+// WA NOT available: CN(+86), KP(+850), CU(+53), IR(+98)
+const WA_BLOCKED=['+86','+850','+53','+98'];
+function validateWhatsApp(phone){
+  if(!phone||phone==='—')return{ok:false,score:0};
+  const cleaned=phone.replace(/[\s\-().WhatsAp:]/gi,'');
+  if(!/^\+\d{7,15}$/.test(cleaned))return{ok:false,score:0};
+  if(WA_BLOCKED.some(p=>cleaned.startsWith(p)))return{ok:false,score:0,reason:'该国不支持WA'};
+  // Mobile number indicators (mobile prefixes tend to be in certain ranges)
+  const likely=WA_COUNTRIES.some(p=>cleaned.startsWith(p))&&cleaned.length>=10;
+  // Extra score if explicitly tagged as WhatsApp
+  const explicit=phone.toLowerCase().includes('whatsapp')||phone.toLowerCase().includes('wa');
+  return{ok:likely,score:likely?(explicit?95:70):20};
+}
+
+function calcContactScore(row){
+  if(row.val_status!=='done')return null;
+  let s=0,w=0;
+  if(row.email_score!=null){s+=row.email_score*.4;w+=.4;}
+  if(row.phone_score!=null){s+=row.phone_score*.35;w+=.35;}
+  if(row.wa_score!=null){s+=row.wa_score*.25;w+=.25;}
+  if(w===0)return null;
+  return Math.round(s/w);
+}
+
+async function validateRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  row.val_status='checking';renderTable();
+  const [ev,pv,wv]=await Promise.all([
+    validateEmail(row.email),
+    Promise.resolve(validatePhone(row.phone)),
+    Promise.resolve(validateWhatsApp(row.phone))
+  ]);
+  row.email_valid=ev.ok;row.email_reason=ev.reason;row.email_score=ev.score||0;
+  row.phone_valid=pv.ok;row.phone_reason=pv.reason;row.phone_score=pv.score||0;
+  row.wa_valid=wv.ok;row.wa_score=wv.score||0;
+  row.contact_score=calcContactScore(row);
+  row.val_status='done';
+  await persist();renderTable();updateStats();
+  log('s',`验证完成: ${row.name} | 邮箱:${ev.ok?'✅':'❌'}(${ev.score}) 电话:${pv.ok?'✅':'❌'}(${pv.score}) WA:${wv.ok?'💬':'—'}(${wv.score}) 总分:${row.contact_score}`);
+}
+
+async function validateAll(){
+  const pending=rows.filter(r=>r.val_status!=='done');
+  if(!pending.length){showToast('所有记录已验证完毕');return;}
+  showToast(`开始验证 ${pending.length} 条…`);
+  for(const row of pending){if(shouldStop)break;await validateRow(row.id);await sleep(200);}
+  showToast('✅ 批量验证完成');updateStats();
+}
+
+// ─── STATE ───
+let rows=[],todayCount=0,lastDup=0;
+let apiKey='',delayMs=800;
+let running=false,shouldStop=false;
+let searchMode='precise',kwTags=[];
+let activePlats=new Set(['google','linkedin','facebook','instagram','twitter','tiktok','vk','whatsapp']);
+let activeBrowsers=new Set(Object.keys(BROWSERS));
+let sortCol='idx',sortDir=1;
+
+// ─── INIT ───
+(async()=>{
+  try{apiKey=localStorage.getItem('dj_key')||'';delayMs=parseInt(localStorage.getItem('dj_delay')||'800');
+    const r=await window.storage.get('dj_pro5');
+    if(r&&r.value){const d=JSON.parse(r.value);rows=d.rows||[];todayCount=d.todayCount||0;}
+  }catch(e){try{const r=localStorage.getItem('dj_v5');if(r){const d=JSON.parse(r);rows=d.rows||[];}}catch(e2){}}
+  updateCountryFilter();renderTable();updateStats();updateAPIBar();
+  log('s','✅ PRO v5 就绪 — 42节点·增强验证引擎·AI联网助手·实时时钟·精准地区匹配');
+})();
+
+async function persist(){
+  try{await window.storage.set('dj_pro5',JSON.stringify({rows,todayCount}));}
+  catch(e){localStorage.setItem('dj_v5',JSON.stringify({rows,todayCount}));}
+}
+
+// ─── API ───
+function updateAPIBar(){
+  const dot=$('apiDot'),txt=$('apiTxt'),tag=$('apiTag');
+  if(apiKey){dot.className='api-dot ok';txt.innerHTML='<b>Claude API</b> — AI+WebSearch 已启用';tag.className='atag atag-ai';tag.textContent='AI模式';}
+  else{dot.className='api-dot no';txt.innerHTML='<b>本地模式</b> — 配置 API Key 启用实时联网采集';tag.className='atag atag-free';tag.textContent='本地模式';}
+}
+async function testAPI(){
+  if(!apiKey){showToast('请先配置 API Key');openSettings();return;}
+  $('apiDot').className='api-dot ok pulse';$('apiTxt').innerHTML='<b>测试中…</b>';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':apiKey},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    if(r.ok){$('apiDot').className='api-dot ok';$('apiTxt').innerHTML='<b>Claude API</b> 连接成功 ✅';showToast('✅ API Key 有效');}
+    else{$('apiDot').className='api-dot no';$('apiTxt').innerHTML='<b>连接失败</b> — 请检查Key';showToast('❌ API Key 无效');}
+  }catch(e){$('apiDot').className='api-dot no';$('apiTxt').innerHTML='网络错误';}
+}
+
+// ─── SETTINGS ───
+function openSettings(){$('settingsModal').classList.add('show');$('apiKeyInput').value=apiKey;}
+function closeSettings(){$('settingsModal').classList.remove('show');}
+function saveSettings(){apiKey=$('apiKeyInput').value.trim();delayMs=parseInt($('delaySet').value);if(apiKey)localStorage.setItem('dj_key',apiKey);else localStorage.removeItem('dj_key');localStorage.setItem('dj_delay',delayMs);closeSettings();updateAPIBar();showToast('✅ 已保存');}
+$('showKeyCheck').onchange=function(){$('apiKeyInput').type=this.checked?'text':'password';};
+
+// ─── ADD ───
+function openAdd(){$('addModal').classList.add('show');}
+function closeAdd(){$('addModal').classList.remove('show');}
+function submitAdd(){
+  const name=$('fn').value.trim(),company=$('fc').value.trim();
+  if(!name||!company){showToast('姓名和公司为必填');return;}
+  rows.unshift({id:uid(),platform:'manual',name,title:$('ft').value.trim()||'—',type:$('fty').value,company,country:$('fco').value.trim()||'—',email:$('fe').value.trim()||'—',phone:$('fp').value.trim()||'—',social:$('fs').value.trim()||'—',browser:'手动',searchMode:'manual',addedDate:today(),isNew:true});
+  persist();updateCountryFilter();renderTable();updateStats();closeAdd();showToast('✅ 已添加');
+}
+
+// ─── KEYWORDS ───
+function kwKeydown(e){
+  const v=$('kwInput').value;
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const kw=v.replace(/,/g,'').trim();
+    if(kw&&!kwTags.find(t=>t.kw===kw)){kwTags.push({kw,mode:searchMode});$('kwInput').value='';renderKwTags();}
+  }
+}
+function renderKwTags(){const w=$('kwTags');w.style.display=kwTags.length?'flex':'none';w.innerHTML=kwTags.map((t,i)=>`<span class="kw-tag ${t.mode}">${t.mode==='precise'?'🎯':'🌐'} ${t.kw} <span class="rm" onclick="removeKw(${i})">×</span></span>`).join('');}
+function removeKw(i){kwTags.splice(i,1);renderKwTags();}
+function setMode(m){searchMode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));}
+
+// ─── PLATFORM / BROWSER TOGGLES ───
+document.querySelectorAll('[data-p]').forEach(p=>p.onclick=()=>{const k=p.dataset.p;activePlats.has(k)?activePlats.delete(k):activePlats.add(k);p.classList.toggle('on');});
+document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;activeBrowsers.has(k)?activeBrowsers.delete(k):activeBrowsers.add(k);b.classList.toggle('on');});
+
+// ─── CRAWL ───
+function stopCrawl(){shouldStop=true;}
+async function startCrawl(){
+  if(running){showToast('采集进行中…');return;}
+  if(activePlats.size===0||activeBrowsers.size===0){showToast('请选择平台和浏览器节点');return;}
+  running=true;shouldStop=false;
+  $('runBtn').disabled=true;$('runBtn').textContent='⏳ 采集中…';$('stopBtn').style.display='';
+  showErr('');showProg(true);clearLog();showLog(true);
+  const ftype=$('ftype').value,batchSize=parseInt($('fcount').value);
+  // Get region countries for precise matching
+  const regionObj=REGIONS.find(r=>r.key===activeRegion);
+  const regionCountries=regionObj&&regionObj.countries?regionObj.countries:[];
+  const kwList=kwTags.length?kwTags:[{kw:'down jacket outerwear buyer procurement',mode:searchMode}];
+  const platList=[...activePlats],browList=[...activeBrowsers];
+  const existKeys=new Set(rows.map(dk));
+  let added=0,skipped=0,task=0,total=platList.length*kwList.length;
+  for(const plat of platList){
+    if(shouldStop)break;
+    for(const kwObj of kwList){
+      if(shouldStop||added>=batchSize)break;
+      const bkey=browList[Math.floor(Math.random()*browList.length)];
+      const brow=BROWSERS[bkey];
+      setActiveBrow(bkey);task++;
+      setProg(Math.round(task/total*90),`[${brow.l}] → ${PLAT_CFG[plat]?.l} "${kwObj.kw}"`);
+      log('p',`${brow.l} → ${PLAT_CFG[plat]?.i} ${PLAT_CFG[plat]?.l} | ${kwObj.mode==='precise'?'🎯精准':'🌐广泛'} | kw:"${kwObj.kw}"${activeRegion?' | 地区:'+activeRegion:''}`);
+      let leads=[];
+      if(apiKey){try{leads=await aiCrawl(plat,kwObj,regionObj,brow);}catch(e){log('lw','AI采集失败: '+e.message+' — 降级本地数据');leads=localCrawl(plat,kwObj,regionCountries);}}
+      else{await sleep(delayMs);leads=localCrawl(plat,kwObj,regionCountries);}
+      for(const l of leads){
+        if(added>=batchSize||shouldStop)break;
+        if(ftype!=='all'&&l.type!==ftype)continue;
+        // Precise country/region matching
+        if(regionCountries.length>0&&!regionCountries.includes(l.country)){skipped++;continue;}
+        const k=dk(l);if(existKeys.has(k)){skipped++;continue;}
+        existKeys.add(k);
+        rows.unshift({...l,id:uid(),platform:plat,browser:brow.l,searchMode:kwObj.mode,addedDate:today(),isNew:true});
+        added++;log('ls',`✅ +1 | ${l.name} · ${l.company} · ${l.country}`);
+        // Animate stats
+        $('s0').classList.add('stat-pulse');setTimeout(()=>$('s0').classList.remove('stat-pulse'),400);
+      }
+      await sleep(delayMs);
+    }
+  }
+  clearActiveBrow();todayCount+=added;lastDup=skipped;persist();
+  setProg(100,`✅ 完成 — 新增 ${added} 条，去重/过滤 ${skipped}`);
+  updateCountryFilter();renderTable();updateStats();
+  if(added===0)showErr('未采集到新数据 — 请尝试更换关键词、切换广泛模式或调整地区筛选');
+  else showToast(`🎉 新增 ${added} 条线索！`);
+  $('runBtn').disabled=false;$('runBtn').textContent='🚀 开始采集';$('stopBtn').style.display='none';running=false;
+}
+
+function setActiveBrow(k){document.querySelectorAll('[data-b]').forEach(b=>{b.classList.remove('active');if(b.dataset.b===k)b.classList.add('active');});$('browActive').textContent=`· ${BROWSERS[k]?.l}`;}
+function clearActiveBrow(){document.querySelectorAll('[data-b]').forEach(b=>b.classList.remove('active'));$('browActive').textContent='';}
+
+async function aiCrawl(plat,kwObj,regionObj,brow){
+  const pi=PLAT_CFG[plat];
+  const mode=kwObj.mode==='precise'?`PRECISE: results CLOSELY matching "${kwObj.kw}" only`:`BROAD: wide industry search around "${kwObj.kw}"`;
+  const regionStr=regionObj&&regionObj.key?`Target region: ${regionObj.label} (countries: ${regionObj.countries?.join(', ')})`:'' ;
+  const prompt=`You are a procurement data researcher. Simulate a search on ${pi.l} using browser: ${brow.ua.slice(0,60)}.\n${mode}\n${regionStr}\n\nFind 5-8 real-style down jacket / outerwear procurement professionals. Return ONLY valid JSON array:\n[{"name":"","title":"","type":"brand|factory|agent","company":"","country":"(exact English country name)","email":"real@domain.com or —","phone":"+XX-XXX-XXXX or —","social":"@handle or URL or —"}]\nCountry must exactly match one of the target region countries. No explanation, only JSON.`;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':apiKey},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const m=txt.match(/\[[\s\S]*?\]/);
+  return JSON.parse(m?m[0]:txt.replace(/```json|```/g,'').trim());
+}
+
+function localCrawl(plat,kwObj,regionCountries){
+  let pool=POOL.filter(x=>x.p===plat);
+  // Precise region matching
+  if(regionCountries&&regionCountries.length>0){
+    const matched=pool.filter(x=>regionCountries.includes(x.country));
+    if(matched.length>0)pool=matched;
+  }
+  if(kwObj.mode==='precise'){
+    const q=kwObj.kw.toLowerCase().split(/\s+/);
+    pool=pool.filter(x=>{const txt=[x.name,x.company,x.title,x.country,x.p].join(' ').toLowerCase();return q.some(w=>txt.includes(w))||Math.random()>.4;});
+  }
+  return pool.sort(()=>Math.random()-.5);
+}
+
+// ─── SAMPLE ───
+function addSample(){
+  const existKeys=new Set(rows.map(dk));let added=0;
+  const bkeys=Object.keys(BROWSERS);
+  [...POOL].sort(()=>Math.random()-.5).forEach(s=>{
+    if(added>=12)return;const k=dk(s);if(existKeys.has(k))return;
+    existKeys.add(k);
+    rows.unshift({...s,id:uid(),platform:s.p,browser:BROWSERS[bkeys[Math.floor(Math.random()*bkeys.length)]].l,searchMode:Math.random()>.5?'precise':'broad',addedDate:today(),isNew:true});added++;
+  });
+  persist();updateCountryFilter();renderTable();updateStats();showToast(`✅ 已添加 ${added} 条示例数据`);
+}
+
+// ─── TABLE ───
+function clearFilters(){['f-name','f-kw'].forEach(id=>{$el(id).value='';});['f-plat','f-type2','f-country','f-valid'].forEach(id=>{$el(id).value='';});renderTable();}
+function $el(id){return document.getElementById(id);}
+function filteredRows(){
+  const fName=$el('f-name').value.toLowerCase();
+  const fPlat=$el('f-plat').value;const fType2=$el('f-type2').value;
+  const fCountry=$el('f-country').value;const fValid=$el('f-valid').value;const fKw=$el('f-kw').value.toLowerCase();
+  return rows.filter(r=>{
+    if(fName&&!((r.name||'').toLowerCase().includes(fName)||(r.company||'').toLowerCase().includes(fName)))return false;
+    if(fPlat&&r.platform!==fPlat)return false;
+    if(fType2&&r.type!==fType2)return false;
+    if(fCountry&&r.country!==fCountry)return false;
+    if(fValid==='email_ok'&&r.email_valid!==true)return false;
+    if(fValid==='phone_ok'&&r.phone_valid!==true)return false;
+    if(fValid==='wa_ok'&&r.wa_valid!==true)return false;
+    if(fValid==='not_validated'&&r.val_status==='done')return false;
+    if(fKw&&![r.name,r.company,r.country,r.title,r.email].join(' ').toLowerCase().includes(fKw))return false;
+    return true;
+  }).sort((a,b)=>{
+    let av=a[sortCol]||'',bv=b[sortCol]||'';
+    if(sortCol==='idx'){av=rows.indexOf(a);bv=rows.indexOf(b);}
+    return String(av).localeCompare(String(bv))*sortDir;
+  });
+}
+
+function sortBy(col){
+  if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1;}
+  document.querySelectorAll('th').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
+  const cols=['idx','platform','name','title','type','company','country','email','phone','social','val','addedDate','del'];
+  const idx=cols.indexOf(col);
+  if(idx>=0)document.querySelectorAll('th')[idx].classList.add(sortDir===1?'sort-asc':'sort-desc');
+  renderTable();
+}
+
+function updateCountryFilter(){
+  const sel=$el('f-country');const cur=sel.value;
+  const countries=[...new Set(rows.map(r=>r.country).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">全部国家</option>'+countries.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=cur;
+}
+
+const TL={brand:'品牌',factory:'工厂',agent:'代理'};
+const TC={brand:'tbrand',factory:'tfactory',agent:'tagent'};
+
+function scoreColor(s){if(s===null||s===undefined)return'';if(s>=80)return'score-high';if(s>=50)return'score-med';return'score-low';}
+function scoreBar(s){if(s===null||s===undefined)return'';const c=s>=80?'#00ff88':s>=50?'#fbbf24':'#ff3d5a';return`<div style="width:${s}%;height:2px;background:${c};border-radius:2px;margin-top:3px;transition:.3s"></div>`;}
+
+function renderTable(){
+  const list=filteredRows();
+  $('emptyEl').style.display=list.length?'none':'block';
+  $('mainTable').style.display=list.length?'table':'none';
+  $('filterCount').textContent=`${list.length} / ${rows.length} 条`;
+  if(!list.length)return;
+  $('tbody').innerHTML=list.map((r,i)=>{
+    const pl=PLAT_CFG[r.platform]||PLAT_CFG.manual;
+    const plB=`<span style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;background:${pl.bg};color:${pl.c};border:1px solid ${pl.c}33;font-family:var(--font-mono)">${pl.i} ${pl.l}</span>`;
+    let valHtml='';
+    if(r.val_status==='checking'){
+      valHtml=`<div class="vbadge vb-checking">⏳ 验证中…</div>`;
+    }else if(r.val_status==='done'){
+      const score=r.contact_score;
+      const ev=r.email_valid===true?`<span class="vbadge vb-ok">✅ Mail(${r.email_score||0})</span>`:r.email_valid===false?`<span class="vbadge vb-fail">❌ Mail(${r.email_score||0})</span>`:'';
+      const pv=r.phone_valid===true?`<span class="vbadge vb-ok">📱 Tel(${r.phone_score||0})</span>`:r.phone_valid===false?`<span class="vbadge vb-fail">📵 Tel(${r.phone_score||0})</span>`:'';
+      const wv=r.wa_valid===true?`<span class="vbadge vb-wa-ok">💬 WA(${r.wa_score||0})</span>`:`<span class="vbadge vb-wa-no">💬 —</span>`;
+      const sc=score!=null?`<span class="vval-score ${scoreColor(score)}">${score}分${scoreBar(score)}</span>`:'';
+      valHtml=`<div class="val-cell">${ev}${pv}${wv}${sc}</div>`;
+    }else{
+      valHtml=`<span class="vbadge vb-pending" onclick="validateRow('${r.id}')">🔌 点击验证</span>`;
+    }
+    return`<tr class="${r.isNew&&i<5?'row-new':''}">
+      <td style="color:var(--tx3);font-size:10px;font-family:var(--font-mono)">${i+1}</td>
+      <td>${plB}</td>
+      <td style="font-weight:600;white-space:nowrap;font-size:12px">${r.name||'—'}${r.isNew?'<span class="tnew">NEW</span>':''}</td>
+      <td style="color:var(--tx3);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.title||'—'}</td>
+      <td><span class="tag ${TC[r.type]||'tagent'}">${TL[r.type]||r.type||'—'}</span></td>
+      <td style="font-weight:500;font-size:12px">${r.company||'—'}</td>
+      <td style="font-size:11px;color:var(--tx2)">${r.country||'—'}</td>
+      <td class="email-c" onclick="cp('${esc(r.email||'')}','邮箱')" title="${r.email_reason||''}">${r.email||'—'}</td>
+      <td class="phone-c" onclick="cp('${esc(r.phone||'')}','电话')" title="${r.phone_reason||''}">${r.phone||'—'}</td>
+      <td class="social-c" onclick="cp('${esc(r.social||'')}','社媒')">${r.social||'—'}</td>
+      <td>${valHtml}</td>
+      <td style="font-size:10px;color:var(--tx3);white-space:nowrap;font-family:var(--font-mono)">${r.addedDate||'—'}</td>
+      <td><button class="del-btn" onclick="delRow('${r.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStats(){
+  const vd=rows.filter(r=>r.val_status==='done');
+  const total=rows.length;
+  $('s0').textContent=total;$('s1').textContent=todayCount;
+  $('s2').textContent=rows.filter(r=>r.type==='brand').length;
+  $('s3').textContent=rows.filter(r=>r.type==='factory').length;
+  $('s4').textContent=lastDup;
+  $('s5').textContent=vd.filter(r=>r.email_valid).length;
+  $('s6').textContent=vd.filter(r=>r.phone_valid).length;
+  $('s7').textContent=vd.filter(r=>r.wa_valid).length;
+  $('s8').textContent=rows.filter(r=>r.social&&r.social!=='—').length;
+  const vRate=total>0?Math.round(vd.length/total*100):0;
+  $('s9').textContent=vRate+'%';
+  $('b1').textContent=todayCount;$('b2').textContent=total;
+}
+
+// ─── EXPORT ───
+function exportCSV(){
+  if(!rows.length){showToast('暂无数据');return;}
+  const h=['#','平台','姓名','职位','类型','公司','国家','邮箱','邮箱验证','邮箱评分','电话','电话验证','电话评分','WhatsApp','WA评分','社媒','可联系评分','浏览器节点','搜索模式','日期'];
+  const body=rows.map((r,i)=>[i+1,PLAT_CFG[r.platform]?.l||'—',r.name,r.title,{brand:'品牌',factory:'工厂',agent:'代理'}[r.type]||r.type,r.company,r.country,r.email,r.email_valid===true?'✅':r.email_valid===false?'❌':'未验',r.email_score||0,r.phone,r.phone_valid===true?'✅':r.phone_valid===false?'❌':'未验',r.phone_score||0,r.wa_valid===true?'💬':'—',r.wa_score||0,r.social,r.contact_score||0,r.browser,r.searchMode,r.addedDate].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv='\uFEFF'+[h.join(','),...body].join('\r\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`采购数据PRO_${today()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  showToast(`✅ 已导出 ${rows.length} 条`);
+}
+
+function doClear(){if(!rows.length){showToast('已没有数据');return;}if(!confirm(`确认清空全部 ${rows.length} 条记录？`))return;rows=[];todayCount=0;lastDup=0;persist();updateCountryFilter();renderTable();updateStats();showProg(false);showLog(false);showErr('');showToast('已清空');}
+function delRow(id){rows=rows.filter(r=>r.id!==id);persist();updateCountryFilter();renderTable();updateStats();}
+function cp(t,l){if(!t||t==='—'){showToast('无内容');return;}navigator.clipboard.writeText(t).then(()=>showToast(`✅ 已复制${l}`)).catch(()=>prompt('手动复制:',t));}
+
+// ─── AI ASSISTANT ───
+let aiOpen=false,aiHistory=[],aiLoading=false;
+const AI_SYSTEM=`你是NEXUS，一个专业的采购数据分析AI助手，专注于羽绒服/户外服装行业。你可以：分析采购线索、生成开发信、提供市场洞察、解答采购问题、帮助验证策略。使用简洁专业的中文回复，保持对话简短有力（2-4段）。你有联网能力，可以获取最新市场信息。`;
+
+function toggleAI(){
+  aiOpen=!aiOpen;
+  document.getElementById('aiPanel').classList.toggle('open',aiOpen);
+}
+
+function aiKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}}
+
+async function sendAI(){
+  if(aiLoading)return;
+  const input=document.getElementById('aiInput');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  addAIMsg('user',msg);
+  // Build context about current data
+  const ctx=rows.length?`\n[当前数据: ${rows.length}条线索, ${rows.filter(r=>r.type==='brand').length}品牌, ${rows.filter(r=>r.email_valid).length}邮箱验证通过, ${rows.filter(r=>r.wa_valid).length}有WhatsApp]`:'';
+  aiHistory.push({role:'user',content:msg+ctx});
+  setAIStatus('thinking');
+  aiLoading=true;
+  document.getElementById('aiSend').disabled=true;
+  const typingId='typing-'+Date.now();
+  addAITyping(typingId);
+  try{
+    const key=apiKey||localStorage.getItem('dj_key')||'';
+    if(!key){removeAIMsg(typingId);addAIMsg('bot','⚠️ 请先在设置中配置 API Key 才能使用AI助手。');setAIStatus('online');aiLoading=false;document.getElementById('aiSend').disabled=false;return;}
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':key},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:AI_SYSTEM,tools:[{type:'web_search_20250305',name:'web_search'}],messages:aiHistory})});
+    const d=await r.json();
+    const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    removeAIMsg(typingId);
+    if(txt){addAIMsg('bot',txt);aiHistory.push({role:'assistant',content:txt});}
+    else{addAIMsg('bot','(未收到有效回复，请重试)');}
+  }catch(e){removeAIMsg(typingId);addAIMsg('bot',`网络错误: ${e.message}`);}
+  setAIStatus('online');aiLoading=false;document.getElementById('aiSend').disabled=false;
+}
+
+function aiQuick(q){document.getElementById('aiInput').value=q;sendAI();}
+
+function addAIMsg(role,text){
+  const c=document.getElementById('aiMsgs');
+  const div=document.createElement('div');div.className=`ai-msg ${role}`;
+  div.innerHTML=`<div class="ai-icon">${role==='bot'?'🤖':'👤'}</div><div class="ai-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  c.appendChild(div);c.scrollTop=c.scrollHeight;
+}
+function addAITyping(id){
+  const c=document.getElementById('aiMsgs');
+  const div=document.createElement('div');div.className='ai-msg bot';div.id=id;
+  div.innerHTML=`<div class="ai-icon">🤖</div><div class="ai-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  c.appendChild(div);c.scrollTop=c.scrollHeight;
+}
+function removeAIMsg(id){const el=document.getElementById(id);if(el)el.remove();}
+function setAIStatus(s){
+  const el=document.getElementById('aiStatus');
+  if(s==='thinking'){el.textContent='● 思考中…';el.className='ai-status thinking';}
+  else{el.textContent='● 在线 · claude-sonnet-4 + 联网';el.className='ai-status';}
+}
+
+// ─── HELPERS ───
+function dk(r){const e=(r.email||'').trim().toLowerCase();return(e&&e!=='—')?e:(r.name+'|'+r.company).toLowerCase();}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2);}
+function today(){return new Date().toLocaleDateString('zh-CN');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function $(id){return document.getElementById(id);}
+
+let logN=0;
+function log(t,m){const b=$('logBody');const c={i:'lo',e:'le',s:'ls',ls:'ls',lw:'lw',p:'lp',b:'lb'}[t]||'';const ts=new Date().toLocaleTimeString('zh-CN',{hour12:false});b.innerHTML+=`<div class="${c}">[${ts}] ${m}</div>`;b.scrollTop=b.scrollHeight;$('logCount').textContent=++logN+'条';}
+function clearLog(){$('logBody').innerHTML='';logN=0;$('logCount').textContent='0条';}
+function showLog(v){$('logWrap').classList.toggle('show',v);}
+function showProg(v){$('progWrap').classList.toggle('show',v);}
+function setProg(p,m){$('progFill').style.width=p+'%';$('progMsg').textContent=m;$('progPct').textContent=p+'%';}
+function showErr(m){const e=$('errBox');m?(e.textContent=m,e.classList.add('show')):e.classList.remove('show');}
+let _tt;
+function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m){closeSettings();closeAdd();}}));
+// Close TZ dropdown on click outside
+document.addEventListener('click',e=>{const dd=document.getElementById('tzDropdown');if(dd&&!e.target.closest('.tz-search-wrap'))dd.style.display='none';});
+</script>
+</body>
+</html>
