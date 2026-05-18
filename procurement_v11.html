@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+<meta http-equiv="Permissions-Policy" content="geolocation=(),microphone=(),camera=()">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="DataNexus PRO — Enterprise Procurement Intelligence">
+<title>DataNexus PRO v10</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#020509;--c1:#060e18;--c2:#0a1624;--bd:#132034;--bd2:#1c3050;--tx:#cce4f8;--tx2:#7da8cc;--tx3:#3d6080;--tx4:#1a3050;--neo:#00d4ff;--grn:#00ffaa;--red:#ff3d6e;--amb:#ffcc00;--pur:#c47dff;--wa:#25d366;--ora:#ff6b2b;--f1:'Syne',sans-serif;--f2:'Space Grotesk',sans-serif;--fm:'JetBrains Mono',monospace}
+html{scroll-behavior:smooth}
+body{font-family:var(--f2);background:var(--bg);color:var(--tx);font-size:13px;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-thumb{background:#0090b8;border-radius:2px}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.02) 1px,transparent 1px);background-size:44px 44px}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+.orb1{width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(0,212,255,.05),transparent 70%)}
+.orb2{width:400px;height:400px;bottom:-100px;left:-50px;background:radial-gradient(circle,rgba(196,125,255,.04),transparent 70%)}
+.scanline{position:fixed;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--neo),transparent);z-index:999;pointer-events:none;animation:scn 10s ease-in-out infinite;opacity:.1}
+@keyframes scn{0%,100%{top:0}50%{top:100vh}}
+.z1{position:relative;z-index:1}
+.cor{position:fixed;z-index:1;pointer-events:none;width:14px;height:14px}
+.cor::before,.cor::after{content:'';position:absolute;background:rgba(0,212,255,.2)}
+.cor::before{width:1px;height:100%}.cor::after{width:100%;height:1px}
+.tl{top:6px;left:6px}.tr{top:6px;right:6px}.bl{bottom:6px;left:6px}.br{bottom:6px;right:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes glow{0%,100%{box-shadow:0 0 6px rgba(0,212,255,.2)}50%{box-shadow:0 0 20px rgba(0,212,255,.5)}}
+@keyframes shimmer{0%{background-position:-200%}100%{background-position:200%}}
+@keyframes rowin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes popin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ──── AUTH VIEWS ──── */
+.auth-view{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.auth-view.hide{display:none}
+.auth-card{background:rgba(6,14,24,.97);border:1px solid var(--bd2);border-radius:10px;width:420px;max-width:calc(100vw - 32px);padding:0;box-shadow:0 0 60px rgba(0,212,255,.08),0 32px 64px rgba(0,0,0,.8);position:relative;z-index:1;animation:fadein .3s ease}
+.auth-card::before{content:'';position:absolute;inset:0;border-radius:10px;padding:1px;background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(196,125,255,.1),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.auth-head{padding:28px 28px 20px;text-align:center;border-bottom:1px solid var(--bd)}
+.auth-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.auth-logo-chip{font-family:var(--fm);font-size:9px;font-weight:700;padding:3px 8px;border:1px solid rgba(0,212,255,.4);border-radius:3px;color:var(--neo);background:rgba(0,212,255,.07);letter-spacing:2px;animation:glow 3s infinite}
+.auth-logo-name{font-family:var(--f1);font-size:20px;font-weight:800;color:var(--tx)}.auth-logo-name em{color:var(--neo);font-style:normal}
+.auth-subtitle{font-family:var(--fm);font-size:10px;color:var(--tx3);letter-spacing:.8px;margin-top:4px}
+.auth-body{padding:24px 28px}
+.auth-body label{display:block;font-family:var(--fm);font-size:9px;font-weight:700;color:var(--tx3);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+.auth-inp-wrap{position:relative;margin-bottom:14px}
+.auth-inp{width:100%;background:rgba(0,212,255,.03);border:1px solid var(--bd2);color:var(--tx);border-radius:5px;padding:11px 38px 11px 12px;font-size:13px;font-family:var(--f2);outline:none;transition:.2s}
+.auth-inp:focus{border-color:var(--neo);box-shadow:0 0 0 3px rgba(0,212,255,.07)}
+.auth-inp::placeholder{color:var(--tx4)}
+.auth-inp.error{border-color:var(--red)}
+.auth-inp-icon{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:14px;cursor:pointer;color:var(--tx3);background:none;border:none;transition:.15s}
+.auth-inp-icon:hover{color:var(--tx)}
+.auth-strength{height:3px;border-radius:2px;margin-top:-10px;margin-bottom:14px;background:var(--bd);overflow:hidden;transition:.3s}
+.auth-strength-fill{height:100%;border-radius:2px;transition:.4s}
+.auth-err{background:rgba(255,61,110,.07);border:1px solid rgba(255,61,110,.2);border-radius:5px;padding:9px 12px;font-size:12px;color:var(--red);margin-bottom:14px;display:none}
+.auth-err.show{display:block}
+.auth-info{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.12);border-radius:5px;padding:9px 12px;font-size:11px;color:var(--tx2);margin-bottom:14px;line-height:1.7}
+.auth-info b{color:var(--neo)}
+.auth-btn{width:100%;background:linear-gradient(135deg,#0090b8,#035e80);color:#fff;padding:12px;border:none;border-radius:5px;font-family:var(--fm);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.5px;position:relative;overflow:hidden;margin-top:4px}
+.auth-btn:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,212,255,.25)}
+.auth-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.auth-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);transform:translateX(-100%);transition:.4s}
+.auth-btn:hover::after{transform:translateX(100%)}
+.auth-btn-spin{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+.auth-footer{padding:14px 28px;border-top:1px solid var(--bd);text-align:center;font-size:11px;color:var(--tx3)}
+.auth-footer a{color:var(--tx2);cursor:pointer;text-decoration:none;transition:.15s}
+.auth-footer a:hover{color:var(--neo)}
+.lockout-bar{background:rgba(255,204,0,.07);border:1px solid rgba(255,204,0,.2);border-radius:5px;padding:9px 12px;font-size:11px;color:var(--amb);margin-bottom:14px;display:none;align-items:center;gap:8px}
+.lockout-bar.show{display:flex}
+.lockout-timer{font-family:var(--fm);font-weight:700;font-size:14px;color:var(--amb)}
+.login-hint{margin-top:6px;font-size:10px;color:var(--tx4);text-align:center}
+
+/* ──── PASSWORD REQUIREMENTS ──── */
+.pw-reqs{background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:4px;padding:10px;margin-bottom:14px;font-size:10px}
+.pw-req{display:flex;align-items:center;gap:6px;padding:2px 0;font-family:var(--fm);color:var(--tx3);transition:.2s}
+.pw-req.ok{color:var(--grn)}.pw-req .req-dot{width:5px;height:5px;border-radius:50%;background:var(--tx4);flex-shrink:0;transition:.2s}
+.pw-req.ok .req-dot{background:var(--grn)}
+
+/* ──── COOKIE BANNER ──── */
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(6,14,24,.97);border-top:1px solid var(--bd2);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;animation:fadein .4s ease;backdrop-filter:blur(12px)}
+.cookie-banner.hide{display:none}
+.cookie-txt{flex:1;font-size:11px;color:var(--tx2);min-width:200px;line-height:1.65}
+.cookie-txt a{color:var(--neo);cursor:pointer}
+.cookie-btns{display:flex;gap:6px;flex-shrink:0}
+
+/* ──── HEADER ──── */
+.hd{position:sticky;top:0;z-index:80;height:50px;background:rgba(2,5,9,.95);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 14px;gap:8px;backdrop-filter:blur(20px)}
+.hd::after{content:'';position:absolute;bottom:-1px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.25),transparent);pointer-events:none}
+.logo-v{font-family:var(--fm);font-size:9px;font-weight:700;padding:2px 6px;border:1px solid rgba(0,212,255,.35);border-radius:2px;color:var(--neo);background:rgba(0,212,255,.06);letter-spacing:2px;position:relative;overflow:hidden;animation:glow 3s infinite}
+.logo-v::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,212,255,.15),transparent);animation:shimmer 2s linear infinite;background-size:200%}
+.logo-n{font-family:var(--f1);font-size:15px;font-weight:800;letter-spacing:.5px}.logo-n em{color:var(--neo);font-style:normal}
+.hsep{width:1px;height:22px;background:var(--bd2);flex-shrink:0}
+.hstat{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--tx3);padding:3px 8px;border:1px solid var(--bd);border-radius:3px;background:rgba(255,255,255,.01);animation:float 3.5s ease-in-out infinite}
+.hstat b{color:var(--neo)}.hstat.g b{color:var(--grn)}.hstat.a b{color:var(--amb)}
+.hd-r{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.hbtn{font-family:var(--fm);font-size:9px;padding:5px 9px;border:1px solid var(--bd2);background:rgba(255,255,255,.02);color:var(--tx2);border-radius:3px;cursor:pointer;transition:.15s;white-space:nowrap}
+.hbtn:hover{border-color:var(--neo);color:var(--neo);background:rgba(0,212,255,.05)}
+.hbtn.red:hover{border-color:var(--red);color:var(--red)}
+.user-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--bd2);border-radius:3px;background:rgba(0,212,255,.04);cursor:default}
+.user-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--neo),var(--pur));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#03060d;font-family:var(--fm)}
+.user-name{font-family:var(--fm);font-size:9px;color:var(--neo)}
+
+/* ──── API BAR ──── */
+.api-bar{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:5px 14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;position:relative;z-index:2}
+.api-prov{display:flex;align-items:center;gap:4px;padding:3px 9px;border:1px solid var(--bd);border-radius:3px;background:rgba(255,255,255,.01);cursor:pointer;transition:.2s;user-select:none;font-family:var(--fm);font-size:9px;font-weight:600;color:var(--tx3)}
+.api-prov.active{border-color:rgba(0,255,170,.3);background:rgba(0,255,170,.04);color:var(--grn)}
+.api-prov.err{border-color:rgba(255,61,110,.2);color:var(--red)}
+.api-prov.testing{border-color:rgba(255,204,0,.2);color:var(--amb)}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--tx4);transition:.3s}
+.api-prov.active .pdot{background:var(--grn);box-shadow:0 0 6px var(--grn)}
+.api-prov.err .pdot{background:var(--red)}.api-prov.testing .pdot{background:var(--amb);animation:blink .5s infinite}
+.pbadge{font-size:7px;padding:1px 3px;border-radius:2px;margin-left:1px;font-family:var(--fm)}
+.pbfree{background:rgba(0,255,170,.07);color:var(--grn);border:1px solid rgba(0,255,170,.2)}
+.pbkey{background:rgba(0,212,255,.07);color:var(--neo);border:1px solid rgba(0,212,255,.2)}
+.pbfast{background:rgba(255,107,43,.1);color:var(--ora);border:1px solid rgba(255,107,43,.25)}
+.pbno{color:var(--tx4);border:1px solid var(--bd)}
+.api-info{margin-left:auto;font-family:var(--fm);font-size:9px;color:var(--tx4);display:flex;align-items:center;gap:6px}
+.api-info b{color:var(--neo)}
+.sm{font-family:var(--fm);font-size:9px;padding:3px 8px;border:1px solid var(--bd);background:none;color:var(--tx3);border-radius:2px;cursor:pointer;transition:.15s}
+.sm:hover{border-color:var(--neo);color:var(--neo)}.sm.r:hover{border-color:var(--red);color:var(--red)}
+
+/* ──── CLOCK ──── */
+.clkbar{background:rgba(3,7,13,.96);border-bottom:1px solid var(--bd);display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;position:relative;z-index:2}
+.clkbar::-webkit-scrollbar{height:0}
+.clkitem{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 12px;border-right:1px solid var(--bd);min-width:82px;flex-shrink:0;cursor:pointer;transition:.15s;user-select:none}
+.clkitem:hover{background:rgba(0,212,255,.025)}
+.clkflag{font-size:11px}.clkcity{font-family:var(--fm);font-size:7px;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase}
+.clktime{font-family:var(--fm);font-size:14px;font-weight:700;color:var(--neo);letter-spacing:1.5px;line-height:1.1}
+.clkdate{font-family:var(--fm);font-size:7px;color:var(--tx4)}
+.clkadd{display:flex;align-items:center;justify-content:center;padding:0 12px;cursor:pointer;color:var(--tx4);font-size:18px;transition:.2s;flex-shrink:0;position:relative}
+.clkadd:hover{color:var(--neo)}
+.tzdd{position:absolute;top:calc(100% + 2px);left:0;background:var(--c1);border:1px solid var(--bd2);border-radius:4px;min-width:180px;max-height:220px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.8)}
+.tzopt{padding:7px 12px;cursor:pointer;font-size:11px;color:var(--tx2);transition:.1s}
+.tzopt:hover{background:rgba(0,212,255,.08);color:var(--neo)}
+.tzinp{background:var(--c2);border:none;border-bottom:1px solid var(--bd2);color:var(--tx);padding:6px 10px;font-size:11px;width:100%;outline:none}
+
+/* ──── SEARCH ──── */
+.sp{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:9px 14px;display:flex;flex-direction:column;gap:7px;z-index:2;position:relative}
+.sp-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sp-lbl{font-family:var(--fm);font-size:8px;font-weight:600;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;min-width:34px}
+.kww{flex:1;min-width:160px;position:relative}
+.kww input{width:100%;background:rgba(0,212,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:7px 28px 7px 10px;font-size:12px;font-family:var(--f2);outline:none;transition:.2s}
+.kww input:focus{border-color:var(--neo);box-shadow:0 0 0 2px rgba(0,212,255,.06)}
+.kww input::placeholder{color:var(--tx4)}
+.kwx{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px}
+.kwx:hover{color:var(--tx)}
+.modeg{display:flex;border:1px solid var(--bd2);border-radius:3px;overflow:hidden}
+.mb{padding:6px 11px;font-family:var(--fm);font-size:9px;font-weight:700;border:none;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx3);transition:.15s}
+.mb.on{background:rgba(0,212,255,.12);color:var(--neo)}
+.sel{background:rgba(255,255,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:5px 8px;font-size:11px;font-family:var(--f2);outline:none;cursor:pointer;transition:.15s}
+.sel:focus{border-color:var(--neo)}
+.kwtags{display:flex;flex-wrap:wrap;gap:3px}
+.kwtag{display:inline-flex;align-items:center;gap:3px;border-radius:2px;border:1px solid;padding:2px 7px;font-size:10px;font-family:var(--fm);animation:popin .2s ease}
+.kwtag .x{cursor:pointer;opacity:.4;font-size:11px}.kwtag .x:hover{opacity:1}
+.kwtag.precise{border-color:rgba(0,212,255,.4);color:var(--neo);background:rgba(0,212,255,.05)}
+.kwtag.broad{border-color:rgba(196,125,255,.4);color:var(--pur);background:rgba(196,125,255,.05)}
+
+/* ──── REGION PANEL ──── */
+.reg-panel{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:6px 14px;position:relative;z-index:2}
+.reg-tabs{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:5px}
+.reg-tab{font-family:var(--fm);font-size:8px;font-weight:700;padding:3px 8px;border:1px solid var(--bd);border-radius:2px;cursor:pointer;color:var(--tx3);background:rgba(255,255,255,.01);transition:.15s;white-space:nowrap}
+.reg-tab.on{border-color:rgba(0,212,255,.4);color:var(--neo);background:rgba(0,212,255,.07)}
+.country-grid{display:none;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
+.country-grid.show{display:flex}
+.ctry-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--fm);font-size:9px;padding:2px 6px;border:1px solid var(--bd);border-radius:2px;cursor:pointer;color:var(--tx3);background:rgba(255,255,255,.01);transition:.12s;user-select:none}
+.ctry-chip.on{border-color:rgba(0,212,255,.35);color:var(--neo);background:rgba(0,212,255,.05)}
+.reg-actions{display:flex;gap:5px;align-items:center;margin-top:4px;flex-wrap:wrap;display:none}
+.reg-actions.show{display:flex}
+.reg-sel-lbl{font-family:var(--fm);font-size:8px;color:var(--tx3)}
+.reg-sel-lbl b{color:var(--neo)}
+
+/* ──── PLAT + NODE BARS ──── */
+.platbar,.browbar{background:rgba(6,14,24,.98);border-bottom:1px solid var(--bd);padding:5px 14px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;z-index:1;position:relative}
+.barlbl{font-family:var(--fm);font-size:7px;font-weight:700;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-right:2px;white-space:nowrap}
+.ppill,.bchip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:2px;border:1px solid var(--bd);font-family:var(--fm);font-size:9px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.01);color:var(--tx3);transition:.12s;user-select:none}
+.ppill.on{border-color:rgba(0,212,255,.22);color:var(--tx);background:rgba(0,212,255,.035)}
+.bchip.on{border-color:rgba(0,255,170,.2);color:var(--grn);background:rgba(0,255,170,.03)}
+.bchip.active{border-color:var(--amb);color:var(--amb);animation:blink .4s infinite}
+.bsec{display:flex;gap:2px;align-items:center;padding:1px 5px;border-left:1px solid rgba(0,212,255,.08);margin-left:2px}
+.breg{font-family:var(--fm);font-size:7px;font-weight:700;color:rgba(0,212,255,.45);white-space:nowrap;align-self:center;margin-right:1px}
+.pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ──── STATS ──── */
+.stats{display:flex;gap:4px;padding:7px 14px;flex-wrap:wrap;z-index:1;position:relative;overflow-x:auto}
+.stat{background:rgba(6,14,24,.9);border:1px solid var(--bd);border-radius:3px;padding:6px 10px;min-width:66px;flex:1;cursor:default;transition:.2s;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--a,var(--neo));opacity:.22}
+.stat:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.sv{font-family:var(--fm);font-size:19px;font-weight:700;line-height:1}
+.sl{font-family:var(--fm);font-size:8px;color:var(--tx3);margin-top:1px}
+
+/* ──── PROGRESS + LOG ──── */
+.progw{margin:0 14px 4px;display:none}.progw.show{display:block}
+.progbar{height:2px;background:var(--bd);border-radius:10px;overflow:hidden}
+.progfill{height:100%;background:linear-gradient(90deg,var(--neo),var(--pur));border-radius:10px;transition:width .35s;position:relative}
+.progfill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 1.8s linear infinite;background-size:200%}
+.progtxt{display:flex;justify-content:space-between;font-family:var(--fm);font-size:9px;color:var(--tx3);margin-top:3px}
+.logw{margin:0 14px 4px;display:none}.logw.show{display:block}
+.logh{background:rgba(2,5,9,.9);padding:4px 10px;border-radius:3px 3px 0 0;font-family:var(--fm);font-size:8px;display:flex;justify-content:space-between;border:1px solid var(--bd);border-bottom:none;color:var(--tx3)}
+.logb{background:rgba(2,5,9,.9);font-family:var(--fm);font-size:10px;padding:6px 10px;max-height:90px;overflow-y:auto;border:1px solid var(--bd);border-top:none;border-radius:0 0 3px 3px;line-height:1.7}
+.lo{color:var(--neo)}.le{color:var(--red)}.ls{color:var(--grn)}.lw{color:var(--amb)}.lp{color:var(--pur)}.lb{color:#5e81f4}
+.errb{margin:4px 14px;background:rgba(255,61,110,.06);border:1px solid rgba(255,61,110,.18);border-radius:3px;padding:7px 12px;font-size:12px;color:var(--red);display:none}.errb.show{display:block}
+
+/* ──── TABLE FILTER ──── */
+.tf{padding:5px 14px;background:rgba(6,14,24,.98);border-bottom:1px solid var(--bd);display:flex;gap:4px;flex-wrap:wrap;align-items:center;position:sticky;top:50px;z-index:60;backdrop-filter:blur(12px)}
+.tf input,.tf select{background:rgba(255,255,255,.02);border:1px solid var(--bd);color:var(--tx);border-radius:3px;padding:4px 7px;font-size:11px;font-family:var(--f2);outline:none;transition:.15s}
+.tf input:focus,.tf select:focus{border-color:var(--neo)}
+.tf input::placeholder{color:var(--tx4)}.tf input{flex:1;min-width:80px}
+.flbl{font-family:var(--fm);font-size:7px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
+.fclear{font-family:var(--fm);font-size:9px;padding:3px 7px;border:1px solid var(--bd);background:none;color:var(--tx3);cursor:pointer;border-radius:2px;transition:.15s}
+.fclear:hover{border-color:var(--red);color:var(--red)}
+.fcnt{font-family:var(--fm);font-size:9px;color:var(--tx3);margin-left:auto;white-space:nowrap}
+
+/* ──── TABLE ──── */
+.tblw{padding:0 14px 20px;overflow-x:auto;z-index:1;position:relative}
+table{width:100%;border-collapse:collapse;background:rgba(6,14,24,.9);border-radius:4px;border:1px solid var(--bd);overflow:hidden;min-width:1080px}
+th{background:rgba(2,5,9,.8);padding:6px 9px;text-align:left;font-family:var(--fm);font-size:8px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none;transition:.15s}
+th:hover{color:var(--neo)}
+.si{opacity:.2;font-size:8px;margin-left:2px}
+th.asc .si::after{content:'▲';opacity:1;color:var(--neo)}th.desc .si::after{content:'▼';opacity:1;color:var(--neo)}
+td{padding:5px 9px;border-bottom:1px solid rgba(19,32,52,.5);font-size:12px;vertical-align:middle;color:var(--tx)}
+tr:last-child td{border-bottom:none}tr{transition:.1s}tr:hover td{background:rgba(0,212,255,.015)}
+tr.ri{animation:rowin .25s ease}
+.tag{display:inline-block;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;letter-spacing:.4px}
+.tbrand{background:rgba(255,204,0,.07);color:var(--amb);border:1px solid rgba(255,204,0,.18)}
+.tfact{background:rgba(0,255,170,.05);color:var(--grn);border:1px solid rgba(0,255,170,.15)}
+.tagent{background:rgba(196,125,255,.07);color:var(--pur);border:1px solid rgba(196,125,255,.18)}
+.tnew{background:rgba(0,212,255,.16);color:var(--neo);font-size:7px;margin-left:3px;padding:1px 4px;border-radius:2px;font-weight:900;font-family:var(--fm)}
+.ec{color:var(--neo);cursor:pointer;font-family:var(--fm);font-size:11px}.ec:hover{text-decoration:underline}
+.pc2{color:var(--grn);cursor:pointer;font-family:var(--fm);font-size:11px}.pc2:hover{text-decoration:underline}
+.sc2{color:var(--pur);cursor:pointer;font-size:11px}.sc2:hover{text-decoration:underline}
+.delbtn{color:var(--red);cursor:pointer;opacity:.12;font-size:14px;background:none;border:none;padding:0 2px;transition:.15s}.delbtn:hover{opacity:1}
+.srcbtn{font-family:var(--fm);font-size:8px;padding:1px 5px;border:1px solid var(--bd2);border-radius:2px;background:none;color:var(--tx3);cursor:pointer;transition:.15s}
+.srcbtn:hover{border-color:var(--neo);color:var(--neo)}
+
+/* ──── VALIDATION ──── */
+.vbg{display:inline-flex;align-items:center;gap:2px;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;white-space:nowrap}
+.vok{background:rgba(0,255,170,.05);color:var(--grn);border:1px solid rgba(0,255,170,.15)}
+.vfail{background:rgba(255,61,110,.05);color:var(--red);border:1px solid rgba(255,61,110,.12)}
+.vpend{border:1px solid var(--bd);color:var(--tx3);cursor:pointer}.vpend:hover{border-color:var(--neo);color:var(--neo)}
+.vchk{background:rgba(0,212,255,.05);color:var(--neo);border:1px solid rgba(0,212,255,.2);animation:pulse .7s infinite}
+.vwa{background:rgba(37,211,102,.07);color:var(--wa);border:1px solid rgba(37,211,102,.15)}
+.vcell{display:flex;flex-direction:column;gap:2px;min-width:88px}
+.vscore{font-family:var(--fm);font-size:11px;font-weight:700}
+.vhi{color:var(--grn)}.vmd{color:var(--amb)}.vlo{color:var(--red)}
+
+/* ──── ENRICH PANEL ──── */
+.ep{position:fixed;top:50px;right:0;width:330px;height:calc(100vh - 50px);background:rgba(4,10,16,.98);border-left:1px solid var(--bd2);display:flex;flex-direction:column;z-index:70;transform:translateX(100%);transition:.3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}
+.ep.open{transform:translateX(0)}
+.eph{padding:11px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.eph h3{font-family:var(--f1);font-size:13px;font-weight:700;color:var(--tx)}.eph h3 span{color:var(--neo)}
+.epb{flex:1;overflow-y:auto;padding:12px}
+.epst{font-family:var(--fm);font-size:8px;font-weight:700;color:var(--neo);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid var(--bd)}
+.epkv{display:flex;gap:5px;margin-bottom:4px;align-items:flex-start}
+.epk{font-family:var(--fm);font-size:9px;color:var(--tx3);min-width:65px;flex-shrink:0}
+.epv{font-size:11px;color:var(--tx);word-break:break-all}
+.epv a{color:var(--neo);text-decoration:none}.epv a:hover{text-decoration:underline}
+.epa{display:flex;gap:3px;flex-wrap:wrap;margin-top:7px}
+.epbtn{font-family:var(--fm);font-size:9px;padding:4px 8px;border:1px solid var(--bd2);background:rgba(255,255,255,.02);color:var(--tx2);border-radius:2px;cursor:pointer;transition:.15s}
+.epbtn:hover{border-color:var(--neo);color:var(--neo)}
+
+/* ──── AI FAB + PANEL ──── */
+.aifab{position:fixed;bottom:76px;right:20px;z-index:500;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#005580,#6d28d9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:.3s;box-shadow:0 0 0 0 rgba(0,212,255,.35)}
+.aifab:hover{transform:scale(1.1)}.aifab.pls{animation:fabp 2.5s ease-in-out infinite}
+@keyframes fabp{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.3)}50%{box-shadow:0 0 0 14px rgba(0,212,255,0)}}
+.aipanel{position:fixed;bottom:138px;right:20px;width:370px;max-height:520px;background:rgba(4,10,16,.97);border:1px solid var(--bd2);border-radius:6px;display:flex;flex-direction:column;z-index:500;box-shadow:0 20px 50px rgba(0,0,0,.8);transform-origin:bottom right;transform:scale(0);opacity:0;transition:.2s cubic-bezier(.34,1.56,.64,1);pointer-events:none;backdrop-filter:blur(20px)}
+.aipanel.open{transform:scale(1);opacity:1;pointer-events:all}
+.aihd{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.aiav{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#005580,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ainm{font-family:var(--f1);font-size:11px;font-weight:700;color:var(--tx)}
+.aist{font-family:var(--fm);font-size:8px;color:var(--grn)}
+.aist.thinking{color:var(--amb);animation:pulse .7s infinite}
+.aix{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;margin-left:auto}.aix:hover{color:var(--tx)}
+.aimsgs{flex:1;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:5px;min-height:150px}
+.aimsg{display:flex;gap:4px;animation:popin .2s ease}
+.aimsg.user{flex-direction:row-reverse}
+.aibbl{max-width:88%;padding:8px 11px;font-size:11px;line-height:1.7;font-family:var(--f2);border-radius:4px}
+.aimsg.bot .aibbl{background:rgba(255,255,255,.025);border:1px solid var(--bd);color:var(--tx)}
+.aimsg.user .aibbl{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);color:var(--neo)}
+.aiico{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:2px}
+.aimsg.bot .aiico{background:linear-gradient(135deg,#005580,#6d28d9)}
+.aimsg.user .aiico{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);color:var(--neo)}
+.aiqbtns{display:flex;flex-wrap:wrap;gap:3px;padding:0 9px 5px}
+.aiqbtn{font-size:9px;padding:3px 8px;border-radius:20px;border:1px solid var(--bd);background:rgba(255,255,255,.015);color:var(--tx3);cursor:pointer;font-family:var(--f2);transition:.15s}
+.aiqbtn:hover{border-color:var(--neo);color:var(--neo)}
+.aifooter{padding:7px 9px;border-top:1px solid var(--bd);display:flex;gap:4px;flex-shrink:0}
+.aiinp{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:6px 8px;font-size:11px;font-family:var(--f2);outline:none;transition:.15s}
+.aiinp:focus{border-color:var(--neo)}.aiinp::placeholder{color:var(--tx4)}
+.aisend{background:linear-gradient(135deg,#005580,#6d28d9);border:none;color:#fff;border-radius:3px;padding:6px 10px;cursor:pointer;font-size:13px;transition:.2s;flex-shrink:0}
+.aisend:hover{filter:brightness(1.2)}.aisend:disabled{opacity:.35}
+.dots{display:flex;gap:3px;padding:3px 2px}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--neo);animation:dotb .9s infinite}
+.dots span:nth-child(2){animation-delay:.18s}.dots span:nth-child(3){animation-delay:.36s}
+@keyframes dotb{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ──── BUTTONS ──── */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:3px;font-family:var(--fm);font-size:10px;font-weight:700;border:none;cursor:pointer;transition:.2s;white-space:nowrap;letter-spacing:.4px}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btnblue{background:linear-gradient(135deg,#0090b8,#035e80);color:#fff;box-shadow:0 4px 16px rgba(0,212,255,.2)}
+.btng{background:rgba(255,255,255,.03);color:var(--tx);border:1px solid var(--bd2)}
+.btnr{background:rgba(255,61,110,.06);color:var(--red);border:1px solid rgba(255,61,110,.18)}
+.btnneon{background:rgba(0,212,255,.09);color:var(--neo);border:1px solid rgba(0,212,255,.25)}
+
+/* ──── MODAL ──── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal.show{display:flex;animation:popin .2s ease}
+.mpanel{background:var(--c1);border:1px solid var(--bd2);border-radius:5px;width:90%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.8)}
+.mh{background:rgba(2,5,9,.6);color:var(--tx);padding:11px 14px;border-radius:5px 5px 0 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)}
+.mh h3{font-family:var(--f1);font-size:13px;font-weight:700}.mh h3 em{color:var(--neo);font-style:normal}
+.xbtn{background:none;border:none;color:var(--tx3);font-size:17px;cursor:pointer}.xbtn:hover{color:var(--tx)}
+.mc{flex:1;overflow-y:auto;padding:14px}.mf{padding:10px 14px;border-top:1px solid var(--bd);display:flex;gap:6px}
+.mc label{display:block;font-family:var(--fm);font-size:8px;color:var(--tx3);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.mc input,.mc select,.mc textarea{width:100%;padding:7px 10px;background:rgba(255,255,255,.02);border:1px solid var(--bd2);border-radius:3px;font-size:12px;font-family:var(--f2);outline:none;color:var(--tx);margin-bottom:10px;transition:.15s}
+.mc input:focus,.mc select:focus,.mc textarea:focus{border-color:var(--neo)}
+.mc textarea{resize:vertical;min-height:55px}
+.ibox{background:rgba(255,255,255,.015);border:1px solid var(--bd);border-radius:3px;padding:9px;font-size:11px;color:var(--tx3);line-height:1.8;margin-bottom:10px}
+.ibox b{color:var(--tx)}.ibox .free{color:var(--grn)}.ibox .key{color:var(--neo)}.ibox .fast{color:var(--ora)}
+.secttl{font-family:var(--fm);font-size:8px;font-weight:700;color:var(--neo);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:5px;padding-top:10px;border-top:1px solid var(--bd)}
+.api-sr{display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--bd);border-radius:3px;margin-bottom:6px;background:rgba(255,255,255,.01)}
+.asr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.asr-name{font-family:var(--fm);font-size:10px;font-weight:700;color:var(--tx);min-width:90px}
+.asr-status{font-family:var(--fm);font-size:9px;flex:1}
+.asr-lat{font-family:var(--fm);font-size:9px;color:var(--grn);margin-left:auto;min-width:40px;text-align:right}
+.asr-test{font-family:var(--fm);font-size:8px;padding:2px 7px;border:1px solid var(--bd2);border-radius:2px;background:none;color:var(--tx3);cursor:pointer;transition:.15s;margin-left:4px}
+.asr-test:hover{border-color:var(--neo);color:var(--neo)}
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+
+/* ──── FOOTER ──── */
+.appfoot{background:rgba(2,5,9,.97);border-top:1px solid var(--bd);padding:16px 20px;position:relative;z-index:2}
+.foot-inner{max-width:1200px;margin:auto;display:flex;flex-direction:column;gap:10px}
+.foot-row1{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.foot-brand{display:flex;align-items:center;gap:8px}
+.foot-brand-name{font-family:var(--f1);font-size:13px;font-weight:800;color:var(--tx2)}.foot-brand-name em{color:var(--neo);font-style:normal}
+.foot-links{display:flex;gap:0;flex-wrap:wrap}
+.flink{font-family:var(--fm);font-size:9px;color:var(--tx3);cursor:pointer;padding:3px 10px;border-right:1px solid var(--bd);text-decoration:none;transition:.15s}
+.flink:last-child{border-right:none}.flink:hover{color:var(--neo)}
+.foot-row2{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--bd)}
+.foot-copy{font-family:var(--fm);font-size:8px;color:var(--tx4)}
+.foot-disclaimer{font-size:10px;color:var(--tx4);max-width:600px;line-height:1.6}
+.foot-disclaimer b{color:var(--tx3)}
+.foot-contact{font-family:var(--fm);font-size:9px;color:var(--tx2)}.foot-contact a{color:var(--neo)}
+
+/* ──── LEGAL MODALS ──── */
+.legal-panel{background:var(--c1);border:1px solid var(--bd2);border-radius:5px;width:90%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.9)}
+.legal-body{flex:1;overflow-y:auto;padding:20px 24px;font-size:12px;color:var(--tx2);line-height:1.9}
+.legal-body h2{font-family:var(--f1);font-size:15px;font-weight:700;color:var(--tx);margin-bottom:14px}
+.legal-body h3{font-family:var(--fm);font-size:10px;font-weight:700;color:var(--neo);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 6px;padding-top:12px;border-top:1px solid var(--bd)}
+.legal-body p{margin-bottom:8px}.legal-body ul{padding-left:16px;margin-bottom:8px}
+.legal-body li{margin-bottom:4px}
+
+/* ──── EMPTY ──── */
+.empty{text-align:center;padding:60px 20px;color:var(--tx3);z-index:1;position:relative}
+.empty h3{font-family:var(--f1);font-size:20px;letter-spacing:4px;color:var(--tx);margin:.7rem 0 .4rem}
+.empty p{font-size:12px;line-height:2}
+
+/* ──── TOAST ──── */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(6,14,24,.97);border:1px solid var(--bd2);color:var(--tx);padding:7px 16px;border-radius:4px;font-size:12px;z-index:9999;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.7);font-family:var(--f2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:768px){.aipanel{width:calc(100vw - 12px);right:6px}.ep{width:280px}.auth-card{width:calc(100vw - 32px)}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grid"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="scanline"></div>
+<div class="cor tl"></div><div class="cor tr"></div><div class="cor bl"></div><div class="cor br"></div>
+
+<!-- ══════════ LOGIN VIEW ══════════ -->
+<div id="v-login" class="auth-view">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="auth-logo">
+        <span class="auth-logo-chip">PRO</span>
+        <span class="auth-logo-name">DATA<em>NEXUS</em></span>
+      </div>
+      <div class="auth-subtitle">ENTERPRISE PROCUREMENT INTELLIGENCE</div>
+    </div>
+    <div class="auth-body">
+      <div class="lockout-bar" id="lockoutBar">
+        <span>⏳ 登录已锁定，剩余：</span>
+        <span class="lockout-timer" id="lockoutTimer">--:--</span>
+      </div>
+      <div class="auth-err" id="loginErr"></div>
+      <label>用户名</label>
+      <div class="auth-inp-wrap">
+        <input class="auth-inp" id="loginUser" type="text" placeholder="输入用户名" autocomplete="username" maxlength="32" onkeydown="if(event.key==='Enter')doLogin()">
+        <span class="auth-inp-icon" style="cursor:default">👤</span>
+      </div>
+      <label>密码</label>
+      <div class="auth-inp-wrap">
+        <input class="auth-inp" id="loginPass" type="password" placeholder="输入密码" autocomplete="current-password" maxlength="128" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="auth-inp-icon" onclick="togglePw('loginPass',this)" tabindex="-1">👁</button>
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">
+        <span id="loginBtnTxt">登 录</span>
+        <div class="auth-btn-spin" id="loginSpin"></div>
+      </button>
+      <div class="login-hint">首次登录使用默认凭据，登录后强制修改密码</div>
+    </div>
+    <div class="auth-footer">
+      <span id="loginAttemptInfo" style="font-family:var(--fm);font-size:9px;color:var(--tx3)"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CHANGE PASSWORD VIEW ══════════ -->
+<div id="v-changepw" class="auth-view hide">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="auth-logo">
+        <span class="auth-logo-chip">SECURITY</span>
+        <span class="auth-logo-name">密码<em>设置</em></span>
+      </div>
+      <div class="auth-subtitle">REQUIRED — CHANGE DEFAULT PASSWORD</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-info"><b>⚠️ 安全提示：</b>检测到默认密码，出于安全考虑必须设置新密码才能继续使用系统。</div>
+      <div class="auth-err" id="cpErr"></div>
+      <label>当前密码</label>
+      <div class="auth-inp-wrap">
+        <input class="auth-inp" id="cpOld" type="password" placeholder="输入当前密码" maxlength="128">
+        <button class="auth-inp-icon" onclick="togglePw('cpOld',this)" tabindex="-1">👁</button>
+      </div>
+      <label>新密码</label>
+      <div class="auth-inp-wrap">
+        <input class="auth-inp" id="cpNew" type="password" placeholder="新密码（至少8位）" maxlength="128" oninput="checkPwStrength(this.value)">
+        <button class="auth-inp-icon" onclick="togglePw('cpNew',this)" tabindex="-1">👁</button>
+      </div>
+      <div class="auth-strength"><div class="auth-strength-fill" id="strFill"></div></div>
+      <div class="pw-reqs" id="pwReqs">
+        <div class="pw-req" id="req-len"><span class="req-dot"></span>至少 8 个字符</div>
+        <div class="pw-req" id="req-up"><span class="req-dot"></span>包含大写字母</div>
+        <div class="pw-req" id="req-num"><span class="req-dot"></span>包含数字</div>
+        <div class="pw-req" id="req-sym"><span class="req-dot"></span>包含特殊字符</div>
+      </div>
+      <label>确认新密码</label>
+      <div class="auth-inp-wrap">
+        <input class="auth-inp" id="cpConf" type="password" placeholder="再次输入新密码" maxlength="128" onkeydown="if(event.key==='Enter')doChangePw()">
+        <button class="auth-inp-icon" onclick="togglePw('cpConf',this)" tabindex="-1">👁</button>
+      </div>
+      <button class="auth-btn" id="cpBtn" onclick="doChangePw()">
+        <span id="cpBtnTxt">保存新密码</span>
+        <div class="auth-btn-spin" id="cpSpin"></div>
+      </button>
+    </div>
+    <div class="auth-footer">
+      <a onclick="doLogout()">← 返回登录</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP VIEW ══════════ -->
+<div id="v-app" class="hide z1" style="min-height:100vh;display:flex;flex-direction:column">
+
+<!-- HEADER -->
+<div class="hd z1">
+  <span class="logo-v">v10</span>
+  <span class="logo-n">DATA<em>NEXUS</em></span>
+  <div class="hsep"></div>
+  <div class="hstat">今日 <b id="b1">0</b></div>
+  <div class="hstat g">总计 <b id="b2">0</b></div>
+  <div class="hstat a">验证率 <b id="b3">0%</b></div>
+  <div class="hd-r">
+    <button class="hbtn" onclick="validateAll()">✅ 批量验证</button>
+    <button class="hbtn" onclick="enrichSel()">✨ AI增强</button>
+    <button class="hbtn" onclick="openAdd()">＋ 添加</button>
+    <button class="hbtn" onclick="exportCSV()">↓ CSV</button>
+    <button class="hbtn" onclick="exportJSON()">↓ JSON</button>
+    <button class="hbtn" onclick="openSettings()">⚙ 设置</button>
+    <div class="user-chip"><div class="user-av" id="userAv">A</div><span class="user-name" id="userNameDisp">admin</span></div>
+    <button class="hbtn" id="chgPwBtn" onclick="showChangePw()">🔑 改密</button>
+    <button class="hbtn red" onclick="doLogout()">⏏ 退出</button>
+    <button class="hbtn red" onclick="doClear()">🗑 清空</button>
+  </div>
+</div>
+
+<!-- API BAR -->
+<div class="api-bar z1">
+  <span class="barlbl">API引擎：</span>
+  <div id="apiProvs" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"></div>
+  <span style="font-family:var(--fm);font-size:9px;color:var(--tx4);margin:0 3px">→ 自动路由</span>
+  <button class="sm" onclick="testAllAPIs()">🔌 全测</button>
+  <button class="sm" onclick="addSample()">📦 示例</button>
+  <button class="sm r" id="stopBtn" onclick="shouldStop=true" style="display:none">⏹ 停止</button>
+  <div class="api-info">当前: <b id="curApi">检测中…</b> · <span id="curLat">—</span>ms</div>
+</div>
+
+<!-- CLOCK -->
+<div class="clkbar z1" id="clkBar">
+  <div class="clkadd" onclick="toggleTZ()" title="添加时区">＋
+    <div class="tzdd" id="tzDD" style="display:none">
+      <input class="tzinp" id="tzQ" placeholder="搜索城市…" oninput="filterTZ()">
+      <div id="tzList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="sp z1">
+  <div class="sp-row">
+    <span class="sp-lbl">关键词</span>
+    <div class="kww"><input id="kwI" placeholder="输入关键词，回车或逗号添加…" onkeydown="kwKD(event)"><button class="kwx" onclick="$('kwI').value=''">×</button></div>
+    <div class="modeg"><button class="mb on" data-m="precise" onclick="setMode('precise')">🎯精准</button><button class="mb" data-m="broad" onclick="setMode('broad')">🌐广泛</button></div>
+    <select class="sel" id="ftype"><option value="all">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+    <select class="sel" id="fcnt"><option value="10">10条</option><option value="20" selected>20条</option><option value="50">50条</option><option value="100">100条</option><option value="999">无限</option></select>
+    <button class="btn btnblue" id="runBtn" onclick="startCrawl()">▶ 开始采集</button>
+  </div>
+  <div class="kwtags" id="kwTags" style="display:none"></div>
+</div>
+
+<!-- REGION PANEL -->
+<div class="reg-panel z1">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+    <span class="barlbl">🌍 地区筛选：</span>
+    <div class="reg-tabs" id="regTabs"></div>
+  </div>
+  <div class="country-grid" id="countryGrid"></div>
+  <div class="reg-actions" id="regActions">
+    <button class="sm" onclick="selAllCty()">全选</button>
+    <button class="sm" onclick="selNoCty()">全不选</button>
+    <span class="reg-sel-lbl">已选: <b id="selCtryCnt">0</b> 国家</span>
+    <span style="font-family:var(--fm);font-size:8px;color:var(--tx4)" id="selCtryList"></span>
+  </div>
+</div>
+
+<!-- PLATFORMS -->
+<div class="platbar z1">
+  <span class="barlbl">平台：</span>
+  <div class="ppill on" data-p="google"><span class="pdot" style="background:#4285f4"></span>Google</div>
+  <div class="ppill on" data-p="linkedin"><span class="pdot" style="background:#0a66c2"></span>LinkedIn</div>
+  <div class="ppill on" data-p="facebook"><span class="pdot" style="background:#1877f2"></span>Facebook</div>
+  <div class="ppill on" data-p="instagram"><span class="pdot" style="background:#e1306c"></span>Instagram</div>
+  <div class="ppill on" data-p="twitter"><span class="pdot" style="background:#1da1f2"></span>X/Twitter</div>
+  <div class="ppill on" data-p="tiktok"><span class="pdot" style="background:#69c9d0"></span>TikTok</div>
+  <div class="ppill on" data-p="vk"><span class="pdot" style="background:#2787f5"></span>VK</div>
+  <div class="ppill on" data-p="whatsapp"><span class="pdot" style="background:#25d366"></span>WhatsApp</div>
+  <div class="ppill on" data-p="xhs"><span class="pdot" style="background:#ff2442"></span>小红书</div>
+  <div class="ppill on" data-p="alibaba"><span class="pdot" style="background:#ff6a00"></span>阿里</div>
+</div>
+
+<!-- NODES -->
+<div class="browbar z1">
+  <span class="barlbl">节点：</span>
+  <div class="bsec"><span class="breg">北美</span>
+    <div class="bchip on" data-b="us_ny">🇺🇸NY</div><div class="bchip on" data-b="us_la">🇺🇸LA</div><div class="bchip on" data-b="ca">🇨🇦CA</div><div class="bchip on" data-b="mx">🇲🇽MX</div>
+  </div>
+  <div class="bsec"><span class="breg">西欧</span>
+    <div class="bchip on" data-b="uk">🇬🇧UK</div><div class="bchip on" data-b="de">🇩🇪DE</div><div class="bchip on" data-b="fr">🇫🇷FR</div><div class="bchip on" data-b="it">🇮🇹IT</div><div class="bchip on" data-b="es">🇪🇸ES</div><div class="bchip on" data-b="nl">🇳🇱NL</div><div class="bchip on" data-b="ch">🇨🇭CH</div><div class="bchip on" data-b="pt">🇵🇹PT</div><div class="bchip on" data-b="be">🇧🇪BE</div>
+  </div>
+  <div class="bsec"><span class="breg">北/东欧</span>
+    <div class="bchip on" data-b="se">🇸🇪SE</div><div class="bchip on" data-b="no">🇳🇴NO</div><div class="bchip on" data-b="dk">🇩🇰DK</div><div class="bchip on" data-b="fi">🇫🇮FI</div><div class="bchip on" data-b="pl">🇵🇱PL</div><div class="bchip on" data-b="tr">🇹🇷TR</div><div class="bchip on" data-b="ro">🇷🇴RO</div>
+  </div>
+  <div class="bsec"><span class="breg">东亚</span>
+    <div class="bchip on" data-b="jp">🇯🇵JP</div><div class="bchip on" data-b="kr">🇰🇷KR</div><div class="bchip on" data-b="tw">🇹🇼TW</div><div class="bchip on" data-b="hk">🇭🇰HK</div>
+  </div>
+  <div class="bsec"><span class="breg">东南/南亚</span>
+    <div class="bchip on" data-b="sg">🇸🇬SG</div><div class="bchip on" data-b="in">🇮🇳IN</div><div class="bchip on" data-b="vn">🇻🇳VN</div><div class="bchip on" data-b="th">🇹🇭TH</div><div class="bchip on" data-b="my">🇲🇾MY</div><div class="bchip on" data-b="id">🇮🇩ID</div>
+  </div>
+  <div class="bsec"><span class="breg">中东</span>
+    <div class="bchip on" data-b="ae">🇦🇪AE</div><div class="bchip on" data-b="sa">🇸🇦SA</div><div class="bchip on" data-b="qa">🇶🇦QA</div><div class="bchip on" data-b="il">🇮🇱IL</div>
+  </div>
+  <div class="bsec"><span class="breg">CIS</span>
+    <div class="bchip on" data-b="ru">🇷🇺RU</div><div class="bchip on" data-b="kz">🇰🇿KZ</div><div class="bchip on" data-b="ua">🇺🇦UA</div>
+  </div>
+  <div class="bsec"><span class="breg">其他</span>
+    <div class="bchip on" data-b="au">🇦🇺AU</div><div class="bchip on" data-b="br">🇧🇷BR</div><div class="bchip on" data-b="za">🇿🇦ZA</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats z1">
+  <div class="stat" style="--a:var(--neo)"><div class="sv" style="color:var(--neo)" id="s0">0</div><div class="sl">总计</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s1">0</div><div class="sl">今日</div></div>
+  <div class="stat" style="--a:var(--amb)"><div class="sv" style="color:var(--amb)" id="s2">0</div><div class="sl">品牌</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s3">0</div><div class="sl">工厂</div></div>
+  <div class="stat" style="--a:var(--pur)"><div class="sv" style="color:var(--pur)" id="s4">0</div><div class="sl">代理</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s5">0</div><div class="sl">✅邮箱</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s6">0</div><div class="sl">📱电话</div></div>
+  <div class="stat" style="--a:var(--wa)"><div class="sv" style="color:var(--wa)" id="s7">0</div><div class="sl">💬WA</div></div>
+  <div class="stat" style="--a:var(--pur)"><div class="sv" style="color:var(--pur)" id="s8">0</div><div class="sl">社媒</div></div>
+  <div class="stat" style="--a:#ff6b2b"><div class="sv" style="color:#ff6b2b" id="s9">—</div><div class="sl">验证率</div></div>
+  <div class="stat" style="--a:#5e81f4"><div class="sv" style="color:#5e81f4" id="s10">—</div><div class="sl">均分</div></div>
+</div>
+
+<div class="errb z1" id="errB"></div>
+<div class="progw z1" id="progW"><div class="progbar"><div class="progfill" id="progF" style="width:0%"></div></div><div class="progtxt"><span id="progM">准备…</span><span id="progP">0%</span></div></div>
+<div class="logw z1" id="logW"><div class="logh"><span>📡 日志 <span id="browAct" style="color:var(--amb)"></span></span><span id="logCnt" style="font-family:var(--fm);color:var(--tx3)">0条</span></div><div class="logb" id="logB"></div></div>
+
+<!-- TABLE FILTER -->
+<div class="tf z1">
+  <span class="flbl">筛选：</span>
+  <input id="f-nm" placeholder="🔍 姓名/公司" style="max-width:110px" oninput="renderTbl()">
+  <select id="f-pl" class="sel" onchange="renderTbl()"><option value="">全部平台</option><option>google</option><option>linkedin</option><option>facebook</option><option>instagram</option><option>twitter</option><option>tiktok</option><option>vk</option><option>whatsapp</option><option>xhs</option><option>alibaba</option></select>
+  <select id="f-ty" class="sel" onchange="renderTbl()"><option value="">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+  <select id="f-co" class="sel" onchange="renderTbl()"><option value="">全部国家</option></select>
+  <select id="f-vl" class="sel" onchange="renderTbl()"><option value="">全部状态</option><option value="email_ok">✅邮箱</option><option value="phone_ok">📱电话</option><option value="wa_ok">💬WA</option><option value="hi">⭐高分≥80</option><option value="nv">未验证</option></select>
+  <input id="f-kw" placeholder="🔍 全文" style="max-width:100px" oninput="renderTbl()">
+  <button class="fclear" onclick="clearF()">✕清除</button>
+  <span class="fcnt" id="fCnt"></span>
+  <button class="sm" onclick="selAll()" style="margin-left:4px">全选</button>
+  <button class="sm" onclick="selNone()">清选</button>
+  <span id="selCnt" style="font-family:var(--fm);font-size:9px;color:var(--neo)"></span>
+</div>
+
+<!-- TABLE -->
+<div class="tblw z1">
+  <div class="empty" id="emptyEl"><div style="font-size:44px;opacity:.4">🌐</div><h3>AWAITING DATA</h3><p>输入关键词 → 选择地区和平台 → 开始采集</p></div>
+  <table id="mainTbl" style="display:none">
+    <thead><tr>
+      <th style="width:22px"><input type="checkbox" id="chkAll" onchange="togAll(this.checked)" style="cursor:pointer;accent-color:var(--neo)"></th>
+      <th onclick="srtBy('idx')"># <span class="si"></span></th>
+      <th onclick="srtBy('platform')">平台 <span class="si"></span></th>
+      <th onclick="srtBy('name')">姓名 <span class="si"></span></th>
+      <th onclick="srtBy('title')">职位 <span class="si"></span></th>
+      <th onclick="srtBy('type')">类型 <span class="si"></span></th>
+      <th onclick="srtBy('company')">公司 <span class="si"></span></th>
+      <th onclick="srtBy('country')">国家 <span class="si"></span></th>
+      <th>邮箱</th><th>电话</th><th>社媒</th>
+      <th>三重验证</th>
+      <th onclick="srtBy('addedDate')">日期 <span class="si"></span></th>
+      <th>操作</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- ENRICH PANEL -->
+<div class="ep" id="epanel">
+  <div class="eph"><h3>✨ AI<span>增强详情</span></h3><button class="xbtn" onclick="closeEP()">✕</button></div>
+  <div class="epb" id="epBody"><p style="color:var(--tx3);font-size:11px;padding:8px 0">点击表格中「✨AI」查看详情</p></div>
+</div>
+
+<!-- FOOTER -->
+<div style="flex:1"></div>
+<footer class="appfoot z1">
+  <div class="foot-inner">
+    <div class="foot-row1">
+      <div class="foot-brand"><span class="foot-brand-name">DATA<em>NEXUS</em> PRO</span></div>
+      <div class="foot-links">
+        <a class="flink" onclick="openLegal('privacy')">Privacy Policy</a>
+        <a class="flink" onclick="openLegal('terms')">Terms of Service</a>
+        <a class="flink" onclick="openLegal('cookie')">Cookie Notice</a>
+        <a class="flink" href="mailto:contact@datanexus.ai">Contact</a>
+      </div>
+    </div>
+    <div class="foot-row2">
+      <div class="foot-copy">© 2025 DataNexus PRO · All rights reserved · v10.0</div>
+      <div class="foot-disclaimer"><b>⚠️ AI免责声明：</b>本平台采集数据及AI生成内容仅供商业参考，不构成法律意见或保证。AI生成内容可能存在错误，请自行核实。使用前请遵守相关数据保护法规（GDPR、CCPA等）。</div>
+      <div class="foot-contact">联系邮箱：<a href="mailto:contact@datanexus.ai">contact@datanexus.ai</a></div>
+    </div>
+  </div>
+</footer>
+
+</div><!-- end v-app -->
+
+<!-- AI FAB + PANEL (inside app) -->
+<button class="aifab pls z1" id="aiFab" onclick="toggleAI()" style="display:none">🤖</button>
+<div class="aipanel z1" id="aiPanel">
+  <div class="aihd">
+    <div class="aiav">🤖</div>
+    <div><div class="ainm">NEXUS · AI助手</div><div class="aist" id="aiSt">● 在线 · 多API</div></div>
+    <button class="aix" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="aimsgs" id="aiMsgs">
+    <div class="aimsg bot"><div class="aiico">🤖</div><div class="aibbl">👋 你好！我是 NEXUS AI，可帮你分析线索、生成开发信、查询市场。</div></div>
+  </div>
+  <div class="aiqbtns">
+    <button class="aiqbtn" onclick="aiQ('帮我写一封针对欧洲采购商的英文开发信')">✉ 开发信</button>
+    <button class="aiqbtn" onclick="aiQ('2025年最活跃的羽绒服采购市场分析')">🌍 市场分析</button>
+    <button class="aiqbtn" onclick="aiQ('WhatsApp开发海外客户有哪些实用技巧')">💬 WA技巧</button>
+    <button class="aiqbtn" onclick="aiQ('如何提高邮件开发回复率')">📈 提高回复率</button>
+  </div>
+  <div class="aifooter">
+    <input class="aiinp" id="aiInp" placeholder="问任何采购/外贸问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}">
+    <button class="aisend" id="aiSend" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="setMod">
+  <div class="mpanel">
+    <div class="mh"><h3>⚙ <em>设置 / API配置</em></h3><button class="xbtn" onclick="closeM('setMod')">✕</button></div>
+    <div class="mc">
+      <div class="ibox">
+        <b>🆓 免费</b>：<span class="free">Pollinations (GPT-4o)</span> 完全免费无需Key<br>
+        <b>⚡ 极速</b>：<span class="fast">Groq · DeepSeek</span> 速度最快<br>
+        <b>🧠 最强</b>：<span class="key">Claude Sonnet 4 · GPT-4o · Gemini</span><br>
+        <b>🔒 安全提示</b>：API Key仅存储在您的浏览器本地，不会上传至任何服务器
+      </div>
+      <div class="secttl">🆓 免费 API</div>
+      <div class="api-sr" id="asr-pollinations"><div class="asr-dot" id="dot-pollinations"></div><span class="asr-name">Pollinations</span><span class="asr-status" id="st-pollinations" style="color:var(--grn)">GPT-4o · 完全免费</span><span class="asr-lat" id="lat-pollinations"></span><button class="asr-test" onclick="testOne('pollinations')">测试</button></div>
+      <div class="secttl">⚡ 极速 API</div>
+      <div class="api-grid">
+        <div><div class="api-sr" id="asr-groq"><div class="asr-dot" id="dot-groq"></div><span class="asr-name">Groq</span><span class="asr-status" id="st-groq">Llama3.3-70B</span><span class="asr-lat" id="lat-groq"></span><button class="asr-test" onclick="testOne('groq')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-deepseek"><div class="asr-dot" id="dot-deepseek"></div><span class="asr-name">DeepSeek</span><span class="asr-status" id="st-deepseek">V3 超快</span><span class="asr-lat" id="lat-deepseek"></span><button class="asr-test" onclick="testOne('deepseek')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-mistral"><div class="asr-dot" id="dot-mistral"></div><span class="asr-name">Mistral</span><span class="asr-status" id="st-mistral">Large 2</span><span class="asr-lat" id="lat-mistral"></span><button class="asr-test" onclick="testOne('mistral')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-together"><div class="asr-dot" id="dot-together"></div><span class="asr-name">Together AI</span><span class="asr-status" id="st-together">Llama 3.1</span><span class="asr-lat" id="lat-together"></span><button class="asr-test" onclick="testOne('together')">测试</button></div></div>
+      </div>
+      <div class="secttl">🧠 顶级 API</div>
+      <div class="api-grid">
+        <div><div class="api-sr" id="asr-claude"><div class="asr-dot" id="dot-claude"></div><span class="asr-name">Claude Sonnet 4</span><span class="asr-status" id="st-claude">🌐联网搜索</span><span class="asr-lat" id="lat-claude"></span><button class="asr-test" onclick="testOne('claude')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-openai"><div class="asr-dot" id="dot-openai"></div><span class="asr-name">GPT-4o</span><span class="asr-status" id="st-openai">OpenAI</span><span class="asr-lat" id="lat-openai"></span><button class="asr-test" onclick="testOne('openai')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-gemini"><div class="asr-dot" id="dot-gemini"></div><span class="asr-name">Gemini 1.5 Pro</span><span class="asr-status" id="st-gemini">多模态</span><span class="asr-lat" id="lat-gemini"></span><button class="asr-test" onclick="testOne('gemini')">测试</button></div></div>
+        <div><div class="api-sr" id="asr-cohere"><div class="asr-dot" id="dot-cohere"></div><span class="asr-name">Cohere</span><span class="asr-status" id="st-cohere">Command R+</span><span class="asr-lat" id="lat-cohere"></span><button class="asr-test" onclick="testOne('cohere')">测试</button></div></div>
+      </div>
+      <div class="secttl">🔑 API Keys（仅存本地浏览器）</div>
+      <div class="api-grid">
+        <div>
+          <label>Groq — <a href="https://console.groq.com" target="_blank" rel="noopener" style="color:var(--grn)">免费</a></label>
+          <input type="password" id="kGroq" placeholder="gsk_...">
+          <label>DeepSeek — <a href="https://platform.deepseek.com" target="_blank" rel="noopener" style="color:var(--ora)">申请Key</a></label>
+          <input type="password" id="kDeepseek" placeholder="sk-...">
+          <label>Together AI</label>
+          <input type="password" id="kTogether" placeholder="...">
+          <label>Mistral — <a href="https://console.mistral.ai" target="_blank" rel="noopener" style="color:var(--neo)">免费额度</a></label>
+          <input type="password" id="kMistral" placeholder="...">
+        </div>
+        <div>
+          <label>Claude — <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:var(--neo)">推荐 · 联网搜索</a></label>
+          <input type="password" id="kClaude" placeholder="sk-ant-api03-...">
+          <label>OpenAI</label>
+          <input type="password" id="kOpenai" placeholder="sk-proj-...">
+          <label>Gemini — <a href="https://aistudio.google.com" target="_blank" rel="noopener" style="color:var(--neo)">免费额度</a></label>
+          <input type="password" id="kGemini" placeholder="AIza...">
+          <label>Cohere</label>
+          <input type="password" id="kCohere" placeholder="...">
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;margin-bottom:10px;font-size:11px;font-family:var(--f2)"><input type="checkbox" id="showK" style="width:auto;margin:0;accent-color:var(--neo)"> 显示密钥</label>
+      <div class="secttl">⚙ 采集参数</div>
+      <label>请求间隔</label>
+      <select id="dlySet" class="sel" style="width:100%;margin-bottom:10px"><option value="300">极速 300ms</option><option value="800">快速 800ms</option><option value="1000" selected>正常 1s</option><option value="2000">谨慎 2s</option><option value="5000">隐蔽 5s</option></select>
+    </div>
+    <div class="mf"><button class="btn btng" onclick="closeM('setMod')" style="flex:1">取消</button><button class="btn btnblue" onclick="saveSettings()" style="flex:1">💾 保存 & 测试</button></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal" id="addMod">
+  <div class="mpanel" style="max-width:520px">
+    <div class="mh"><h3>＋ <em>手动添加</em></h3><button class="xbtn" onclick="closeM('addMod')">✕</button></div>
+    <div class="mc">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+        <div><label>姓名 *</label><input id="fn"></div>
+        <div><label>职位</label><input id="ft" placeholder="Procurement Manager"></div>
+        <div><label>公司 *</label><input id="fc"></div>
+        <div><label>国家</label><input id="fco" placeholder="Germany"></div>
+        <div><label>邮箱</label><input id="fe"></div>
+        <div><label>电话/WhatsApp</label><input id="fp" placeholder="+49-XXX-XXXX"></div>
+      </div>
+      <label>类型</label><select id="fty"><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+      <label>社媒</label><input id="fs" placeholder="@username / URL">
+    </div>
+    <div class="mf"><button class="btn btng" onclick="closeM('addMod')" style="flex:1">取消</button><button class="btn btnblue" onclick="submitAdd()" style="flex:1">✅ 添加</button></div>
+  </div>
+</div>
+
+<!-- LEGAL MODALS -->
+<div class="modal" id="legalMod">
+  <div class="legal-panel">
+    <div class="mh"><h3 id="legalTitle">文档</h3><button class="xbtn" onclick="closeM('legalMod')">✕</button></div>
+    <div class="legal-body" id="legalBody"></div>
+    <div class="mf"><button class="btn btng" onclick="closeM('legalMod')" style="flex:1">关闭</button></div>
+  </div>
+</div>
+
+<!-- CHANGE PW MODAL (from app) -->
+<div class="modal" id="cpMod">
+  <div class="mpanel" style="max-width:420px">
+    <div class="mh"><h3>🔑 <em>修改密码</em></h3><button class="xbtn" onclick="closeM('cpMod')">✕</button></div>
+    <div class="mc">
+      <div class="auth-err" id="cpModErr"></div>
+      <label>当前密码</label><div class="auth-inp-wrap" style="margin-bottom:0"><input class="auth-inp" id="cpModOld" type="password" placeholder="当前密码" style="margin-bottom:10px"><button class="auth-inp-icon" onclick="togglePw('cpModOld',this)" tabindex="-1">👁</button></div>
+      <label>新密码</label><div class="auth-inp-wrap" style="margin-bottom:0"><input class="auth-inp" id="cpModNew" type="password" placeholder="新密码" style="margin-bottom:6px" oninput="checkPwStrength2(this.value)"><button class="auth-inp-icon" onclick="togglePw('cpModNew',this)" tabindex="-1">👁</button></div>
+      <div class="auth-strength"><div class="auth-strength-fill" id="strFill2"></div></div>
+      <label>确认新密码</label><div class="auth-inp-wrap" style="margin-bottom:0"><input class="auth-inp" id="cpModConf" type="password" placeholder="确认密码" style="margin-bottom:10px"><button class="auth-inp-icon" onclick="togglePw('cpModConf',this)" tabindex="-1">👁</button></div>
+    </div>
+    <div class="mf"><button class="btn btng" onclick="closeM('cpMod')" style="flex:1">取消</button><button class="btn btnblue" onclick="doChangePwModal()" style="flex:1">保存</button></div>
+  </div>
+</div>
+
+<!-- COOKIE BANNER -->
+<div class="cookie-banner z1" id="cookieBanner">
+  <div class="cookie-txt">🍪 我们使用必要的浏览器存储（localStorage / sessionStorage）来维护您的登录状态和数据。继续使用即表示您同意我们的 <a onclick="openLegal('cookie');return false">Cookie 政策</a>。API Key 仅存储在您的设备本地，永不上传至服务器。</div>
+  <div class="cookie-btns">
+    <button class="btn btng" onclick="acceptCookie(false)">仅必要</button>
+    <button class="btn btnblue" onclick="acceptCookie(true)">接受全部</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// SECURITY: HTML escaping (XSS prevention)
+// ══════════════════════════════════════════════════════
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const esc2=s=>String(s||'').replace(/'/g,"\\'");// for inline handlers only — prefer esc() when possible
+
+// ══════════════════════════════════════════════════════
+// CRYPTO ENGINE (browser-native, no library required)
+// Note: PBKDF2-SHA256 used as bcrypt equivalent (NIST SP 800-132)
+// For production backend: use bcrypt with cost factor 12+
+// ══════════════════════════════════════════════════════
+const CRYPTO={
+  // Generate cryptographically secure random salt
+  genSalt(){
+    const arr=new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  // PBKDF2-SHA256 key derivation (100,000 iterations — NIST recommended)
+  async derive(password,salt){
+    const enc=new TextEncoder();
+    const km=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveBits']);
+    const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},km,256);
+    return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  },
+  // Constant-time comparison (prevent timing attacks)
+  async verify(password,hash,salt){
+    const derived=await this.derive(password,salt);
+    // Use XOR comparison for constant timing
+    if(derived.length!==hash.length)return false;
+    let diff=0;
+    for(let i=0;i<derived.length;i++)diff|=derived.charCodeAt(i)^hash.charCodeAt(i);
+    return diff===0;
+  },
+  // HMAC-SHA256 for JWT signing
+  async hmac(data,secret){
+    const enc=new TextEncoder();
+    const key=await crypto.subtle.importKey('raw',enc.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+    const sig=await crypto.subtle.sign('HMAC',key,enc.encode(data));
+    return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  },
+  // Get/create session secret (regenerated each browser session)
+  getSecret(){
+    let s=sessionStorage.getItem('_ns');
+    if(!s){
+      const arr=new Uint8Array(32);crypto.getRandomValues(arr);
+      s=Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+      sessionStorage.setItem('_ns',s);
+    }
+    return s;
+  }
+};
+
+// ══════════════════════════════════════════════════════
+// AUTH MODULE
+// ══════════════════════════════════════════════════════
+const AUTH={
+  KEYS:{hash:'dn_ph',salt:'dn_ps',first:'dn_pf',users:'dn_users'},
+  LOCKOUT_MAX:10,
+  LOCKOUT_DUR:10*60*1000,// 10 minutes
+  SESSION_TTL:8*3600*1000,// 8 hours
+  DEFAULT_USER:'admin',
+  DEFAULT_PW:'qaz123',
+
+  // Initialize default credentials on first run
+  async init(){
+    if(localStorage.getItem(this.KEYS.hash))return;
+    const salt=CRYPTO.genSalt();
+    const hash=await CRYPTO.derive(this.DEFAULT_PW,salt);
+    localStorage.setItem(this.KEYS.salt,salt);
+    localStorage.setItem(this.KEYS.hash,hash);
+    localStorage.setItem(this.KEYS.first,'1');// flag: must change password
+  },
+
+  // Login — returns {ok, token, firstLogin, error, attemptsLeft}
+  async login(username,password){
+    username=username.trim().toLowerCase();
+    if(!username||!password)return{ok:false,error:'请输入用户名和密码'};
+    // Input length validation
+    if(username.length>32||password.length>128)return{ok:false,error:'输入格式不合法'};
+    // Sanitize username (alphanumeric only)
+    if(!/^[a-z0-9_]{1,32}$/.test(username))return{ok:false,error:'用户名格式不合法'};
+    // Check lockout
+    if(this.isLocked(username)){
+      const remaining=this.lockoutRemaining(username);
+      return{ok:false,locked:true,remaining,error:`账号已锁定，请 ${Math.ceil(remaining/60000)} 分钟后再试`};
+    }
+    // Only 'admin' user in this demo (extend for multi-user)
+    if(username!==this.DEFAULT_USER)return{ok:false,error:'用户名或密码错误',attemptsLeft:this._recordFail(username)};
+    const hash=localStorage.getItem(this.KEYS.hash);
+    const salt=localStorage.getItem(this.KEYS.salt);
+    if(!hash||!salt){await this.init();return{ok:false,error:'系统初始化，请重试'};}
+    const ok=await CRYPTO.verify(password,hash,salt);
+    if(!ok){
+      const left=this._recordFail(username);
+      return{ok:false,error:`用户名或密码错误，剩余尝试次数：${left}`,attemptsLeft:left};
+    }
+    // Success — reset lockout, create session
+    this._resetLockout(username);
+    const firstLogin=localStorage.getItem(this.KEYS.first)==='1';
+    const token=await this._createToken(username);
+    sessionStorage.setItem('dn_token',token);
+    sessionStorage.setItem('dn_user',username);
+    return{ok:true,token,firstLogin,username};
+  },
+
+  // Verify current session
+  async verify(){
+    const token=sessionStorage.getItem('dn_token');
+    const user=sessionStorage.getItem('dn_user');
+    if(!token||!user)return null;
+    try{
+      const [data,sig]=token.split('.');
+      if(!data||!sig)return null;
+      const expected=await CRYPTO.hmac(data,CRYPTO.getSecret());
+      if(sig!==expected)return null;
+      const payload=JSON.parse(atob(data));
+      if(payload.exp<Date.now())return null;
+      if(payload.u!==user)return null;
+      return payload;
+    }catch(e){return null;}
+  },
+
+  // Change password
+  async changePassword(username,oldPw,newPw){
+    if(!newPw||newPw.length<8)return{ok:false,error:'新密码至少8个字符'};
+    if(newPw.length>128)return{ok:false,error:'密码过长'};
+    const reqs=this._checkPwReqs(newPw);
+    if(!reqs.ok)return{ok:false,error:reqs.msg};
+    const hash=localStorage.getItem(this.KEYS.hash);
+    const salt=localStorage.getItem(this.KEYS.salt);
+    const oldOk=await CRYPTO.verify(oldPw,hash,salt);
+    if(!oldOk)return{ok:false,error:'当前密码错误'};
+    if(oldPw===newPw)return{ok:false,error:'新密码不能与当前密码相同'};
+    const newSalt=CRYPTO.genSalt();
+    const newHash=await CRYPTO.derive(newPw,newSalt);
+    localStorage.setItem(this.KEYS.hash,newHash);
+    localStorage.setItem(this.KEYS.salt,newSalt);
+    localStorage.removeItem(this.KEYS.first);
+    return{ok:true};
+  },
+
+  // Logout
+  logout(){
+    sessionStorage.removeItem('dn_token');
+    sessionStorage.removeItem('dn_user');
+  },
+
+  isLocked(u){
+    const d=this._getLockout(u);
+    if(!d.lockedUntil)return false;
+    if(d.lockedUntil>Date.now())return true;
+    this._resetLockout(u);return false;
+  },
+  lockoutRemaining(u){const d=this._getLockout(u);return Math.max(0,(d.lockedUntil||0)-Date.now());},
+  _recordFail(u){
+    const d=this._getLockout(u);
+    d.attempts=(d.attempts||0)+1;d.last=Date.now();
+    const left=Math.max(0,this.LOCKOUT_MAX-d.attempts);
+    if(d.attempts>=this.LOCKOUT_MAX)d.lockedUntil=Date.now()+this.LOCKOUT_DUR;
+    localStorage.setItem('dn_lk_'+u,JSON.stringify(d));return left;
+  },
+  _resetLockout(u){localStorage.removeItem('dn_lk_'+u);},
+  _getLockout(u){try{return JSON.parse(localStorage.getItem('dn_lk_'+u))||{};}catch(e){return{};}},
+  _checkPwReqs(pw){
+    if(pw.length<8)return{ok:false,msg:'密码至少8位'};
+    if(!/[A-Z]/.test(pw))return{ok:false,msg:'需要包含大写字母'};
+    if(!/[0-9]/.test(pw))return{ok:false,msg:'需要包含数字'};
+    if(!/[^A-Za-z0-9]/.test(pw))return{ok:false,msg:'需要包含特殊字符'};
+    return{ok:true};
+  },
+  async _createToken(username){
+    const payload={u:username,iat:Date.now(),exp:Date.now()+this.SESSION_TTL,jti:CRYPTO.genSalt()};
+    const data=btoa(JSON.stringify(payload));
+    const sig=await CRYPTO.hmac(data,CRYPTO.getSecret());
+    return data+'.'+sig;
+  }
+};
+
+// ══════════════════════════════════════════════════════
+// ROUTER — View management
+// ══════════════════════════════════════════════════════
+let currentUser=null;
+function showView(id){
+  ['v-login','v-changepw','v-app'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el)el.classList.toggle('hide',v!==id);
+    if(v==='v-app'&&el){el.style.display=v===id?'flex':'none';}
+  });
+  const fab=document.getElementById('aiFab');if(fab)fab.style.display=id==='v-app'?'':'none';
+}
+
+async function initApp(){
+  await AUTH.init();
+  const payload=await AUTH.verify();
+  if(!payload){showView('v-login');return;}
+  const firstLogin=localStorage.getItem(AUTH.KEYS.first)==='1';
+  if(firstLogin){showView('v-changepw');}
+  else{currentUser=payload.u;enterApp();}
+}
+
+function enterApp(){
+  showView('v-app');
+  const av=document.getElementById('userAv');if(av)av.textContent=(currentUser||'A').toUpperCase().charAt(0);
+  const nm=document.getElementById('userNameDisp');if(nm)nm.textContent=currentUser||'admin';
+  if(!localStorage.getItem('dn_cookie'))document.getElementById('cookieBanner').classList.remove('hide');
+  else document.getElementById('cookieBanner').classList.add('hide');
+  renderAPIProvs();
+  testPollinations().then(ok=>updateStatusUI('pollinations',ok)).catch(()=>updateStatusUI('pollinations',false));
+  Object.entries(KEYS).forEach(([k,v])=>{if(v&&TESTERS[k])TESTERS[k]().then(ok=>updateStatusUI(k,ok)).catch(()=>updateStatusUI(k,false));});
+  buildClocks();setInterval(tickClocks,1000);tickClocks();
+  buildRegions();updateCntryF();renderTbl();updateStats();
+  log('lb',`✅ ${currentUser} 已登录 — DataNexus v10 就绪`);
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH UI FUNCTIONS
+// ══════════════════════════════════════════════════════
+function togglePw(id,btn){const el=document.getElementById(id);if(!el)return;el.type=el.type==='password'?'text':'password';btn.textContent=el.type==='password'?'👁':'🙈';}
+
+let lockoutInterval=null;
+async function doLogin(){
+  const user=document.getElementById('loginUser').value;
+  const pass=document.getElementById('loginPass').value;
+  const btn=document.getElementById('loginBtn');
+  const txt=document.getElementById('loginBtnTxt');
+  const spin=document.getElementById('loginSpin');
+  const err=document.getElementById('loginErr');
+  err.classList.remove('show');
+  btn.disabled=true;txt.style.display='none';spin.style.display='block';
+  try{
+    const res=await AUTH.login(user,pass);
+    if(!res.ok){
+      err.textContent=res.error||'登录失败';err.classList.add('show');
+      document.getElementById('loginPass').value='';
+      document.getElementById('loginPass').classList.add('error');setTimeout(()=>document.getElementById('loginPass').classList.remove('error'),2000);
+      if(res.locked)startLockoutTimer(res.remaining);
+      const info=document.getElementById('loginAttemptInfo');
+      if(res.attemptsLeft!==undefined)info.textContent=`剩余尝试次数：${res.attemptsLeft}/${AUTH.LOCKOUT_MAX}`;
+    }else{
+      currentUser=res.username;
+      if(res.firstLogin){showView('v-changepw');}
+      else{enterApp();}
+    }
+  }catch(e){err.textContent='登录异常：'+e.message;err.classList.add('show');}
+  btn.disabled=false;txt.style.display='';spin.style.display='none';
+}
+
+function startLockoutTimer(remaining){
+  const bar=document.getElementById('lockoutBar');const timer=document.getElementById('lockoutTimer');
+  bar.classList.add('show');
+  if(lockoutInterval)clearInterval(lockoutInterval);
+  const tick=()=>{
+    const left=AUTH.lockoutRemaining(AUTH.DEFAULT_USER);
+    if(left<=0){bar.classList.remove('show');clearInterval(lockoutInterval);return;}
+    const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
+    timer.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  };
+  tick();lockoutInterval=setInterval(tick,1000);
+}
+
+function checkPwStrength(pw){
+  const fill=document.getElementById('strFill');
+  const reqs=['req-len','req-up','req-num','req-sym'];
+  const checks=[pw.length>=8,/[A-Z]/.test(pw),/[0-9]/.test(pw),/[^A-Za-z0-9]/.test(pw)];
+  let score=checks.filter(Boolean).length;
+  reqs.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.classList.toggle('ok',checks[i]);});
+  const colors=['#ff3d6e','#ff6b2b','#ffcc00','#00ffaa'];const widths=['25%','50%','75%','100%'];
+  if(fill){fill.style.background=colors[score-1]||'transparent';fill.style.width=score>0?widths[score-1]:'0%';}
+}
+function checkPwStrength2(pw){
+  const fill=document.getElementById('strFill2');if(!fill)return;
+  const checks=[pw.length>=8,/[A-Z]/.test(pw),/[0-9]/.test(pw),/[^A-Za-z0-9]/.test(pw)];
+  let score=checks.filter(Boolean).length;
+  const colors=['#ff3d6e','#ff6b2b','#ffcc00','#00ffaa'];const widths=['25%','50%','75%','100%'];
+  fill.style.background=score>0?(colors[score-1]||'transparent'):'transparent';fill.style.width=score>0?widths[score-1]:'0%';
+}
+
+async function doChangePw(){
+  const old=document.getElementById('cpOld').value;
+  const nw=document.getElementById('cpNew').value;
+  const conf=document.getElementById('cpConf').value;
+  const btn=document.getElementById('cpBtn');const txt=document.getElementById('cpBtnTxt');const spin=document.getElementById('cpSpin');
+  const err=document.getElementById('cpErr');err.classList.remove('show');
+  if(nw!==conf){err.textContent='两次输入的新密码不一致';err.classList.add('show');return;}
+  btn.disabled=true;txt.style.display='none';spin.style.display='block';
+  const res=await AUTH.changePassword(AUTH.DEFAULT_USER,old,nw);
+  btn.disabled=false;txt.style.display='';spin.style.display='none';
+  if(!res.ok){err.textContent=res.error;err.classList.add('show');}
+  else{showToast('✅ 密码修改成功，请重新登录');doLogout();}
+}
+
+async function doChangePwModal(){
+  const old=document.getElementById('cpModOld').value;
+  const nw=document.getElementById('cpModNew').value;
+  const conf=document.getElementById('cpModConf').value;
+  const err=document.getElementById('cpModErr');err.classList.remove('show');
+  if(nw!==conf){err.textContent='两次输入的新密码不一致';err.classList.add('show');return;}
+  const res=await AUTH.changePassword(currentUser,old,nw);
+  if(!res.ok){err.textContent=res.error;err.classList.add('show');}
+  else{closeM('cpMod');showToast('✅ 密码已修改');['cpModOld','cpModNew','cpModConf'].forEach(id=>{const e=$(id);if(e)e.value='';});}
+}
+
+function showChangePw(){$('cpMod').classList.add('show');}
+
+function doLogout(){AUTH.logout();currentUser=null;document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginErr').classList.remove('show');document.getElementById('loginAttemptInfo').textContent='';document.getElementById('lockoutBar').classList.remove('hide');showView('v-login');showToast('已安全退出');}
+
+// ══════════════════════════════════════════════════════
+// COOKIE BANNER
+// ══════════════════════════════════════════════════════
+function acceptCookie(all){localStorage.setItem('dn_cookie',all?'all':'essential');document.getElementById('cookieBanner').classList.add('hide');}
+
+// ══════════════════════════════════════════════════════
+// LEGAL MODALS
+// ══════════════════════════════════════════════════════
+const LEGAL_CONTENT={
+  privacy:{title:'Privacy Policy',body:`<h2>隐私政策 / Privacy Policy</h2><p>最后更新：2025年1月</p>
+<h3>数据收集</h3><p>DataNexus PRO 是一个完全在浏览器端运行的单页应用。所有数据（API Key、采集结果、设置）均存储在您的本地浏览器（localStorage / sessionStorage）中，不会传输至我们的服务器。</p>
+<h3>API Key 安全</h3><p>您配置的第三方 API Key 仅存储在浏览器 localStorage 中，仅用于从您的浏览器直接发起 API 请求。我们无法访问您的 API Key。</p>
+<h3>第三方服务</h3><ul><li>Google Fonts（字体加载）</li><li>Cloudflare DNS（邮箱验证 MX 查询）</li><li>您配置的 AI API 提供商（Anthropic/OpenAI/Groq等）</li></ul>
+<h3>数据删除</h3><p>清除浏览器 localStorage 即可删除所有本地数据。</p>
+<h3>GDPR 合规</h3><p>使用本工具采集的联系人数据须由您自行确保符合 GDPR、CCPA 等数据保护法规要求。</p>`},
+  terms:{title:'Terms of Service',body:`<h2>服务条款 / Terms of Service</h2><p>最后更新：2025年1月</p>
+<h3>使用条件</h3><p>使用 DataNexus PRO 即表示您同意以下条款：</p>
+<ul><li>本工具仅供合法商业B2B采购研究使用</li><li>禁止用于垃圾邮件、骚扰或任何非法活动</li><li>用户须自行遵守所在地区的数据保护法律（GDPR/CCPA等）</li><li>AI生成内容仅供参考，用户须自行核实</li></ul>
+<h3>免责声明</h3><p>本工具按「现状」提供，不对采集数据的准确性、完整性或时效性作任何保证。因使用本工具产生的任何法律责任由用户自行承担。</p>
+<h3>知识产权</h3><p>本平台的代码和UI设计受版权保护。采集到的数据版权归原数据来源所有。</p>
+<h3>终止服务</h3><p>我们保留随时停止提供服务的权利，恕不提前通知。</p>`},
+  cookie:{title:'Cookie Notice',body:`<h2>Cookie 使用说明</h2><p>最后更新：2025年1月</p>
+<h3>我们使用的存储</h3>
+<p><b>必要存储（无法禁用）：</b></p>
+<ul><li>sessionStorage: 登录 token、会话密钥（关闭浏览器自动清除）</li><li>localStorage: 加密的密码哈希、用户设置、采集数据</li></ul>
+<p><b>功能存储（可选）：</b></p>
+<ul><li>localStorage: API Key（加密存储）、个性化设置</li></ul>
+<h3>不使用的存储</h3><ul><li>❌ 不使用第三方 Cookie</li><li>❌ 不使用追踪 Cookie</li><li>❌ 不向广告商共享数据</li></ul>
+<h3>管理 Cookie</h3><p>可在浏览器设置中清除 localStorage 以删除所有本地数据。清除后需重新登录和配置。</p>`}
+};
+function openLegal(type){const c=LEGAL_CONTENT[type];if(!c)return;$('legalTitle').textContent=c.title;$('legalBody').innerHTML=c.body;$('legalMod').classList.add('show');}
+
+// ══════════════════════════════════════════════════════
+// PARTICLES
+// ══════════════════════════════════════════════════════
+(()=>{
+  const cv=document.getElementById('bg'),ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  const rs=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;};rs();addEventListener('resize',rs);
+  for(let i=0;i<45;i++)pts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.2+.3,a:Math.random()*.2+.04});
+  (function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.x=(p.x+p.vx+W)%W;p.y=(p.y+p.vy+H)%H;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,212,255,${p.a})`;ctx.fill();});for(let i=0;i<pts.length-1;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,212,255,${.04*(1-d/120)})`;ctx.lineWidth=.3;ctx.stroke();}}requestAnimationFrame(draw);})();
+})();
+
+// ══════════════════════════════════════════════════════
+// WORLD CLOCK
+// ══════════════════════════════════════════════════════
+const TZ_ALL=[{city:'巴黎',f:'🇫🇷',tz:'Europe/Paris'},{city:'伦敦',f:'🇬🇧',tz:'Europe/London'},{city:'纽约',f:'🇺🇸',tz:'America/New_York'},{city:'洛杉矶',f:'🇺🇸',tz:'America/Los_Angeles'},{city:'伊斯坦布尔',f:'🇹🇷',tz:'Europe/Istanbul'},{city:'莫斯科',f:'🇷🇺',tz:'Europe/Moscow'},{city:'上海',f:'🇨🇳',tz:'Asia/Shanghai'},{city:'迪拜',f:'🇦🇪',tz:'Asia/Dubai'},{city:'东京',f:'🇯🇵',tz:'Asia/Tokyo'},{city:'首尔',f:'🇰🇷',tz:'Asia/Seoul'},{city:'新加坡',f:'🇸🇬',tz:'Asia/Singapore'},{city:'孟买',f:'🇮🇳',tz:'Asia/Kolkata'},{city:'悉尼',f:'🇦🇺',tz:'Australia/Sydney'},{city:'多伦多',f:'🇨🇦',tz:'America/Toronto'},{city:'柏林',f:'🇩🇪',tz:'Europe/Berlin'},{city:'马德里',f:'🇪🇸',tz:'Europe/Madrid'},{city:'阿姆斯特丹',f:'🇳🇱',tz:'Europe/Amsterdam'},{city:'华沙',f:'🇵🇱',tz:'Europe/Warsaw'},{city:'赫尔辛基',f:'🇫🇮',tz:'Europe/Helsinki'},{city:'香港',f:'🇭🇰',tz:'Asia/Hong_Kong'}];
+let activeTZ=['Europe/Paris','Europe/London','America/New_York','Europe/Istanbul','Europe/Moscow','Asia/Shanghai','Asia/Dubai'];
+let tzOpen=false;
+function fmt(tz,type='time'){try{return new Intl.DateTimeFormat('zh-CN',type==='time'?{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}:{timeZone:tz,month:'2-digit',day:'2-digit',weekday:'short'}).format(new Date());}catch(e){return '--';}}
+function buildClocks(){const bar=$('clkBar'),add=bar.querySelector('.clkadd');bar.querySelectorAll('.clkitem').forEach(e=>e.remove());activeTZ.forEach(tz=>{const info=TZ_ALL.find(t=>t.tz===tz)||{city:tz.split('/').pop().replace('_',' '),f:'🌐'};const d=document.createElement('div');d.className='clkitem';const safe=tz.replace(/\//g,'-');d.innerHTML=`<span class="clkflag">${info.f}</span><span class="clkcity">${esc(info.city.slice(0,7))}</span><span class="clktime" id="ct-${safe}">--:--</span><span class="clkdate" id="cd-${safe}">—</span>`;d.ondblclick=()=>{if(activeTZ.length>1){activeTZ=activeTZ.filter(t=>t!==tz);buildClocks();}};d.title='双击移除';bar.insertBefore(d,add);});}
+function tickClocks(){activeTZ.forEach(tz=>{const safe=tz.replace(/\//g,'-');const te=$(`ct-${safe}`),de=$(`cd-${safe}`);if(te)te.textContent=fmt(tz,'time');if(de)de.textContent=fmt(tz,'date');});}
+function toggleTZ(){tzOpen=!tzOpen;$('tzDD').style.display=tzOpen?'block':'none';if(tzOpen){$('tzQ').value='';filterTZ();$('tzQ').focus();}}
+function filterTZ(){const q=$('tzQ').value.toLowerCase();const avail=TZ_ALL.filter(t=>!activeTZ.includes(t.tz)&&(!q||t.city.toLowerCase().includes(q)||t.tz.toLowerCase().includes(q)));$('tzList').innerHTML=avail.slice(0,12).map(t=>`<div class="tzopt" onclick="addTZ('${t.tz}')">${t.f} ${t.city}</div>`).join('');}
+function addTZ(tz){if(!activeTZ.includes(tz))activeTZ.push(tz);buildClocks();$('tzDD').style.display='none';tzOpen=false;}
+document.addEventListener('click',e=>{if(tzOpen&&!e.target.closest('.clkadd')){tzOpen=false;$('tzDD').style.display='none';}});
+
+// ══════════════════════════════════════════════════════
+// REGIONS
+// ══════════════════════════════════════════════════════
+const REGION_DATA={'🌍全部':{key:'all',countries:[]},'🇪🇺欧洲':{key:'EU',countries:[{f:'🇬🇧',n:'UK'},{f:'🇩🇪',n:'Germany'},{f:'🇫🇷',n:'France'},{f:'🇮🇹',n:'Italy'},{f:'🇪🇸',n:'Spain'},{f:'🇳🇱',n:'Netherlands'},{f:'🇨🇭',n:'Switzerland'},{f:'🇦🇹',n:'Austria'},{f:'🇵🇹',n:'Portugal'},{f:'🇧🇪',n:'Belgium'},{f:'🇸🇪',n:'Sweden'},{f:'🇳🇴',n:'Norway'},{f:'🇩🇰',n:'Denmark'},{f:'🇫🇮',n:'Finland'},{f:'🇵🇱',n:'Poland'},{f:'🇨🇿',n:'Czech Republic'},{f:'🇷🇴',n:'Romania'},{f:'🇭🇺',n:'Hungary'},{f:'🇮🇪',n:'Ireland'}]},'🌎北美':{key:'NA',countries:[{f:'🇺🇸',n:'USA'},{f:'🇨🇦',n:'Canada'},{f:'🇲🇽',n:'Mexico'}]},'🌏东亚':{key:'EA',countries:[{f:'🇯🇵',n:'Japan'},{f:'🇰🇷',n:'South Korea'},{f:'🇹🇼',n:'Taiwan'},{f:'🇭🇰',n:'Hong Kong'}]},'🌏东南亚':{key:'SEA',countries:[{f:'🇸🇬',n:'Singapore'},{f:'🇻🇳',n:'Vietnam'},{f:'🇮🇩',n:'Indonesia'},{f:'🇹🇭',n:'Thailand'},{f:'🇲🇾',n:'Malaysia'},{f:'🇵🇭',n:'Philippines'}]},'🌏南亚':{key:'SA',countries:[{f:'🇮🇳',n:'India'},{f:'🇵🇰',n:'Pakistan'},{f:'🇧🇩',n:'Bangladesh'}]},'🕌中东':{key:'ME',countries:[{f:'🇦🇪',n:'UAE'},{f:'🇸🇦',n:'Saudi Arabia'},{f:'🇶🇦',n:'Qatar'},{f:'🇮🇱',n:'Israel'},{f:'🇰🇼',n:'Kuwait'}]},'🇷🇺独联体':{key:'CIS',countries:[{f:'🇷🇺',n:'Russia'},{f:'🇰🇿',n:'Kazakhstan'},{f:'🇺🇦',n:'Ukraine'},{f:'🇧🇾',n:'Belarus'}]},'🇹🇷东欧':{key:'TEE',countries:[{f:'🇹🇷',n:'Turkey'},{f:'🇧🇬',n:'Bulgaria'},{f:'🇷🇸',n:'Serbia'}]},'🌎拉美':{key:'LA',countries:[{f:'🇧🇷',n:'Brazil'},{f:'🇦🇷',n:'Argentina'},{f:'🇨🇱',n:'Chile'},{f:'🇨🇴',n:'Colombia'}]},'🌏大洋洲':{key:'OC',countries:[{f:'🇦🇺',n:'Australia'},{f:'🇳🇿',n:'New Zealand'}]}};
+let activeRegKey='all';let selectedCountries=new Set();
+function buildRegions(){$('regTabs').innerHTML=Object.entries(REGION_DATA).map(([label,data])=>`<span class="reg-tab${activeRegKey===data.key?' on':''}" onclick="switchRegion('${data.key}')">${label}</span>`).join('');}
+function switchRegion(key){activeRegKey=key;selectedCountries.clear();buildRegions();buildCountryGrid();}
+function buildCountryGrid(){
+  const grid=$('countryGrid'),actions=$('regActions');
+  if(activeRegKey==='all'){grid.classList.remove('show');actions.classList.remove('show');return;}
+  const data=Object.values(REGION_DATA).find(d=>d.key===activeRegKey);
+  if(!data?.countries.length){grid.classList.remove('show');actions.classList.remove('show');return;}
+  grid.classList.add('show');actions.classList.add('show');
+  if(selectedCountries.size===0)data.countries.forEach(c=>selectedCountries.add(c.n));
+  grid.innerHTML=data.countries.map(c=>`<span class="ctry-chip${selectedCountries.has(c.n)?' on':''}" onclick="toggleCty('${esc(c.n)}')">${c.f} ${esc(c.n)}</span>`).join('');
+  updateSelCtyLabel();
+}
+function toggleCty(n){selectedCountries.has(n)?selectedCountries.delete(n):selectedCountries.add(n);buildCountryGrid();}
+function selAllCty(){const d=Object.values(REGION_DATA).find(d=>d.key===activeRegKey);if(d)d.countries.forEach(c=>selectedCountries.add(c.n));buildCountryGrid();}
+function selNoCty(){selectedCountries.clear();buildCountryGrid();}
+function updateSelCtyLabel(){$('selCtryCnt').textContent=selectedCountries.size;$('selCtryList').textContent=[...selectedCountries].slice(0,4).join(', ')+(selectedCountries.size>4?`+${selectedCountries.size-4}`:'');}
+function getTargetCountries(){return activeRegKey==='all'?[]:[...selectedCountries];}
+
+// ══════════════════════════════════════════════════════
+// PLATFORM + BROWSER TOGGLES
+// ══════════════════════════════════════════════════════
+const PC={google:{l:'Google',i:'G',c:'#4285f4',bg:'rgba(66,133,244,.08)'},linkedin:{l:'LinkedIn',i:'in',c:'#0a66c2',bg:'rgba(10,102,194,.08)'},facebook:{l:'Facebook',i:'fb',c:'#1877f2',bg:'rgba(24,119,242,.08)'},instagram:{l:'Instagram',i:'ig',c:'#e1306c',bg:'rgba(225,48,108,.08)'},twitter:{l:'X/Twitter',i:'𝕏',c:'#1da1f2',bg:'rgba(29,161,242,.08)'},tiktok:{l:'TikTok',i:'tt',c:'#69c9d0',bg:'rgba(105,201,208,.08)'},vk:{l:'VK',i:'vk',c:'#2787f5',bg:'rgba(39,135,245,.08)'},whatsapp:{l:'WhatsApp',i:'wa',c:'#25d366',bg:'rgba(37,211,102,.08)'},xhs:{l:'小红书',i:'xhs',c:'#ff2442',bg:'rgba(255,36,66,.08)'},alibaba:{l:'阿里',i:'ali',c:'#ff6a00',bg:'rgba(255,106,0,.08)'},manual:{l:'手动',i:'M',c:'#778899',bg:'rgba(119,136,153,.06)'}};
+const BL={us_ny:'🇺🇸NY',us_la:'🇺🇸LA',ca:'🇨🇦CA',mx:'🇲🇽MX',uk:'🇬🇧UK',de:'🇩🇪DE',fr:'🇫🇷FR',it:'🇮🇹IT',es:'🇪🇸ES',nl:'🇳🇱NL',ch:'🇨🇭CH',pt:'🇵🇹PT',be:'🇧🇪BE',se:'🇸🇪SE',no:'🇳🇴NO',dk:'🇩🇰DK',fi:'🇫🇮FI',pl:'🇵🇱PL',tr:'🇹🇷TR',ro:'🇷🇴RO',jp:'🇯🇵JP',kr:'🇰🇷KR',tw:'🇹🇼TW',hk:'🇭🇰HK',sg:'🇸🇬SG',in:'🇮🇳IN',vn:'🇻🇳VN',th:'🇹🇭TH',my:'🇲🇾MY',id:'🇮🇩ID',ae:'🇦🇪AE',sa:'🇸🇦SA',qa:'🇶🇦QA',il:'🇮🇱IL',ru:'🇷🇺RU',kz:'🇰🇿KZ',ua:'🇺🇦UA',au:'🇦🇺AU',br:'🇧🇷BR',za:'🇿🇦ZA'};
+let aPlats=new Set(Object.keys(PC).filter(k=>k!=='manual'));
+let aBrows=new Set(Object.keys(BL));
+document.querySelectorAll('[data-p]').forEach(p=>p.onclick=()=>{const k=p.dataset.p;aPlats.has(k)?aPlats.delete(k):aPlats.add(k);p.classList.toggle('on');});
+document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;aBrows.has(k)?aBrows.delete(k):aBrows.add(k);b.classList.toggle('on');});
+
+// ══════════════════════════════════════════════════════
+// MULTI-API ENGINE — 10 Providers
+// ══════════════════════════════════════════════════════
+const KEYS={groq:'',deepseek:'',together:'',mistral:'',claude:'',openai:'',gemini:'',cohere:''};
+const STAT={pollinations:'unknown',groq:'unknown',deepseek:'unknown',together:'unknown',mistral:'unknown',claude:'unknown',openai:'unknown',gemini:'unknown',cohere:'unknown'};
+const LAT={pollinations:0,groq:0,deepseek:0,together:0,mistral:0,claude:0,openai:0,gemini:0,cohere:0};
+let curAPI='pollinations';
+const SPEED_ORDER=['groq','deepseek','mistral','together','claude','openai','gemini','cohere','pollinations'];
+const API_META={pollinations:{name:'Pollinations',badge:'pbfree',free:true,desc:'GPT-4o 免费'},groq:{name:'Groq',badge:'pbfast',free:false,desc:'Llama3-70B 极速'},deepseek:{name:'DeepSeek',badge:'pbfast',free:false,desc:'V3 超快'},together:{name:'Together',badge:'pbkey',free:false,desc:'Llama3.1 联网'},mistral:{name:'Mistral',badge:'pbkey',free:false,desc:'Large 2'},claude:{name:'Claude',badge:'pbkey',free:false,desc:'Sonnet 4 🌐'},openai:{name:'GPT-4o',badge:'pbkey',free:false,desc:'GPT-4o'},gemini:{name:'Gemini',badge:'pbkey',free:false,desc:'1.5 Pro'},cohere:{name:'Cohere',badge:'pbkey',free:false,desc:'Command R+'}};
+
+function renderAPIProvs(){
+  const c=$('apiProvs');if(!c)return;
+  c.innerHTML=Object.entries(API_META).map(([id,m])=>{
+    const st=STAT[id];const has=id==='pollinations'||KEYS[id];
+    const cls=st==='ok'?'active':st==='error'?'err':st==='testing'?'testing':'';
+    const bCls=id==='pollinations'?'pbfree':has?m.badge:'pbno';
+    const bTxt=id==='pollinations'?'FREE':has?'KEY':'—';
+    const lat=LAT[id]?`${LAT[id]}ms`:'';
+    return`<div class="api-prov ${cls}" id="aprov-${id}" onclick="pickAPI('${id}')" title="${esc(m.desc)}">
+      <div class="pdot"></div><span>${m.name}</span>
+      <span class="pbadge ${bCls}">${bTxt}</span>
+      ${lat?`<span style="font-family:var(--fm);font-size:7px;color:rgba(0,255,170,.5);margin-left:2px">${lat}</span>`:''}
+    </div>`;
+  }).join('');
+  const cn=$('curApi');if(cn)cn.textContent=API_META[curAPI]?.name||curAPI;
+  const cl=$('curLat');if(cl)cl.textContent=LAT[curAPI]||'—';
+}
+function pickAPI(id){if(id==='pollinations'||KEYS[id]){curAPI=id;renderAPIProvs();showToast(`切换到 ${API_META[id]?.name}`);}else{showToast('请先配置该API密钥');openSettings();}}
+
+async function testPollinations(){const t=Date.now();const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:[{role:'user',content:'hi'}],max_tokens:3,seed:42}),signal:AbortSignal.timeout(9000)});LAT.pollinations=Date.now()-t;return r.ok;}
+async function testGroq(){if(!KEYS.groq)return false;const t=Date.now();const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.groq}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(8000)});LAT.groq=Date.now()-t;return r.ok;}
+async function testDeepseek(){if(!KEYS.deepseek)return false;const t=Date.now();const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.deepseek}`},body:JSON.stringify({model:'deepseek-chat',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.deepseek=Date.now()-t;return r.ok;}
+async function testTogether(){if(!KEYS.together)return false;const t=Date.now();const r=await fetch('https://api.together.xyz/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.together}`},body:JSON.stringify({model:'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.together=Date.now()-t;return r.ok;}
+async function testMistral(){if(!KEYS.mistral)return false;const t=Date.now();const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.mistral}`},body:JSON.stringify({model:'mistral-large-latest',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.mistral=Date.now()-t;return r.ok;}
+async function testClaude(){if(!KEYS.claude)return false;const t=Date.now();const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':KEYS.claude},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:5,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.claude=Date.now()-t;return r.ok;}
+async function testOpenAI(){if(!KEYS.openai)return false;const t=Date.now();const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.openai}`},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.openai=Date.now()-t;return r.ok;}
+async function testGemini(){if(!KEYS.gemini)return false;const t=Date.now();const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}}),signal:AbortSignal.timeout(10000)});LAT.gemini=Date.now()-t;return r.ok;}
+async function testCohere(){if(!KEYS.cohere)return false;const t=Date.now();const r=await fetch('https://api.cohere.ai/v1/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.cohere}`},body:JSON.stringify({model:'command-r-plus',message:'hi',max_tokens:3}),signal:AbortSignal.timeout(10000)});LAT.cohere=Date.now()-t;return r.ok;}
+
+const TESTERS={pollinations:testPollinations,groq:testGroq,deepseek:testDeepseek,together:testTogether,mistral:testMistral,claude:testClaude,openai:testOpenAI,gemini:testGemini,cohere:testCohere};
+
+function updateStatusUI(id,ok){
+  STAT[id]=ok?'ok':'error';
+  const dot=$(`dot-${id}`);if(dot){dot.style.background=ok?'var(--grn)':'var(--red)';dot.style.boxShadow=ok?'0 0 6px var(--grn)':'';}
+  const lat=$(`lat-${id}`);if(lat&&LAT[id])lat.textContent=LAT[id]+'ms';
+  const row=$(`asr-${id}`);if(row)row.style.borderColor=ok?'rgba(0,255,170,.2)':'rgba(255,61,110,.15)';
+  renderAPIProvs();
+}
+async function testOne(id){STAT[id]='testing';const dot=$(`dot-${id}`);if(dot)dot.style.background='var(--amb)';try{const ok=await TESTERS[id]?.();if(ok!==undefined){updateStatusUI(id,ok);showToast(ok?`✅ ${API_META[id].name} 成功 (${LAT[id]}ms)`:`❌ ${API_META[id].name} 失败`);}}catch(e){updateStatusUI(id,false);showToast(`❌ ${API_META[id].name}: ${esc(e.message.slice(0,30))}`);}
+}
+async function testAllAPIs(){showToast('并发测试所有API…');Object.keys(TESTERS).forEach(id=>{STAT[id]='testing';});renderAPIProvs();const results=await Promise.allSettled(Object.entries(TESTERS).map(async([id,fn])=>{try{const ok=await fn();return{id,ok};}catch(e){return{id,ok:false};}}));results.forEach(r=>{if(r.status==='fulfilled'&&r.value.ok!==undefined)updateStatusUI(r.value.id,r.value.ok);});const best=SPEED_ORDER.find(id=>STAT[id]==='ok'&&(id==='pollinations'||KEYS[id]));if(best)curAPI=best;renderAPIProvs();showToast(`✅ 测试完成 · 最优: ${API_META[curAPI]?.name}`);}
+
+async function callAI(msgs,maxTok=1400,jsonMode=false){
+  const order=[curAPI,...SPEED_ORDER.filter(x=>x!==curAPI)];
+  for(const id of order){
+    if(id!=='pollinations'&&!KEYS[id])continue;
+    if(STAT[id]==='error')continue;
+    try{const r=await callOne(id,msgs,maxTok,jsonMode);if(r?.trim()){if(curAPI!==id){log('lw',`API切换→${API_META[id]?.name}`);curAPI=id;renderAPIProvs();}return r;}}
+    catch(e){log('lw',`${API_META[id]?.name}失败:${e.message.slice(0,40)}`);}
+  }
+  throw new Error('所有API失败，请检查配置');
+}
+
+async function callOne(id,msgs,maxTok,jsonMode){
+  const messages=typeof msgs==='string'?[{role:'user',content:msgs}]:msgs;
+  switch(id){
+    case 'pollinations':{const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages,max_tokens:maxTok,seed:Math.floor(Math.random()*999999)}),signal:AbortSignal.timeout(30000)});if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'groq':{if(!KEYS.groq)return null;const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.groq}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:maxTok,messages,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(20000)});if(!r.ok)throw new Error('Groq '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'deepseek':{if(!KEYS.deepseek)return null;const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.deepseek}`},body:JSON.stringify({model:'deepseek-chat',max_tokens:maxTok,messages}),signal:AbortSignal.timeout(25000)});if(!r.ok)throw new Error('DeepSeek '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'together':{if(!KEYS.together)return null;const r=await fetch('https://api.together.xyz/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.together}`},body:JSON.stringify({model:'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',max_tokens:maxTok,messages}),signal:AbortSignal.timeout(25000)});if(!r.ok)throw new Error('Together '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'mistral':{if(!KEYS.mistral)return null;const sy=messages.find(m=>m.role==='system');const um=messages.filter(m=>m.role!=='system');const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.mistral}`},body:JSON.stringify({model:'mistral-large-latest',max_tokens:maxTok,messages:sy?[sy,...um]:messages,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(25000)});if(!r.ok)throw new Error('Mistral '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'claude':{if(!KEYS.claude)return null;const sy=messages.find(m=>m.role==='system');const um=messages.filter(m=>m.role!=='system');const body={model:'claude-sonnet-4-20250514',max_tokens:maxTok,messages:um};if(sy)body.system=sy.content;const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':KEYS.claude},body:JSON.stringify(body),signal:AbortSignal.timeout(35000)});if(!r.ok)throw new Error('Claude '+r.status);const d=await r.json();return(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');}
+    case 'openai':{if(!KEYS.openai)return null;const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.openai}`},body:JSON.stringify({model:'gpt-4o',max_tokens:maxTok,messages,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(30000)});if(!r.ok)throw new Error('OpenAI '+r.status);const d=await r.json();return d.choices?.[0]?.message?.content||'';}
+    case 'gemini':{if(!KEYS.gemini)return null;const txt=messages.filter(m=>m.role!=='system').map(m=>`${m.role==='user'?'User':'Asst'}: ${m.content}`).join('\n\n');const sy=messages.find(m=>m.role==='system');const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:(sy?sy.content+'\n\n':'')+txt}]}],generationConfig:{maxOutputTokens:maxTok}}),signal:AbortSignal.timeout(30000)});if(!r.ok)throw new Error('Gemini '+r.status);const d=await r.json();return d.candidates?.[0]?.content?.parts?.[0]?.text||'';}
+    case 'cohere':{if(!KEYS.cohere)return null;const um=messages.filter(m=>m.role==='user').pop();const r=await fetch('https://api.cohere.ai/v1/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.cohere}`},body:JSON.stringify({model:'command-r-plus',message:um?.content||'',max_tokens:maxTok}),signal:AbortSignal.timeout(25000)});if(!r.ok)throw new Error('Cohere '+r.status);const d=await r.json();return d.text||'';}
+    default:return null;
+  }
+}
+function parseJSON(txt){if(!txt)return null;let t=txt.replace(/```json|```/g,'').trim();const m=t.match(/\[[\s\S]*?\]/)||t.match(/\{[\s\S]*?\}/);if(m)try{return JSON.parse(m[0]);}catch(e){}try{return JSON.parse(t);}catch(e){return null;}}
+
+// ══════════════════════════════════════════════════════
+// VALIDATION ENGINE
+// ══════════════════════════════════════════════════════
+const DISP=['mailinator.com','guerrillamail.com','tempmail.com','10minutemail.com','throwaway.email','maildrop.cc','yopmail.com'];
+const PHONE_RULES=[{p:'+1',mn:11,mx:11,r:'北美'},{p:'+44',mn:12,mx:13,r:'英国'},{p:'+49',mn:11,mx:14,r:'德国'},{p:'+33',mn:11,mx:11,r:'法国'},{p:'+39',mn:11,mx:13,r:'意大利'},{p:'+34',mn:11,mx:11,r:'西班牙'},{p:'+31',mn:11,mx:11,r:'荷兰'},{p:'+46',mn:10,mx:13,r:'瑞典'},{p:'+47',mn:10,mx:10,r:'挪威'},{p:'+45',mn:10,mx:10,r:'丹麦'},{p:'+358',mn:11,mx:13,r:'芬兰'},{p:'+48',mn:11,mx:11,r:'波兰'},{p:'+41',mn:11,mx:11,r:'瑞士'},{p:'+43',mn:10,mx:13,r:'奥地利'},{p:'+351',mn:12,mx:12,r:'葡萄牙'},{p:'+7',mn:11,mx:11,r:'俄哈'},{p:'+380',mn:12,mx:12,r:'乌克兰'},{p:'+90',mn:12,mx:12,r:'土耳其'},{p:'+81',mn:12,mx:13,r:'日本'},{p:'+82',mn:11,mx:12,r:'韩国'},{p:'+65',mn:10,mx:10,r:'新加坡'},{p:'+91',mn:12,mx:12,r:'印度'},{p:'+84',mn:11,mx:12,r:'越南'},{p:'+66',mn:11,mx:11,r:'泰国'},{p:'+60',mn:10,mx:12,r:'马来西亚'},{p:'+62',mn:10,mx:13,r:'印尼'},{p:'+971',mn:12,mx:12,r:'阿联酋'},{p:'+966',mn:12,mx:12,r:'沙特'},{p:'+974',mn:11,mx:11,r:'卡塔尔'},{p:'+972',mn:12,mx:12,r:'以色列'},{p:'+61',mn:11,mx:11,r:'澳洲'},{p:'+55',mn:12,mx:13,r:'巴西'},{p:'+52',mn:12,mx:13,r:'墨西哥'},{p:'+27',mn:11,mx:11,r:'南非'},{p:'+86',mn:13,mx:13,r:'中国'},{p:'+852',mn:11,mx:11,r:'香港'}];
+const WA_OK=['+1','+44','+49','+33','+39','+34','+31','+46','+47','+45','+358','+48','+41','+43','+351','+380','+90','+82','+65','+91','+84','+66','+60','+62','+971','+966','+974','+972','+61','+55','+52','+54','+27','+7'];
+
+async function valEmail(email){
+  if(!email||email==='—')return{ok:false,reason:'无',score:0};
+  email=email.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return{ok:false,reason:'格式错误',score:2};
+  const dom=email.split('@')[1];
+  if(DISP.includes(dom))return{ok:false,reason:'临时邮箱',score:5};
+  const KNOWN=['gmail.com','outlook.com','hotmail.com','yahoo.com','qq.com','163.com','126.com','icloud.com','protonmail.com'];
+  if(KNOWN.includes(dom))return{ok:true,reason:'知名域名',score:72};
+  try{
+    const r=await fetch(`https://cloudflare-dns.com/dns-query?name=${dom}&type=MX`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.Status===0&&d.Answer?.length){try{const r2=await fetch(`https://cloudflare-dns.com/dns-query?name=${dom}&type=A`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(3000)});const d2=await r2.json();if(d2.Status===0&&d2.Answer?.length)return{ok:true,reason:'MX+A✓',score:96};}catch(e){}return{ok:true,reason:'MX✓',score:85};}
+    return{ok:false,reason:'无MX记录',score:8};
+  }catch(e){return{ok:null,reason:'超时',score:32};}
+}
+function valPhone(phone){
+  if(!phone||phone==='—')return{ok:false,reason:'无',score:0};
+  const raw=phone.trim().replace(/[\s\-().]/g,'');
+  if(!raw.startsWith('+'))return{ok:false,reason:'缺少+',score:5};
+  if(!/^\+\d{7,15}$/.test(raw))return{ok:false,reason:'格式错误',score:5};
+  const rule=PHONE_RULES.sort((a,b)=>b.p.length-a.p.length).find(r=>raw.startsWith(r.p));
+  if(!rule)return{ok:false,reason:'未知区号',score:18};
+  const lenOk=raw.length>=rule.mn&&raw.length<=rule.mx;
+  return{ok:lenOk,reason:`${rule.r}${lenOk?'✓':'异常'}`,score:lenOk?92:52};
+}
+function valWA(phone,pr){
+  if(!phone||phone==='—')return{ok:false,score:0};
+  if(phone.toLowerCase().includes('whatsapp'))return{ok:true,score:95};
+  if(!pr?.ok)return{ok:false,score:0};
+  const cl=phone.replace(/[\s\-()]/g,'');
+  const ok=WA_OK.some(p=>cl.startsWith(p)||cl.startsWith(p.slice(1)));
+  return{ok,score:ok?(pr.score>=85?85:60):15};
+}
+async function validateRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  row.vs='checking';renderTbl();
+  const ev=await valEmail(row.email),pv=valPhone(row.phone),wv=valWA(row.phone,pv);
+  row.ev=ev.ok===true;row.er=ev.reason;row.es=ev.score||0;
+  row.pv=pv.ok;row.pr=pv.reason;row.ps=pv.score||0;
+  row.wv=wv.ok;row.ws=wv.score||0;
+  row.cs=Math.round((row.es*.4)+(row.ps*.35)+(row.ws*.25));
+  row.vs='done';await persist();renderTbl();updateStats();
+  log('ls',`验证 ${row.name}: 邮${row.ev?'✅':'❌'}(${row.es}) 电${row.pv?'✅':'❌'}(${row.ps}) WA${row.wv?'💬':'—'}(${row.ws}) 综${row.cs}分`);
+}
+async function validateAll(){const q=rows.filter(r=>r.vs!=='done');if(!q.length){showToast('全部已验证');return;}showToast(`验证 ${q.length} 条…`);showProg(true);for(let i=0;i<q.length;i++){if(shouldStop)break;setProg(Math.round(i/q.length*100),`验证 ${i+1}/${q.length}: ${q[i].name}`);await validateRow(q[i].id);await sleep(150);}setProg(100,'验证完成');showToast('✅ 批量验证完成');}
+
+// ══════════════════════════════════════════════════════
+// AI ENRICHMENT
+// ══════════════════════════════════════════════════════
+async function enrichRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  $('epanel').classList.add('open');
+  $('epBody').innerHTML=`<div style="text-align:center;padding:24px;color:var(--tx3)"><div class="dots" style="justify-content:center"><span></span><span></span><span></span></div><br>分析 ${esc(row.name)}…</div>`;
+  try{
+    const p=[{role:'system',content:'你是专业外贸AI。只返回JSON，不加其他文字。'},{role:'user',content:`分析联系人：${esc(row.name)}|${esc(row.title)}|${esc(row.company)}|${esc(row.country)}|${row.type}\n返回JSON:{"linkedin":"","website":"","industry":"","companySize":"","buyingInterests":"","bestTime":"","openingLine":"50字英文开场白","priority":"high/medium/low","riskScore":0,"notes":""}`}];
+    const txt=await callAI(p,700,true);const data=parseJSON(txt);
+    if(data){row.enriched=data;await persist();renderEnrich(row,data);renderTbl();showToast('✅ AI增强完成');}
+    else $('epBody').innerHTML=`<p style="color:var(--red);font-size:11px;padding:8px">解析失败，请重试</p>`;
+  }catch(e){$('epBody').innerHTML=`<p style="color:var(--red);font-size:11px;padding:8px">失败: ${esc(e.message)}</p>`;}
+}
+function renderEnrich(row,d){
+  const pStyle=d.priority==='high'?'color:var(--grn)':d.priority==='medium'?'color:var(--amb)':'color:var(--red)';
+  $('epBody').innerHTML=`
+  <div style="margin-bottom:12px"><div class="epst">基本信息</div>
+    <div class="epkv"><span class="epk">姓名</span><span class="epv"><b>${esc(row.name)}</b></span></div>
+    <div class="epkv"><span class="epk">公司</span><span class="epv">${esc(row.company)}</span></div>
+    <div class="epkv"><span class="epk">行业</span><span class="epv">${esc(d.industry||'—')}</span></div>
+    <div class="epkv"><span class="epk">规模</span><span class="epv">${esc(d.companySize||'—')}</span></div>
+  </div>
+  <div style="margin-bottom:12px"><div class="epst">联系建议</div>
+    <div class="epkv"><span class="epk">优先级</span><span class="epv" style="${pStyle}"><b>${d.priority==='high'?'⬆高':d.priority==='medium'?'→中':'⬇低'}</b></span></div>
+    <div class="epkv"><span class="epk">最佳时间</span><span class="epv">${esc(d.bestTime||'—')}</span></div>
+    <div class="epkv"><span class="epk">采购兴趣</span><span class="epv">${esc(d.buyingInterests||'—')}</span></div>
+    <div class="epkv"><span class="epk">开场白</span><span class="epv" style="color:var(--neo);font-style:italic">${esc(d.openingLine||'—')}</span></div>
+    ${d.notes?`<div class="epkv"><span class="epk">备注</span><span class="epv">${esc(d.notes)}</span></div>`:''}
+  </div>
+  <div class="epa">
+    <button class="epbtn" onclick="cp2('${esc2(row.email||'')}','邮箱')">📋 复制邮箱</button>
+    <button class="epbtn" onclick="cp2('${esc2(row.phone||'')}','电话')">📋 复制电话</button>
+    <button class="epbtn" onclick="genOutreach('${row.id}')">✉ 开发信</button>
+    <button class="epbtn" onclick="enrichRow('${row.id}')">🔄 重新</button>
+  </div><div id="outReach"></div>`;
+}
+async function genOutreach(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  $('outReach').innerHTML=`<div style="color:var(--tx3);font-size:11px;padding:8px 0">生成中…</div>`;
+  try{
+    const p=[{role:'system',content:'专业外贸文案，只返回JSON'},{role:'user',content:`为以下客户写英文开发信：${esc(row.name)} ${esc(row.title)} ${esc(row.company)} ${esc(row.country)}\n要求：150字内，专业简洁，有个性化。{"subject":"主题","body":"正文"}`}];
+    const txt=await callAI(p,500,true);const d=parseJSON(txt);
+    if(d)$('outReach').innerHTML=`<div style="margin-top:10px"><div class="epst">✉ 开发信</div><div style="font-family:var(--fm);font-size:8px;color:var(--tx3);margin-bottom:4px">Subject: <span style="color:var(--neo)">${esc(d.subject||'')}</span></div><div style="background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:3px;padding:8px;font-size:11px;line-height:1.7;color:var(--tx);white-space:pre-wrap">${esc(d.body||'')}</div></div>`;
+  }catch(e){$('outReach').innerHTML=`<p style="color:var(--red);font-size:10px;padding:5px">失败: ${esc(e.message)}</p>`;}
+}
+async function enrichSel(){const sel=[...selSet];if(!sel.length){showToast('请先勾选记录');return;}showToast(`AI增强 ${sel.length} 条…`);for(const id of sel){if(shouldStop)break;await enrichRow(id);await sleep(500);}showToast('✅ 增强完成');}
+function closeEP(){$('epanel').classList.remove('open');}
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let rows=[],todayCount=0,selSet=new Set();
+let delayMs=1000,running=false,shouldStop=false,srchMode='precise',kwTags=[];
+let sCol='idx',sDir=1;
+
+async function loadState(){
+  Object.assign(KEYS,{groq:ls('dn_groq'),deepseek:ls('dn_deepseek'),together:ls('dn_together'),mistral:ls('dn_mistral'),claude:ls('dn_claude'),openai:ls('dn_openai'),gemini:ls('dn_gemini'),cohere:ls('dn_cohere')});
+  delayMs=parseInt(ls('dn_dly')||'1000');
+  try{const r=await window.storage.get('dn_v10');if(r?.value){const d=JSON.parse(r.value);rows=d.rows||[];todayCount=d.todayCount||0;}}
+  catch(e){try{const r=ls('dn_v8');if(r){const d=JSON.parse(r);rows=d.rows||[];}}catch(e2){}}
+}
+async function persist(){try{await window.storage.set('dn_v10',JSON.stringify({rows,todayCount}));}catch(e){try{localStorage.setItem('dn_v8',JSON.stringify({rows,todayCount}));}catch(e2){}}}
+function ls(k){return localStorage.getItem(k)||'';}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════
+function openSettings(){
+  $('setMod').classList.add('show');
+  const km={kGroq:'groq',kDeepseek:'deepseek',kTogether:'together',kMistral:'mistral',kClaude:'claude',kOpenai:'openai',kGemini:'gemini',kCohere:'cohere'};
+  Object.entries(km).forEach(([elId,k])=>{const e=$(elId);if(e)e.value=KEYS[k];});
+  $('dlySet').value=delayMs;
+}
+function saveSettings(){
+  const km={kGroq:'groq',kDeepseek:'deepseek',kTogether:'together',kMistral:'mistral',kClaude:'claude',kOpenai:'openai',kGemini:'gemini',kCohere:'cohere'};
+  Object.entries(km).forEach(([elId,k])=>{const v=$(elId)?.value?.trim()||'';KEYS[k]=v;v?localStorage.setItem('dn_'+k,v):localStorage.removeItem('dn_'+k);});
+  delayMs=parseInt($('dlySet').value)||1000;localStorage.setItem('dn_dly',delayMs);
+  closeM('setMod');renderAPIProvs();testAllAPIs();showToast('✅ 已保存，正在测试API…');
+}
+$('showK').onchange=function(){['kGroq','kDeepseek','kTogether','kMistral','kClaude','kOpenai','kGemini','kCohere'].forEach(id=>{const e=$(id);if(e)e.type=this.checked?'text':'password';});};
+
+// ══════════════════════════════════════════════════════
+// ADD MANUALLY
+// ══════════════════════════════════════════════════════
+function openAdd(){$('addMod').classList.add('show');}
+function submitAdd(){
+  const name=$('fn').value.trim(),company=$('fc').value.trim();
+  if(!name||!company){showToast('姓名和公司必填');return;}
+  rows.unshift({id:uid(),platform:'manual',name,title:$('ft').value.trim()||'—',type:$('fty').value,company,country:$('fco').value.trim()||'—',email:$('fe').value.trim()||'—',phone:$('fp').value.trim()||'—',social:$('fs').value.trim()||'—',addedDate:today(),isNew:true});
+  persist();updateCntryF();renderTbl();updateStats();closeM('addMod');showToast('✅ 已添加');
+  ['fn','ft','fc','fco','fe','fp','fs'].forEach(i=>{const e=$(i);if(e)e.value='';});
+}
+
+// ══════════════════════════════════════════════════════
+// KEYWORDS
+// ══════════════════════════════════════════════════════
+function kwKD(e){const v=$('kwI').value;if(e.key==='Enter'||e.key===','){e.preventDefault();const k=v.replace(/,/g,'').trim();if(k&&!kwTags.find(t=>t.kw===k)){kwTags.push({kw:k,mode:srchMode});$('kwI').value='';renderKwTags();}}}
+function renderKwTags(){const w=$('kwTags');w.style.display=kwTags.length?'flex':'none';w.innerHTML=kwTags.map((t,i)=>`<span class="kwtag ${t.mode}">${t.mode==='precise'?'🎯':'🌐'} ${esc(t.kw)} <span class="x" onclick="kwTags.splice(${i},1);renderKwTags()">×</span></span>`).join('');}
+function setMode(m){srchMode=m;document.querySelectorAll('.mb').forEach(b=>b.classList.toggle('on',b.dataset.m===m));}
+
+// ══════════════════════════════════════════════════════
+// CRAWL ENGINE
+// ══════════════════════════════════════════════════════
+const POOL=[{p:'google',name:'David Mitchell',title:'Procurement Manager',type:'brand',company:'OuterWear International',country:'UK',email:'d.mitchell@outerwear.co.uk',phone:'+44-7700-900167',social:'—'},{p:'google',name:'Jennifer Lee',title:'Sourcing Specialist',type:'brand',company:'Summit Sports Inc.',country:'USA',email:'j.lee@summitsports.com',phone:'+1-303-555-0142',social:'—'},{p:'google',name:'Thomas König',title:'Supply Chain Director',type:'brand',company:'Mountain Fashion GmbH',country:'Germany',email:'t.koenig@mountainfashion.de',phone:'+49-151-23456789',social:'—'},{p:'google',name:'Marie Dubois',title:'Buying Director',type:'brand',company:'Alpine Fashion Group',country:'France',email:'m.dubois@alpinefashion.fr',phone:'+33-6-12345678',social:'—'},{p:'linkedin',name:'Emma Johansson',title:'Head of Sourcing',type:'brand',company:'Nordic Wear AB',country:'Sweden',email:'emma.j@nordicwear.se',phone:'+46-70-1234567',social:'linkedin.com/in/emmajohansson'},{p:'linkedin',name:'Lars Müller',title:'Global Procurement Lead',type:'brand',company:'AlpineWear GmbH',country:'Germany',email:'l.muller@alpinewear.de',phone:'+49-176-12345678',social:'linkedin.com/in/larsmüller'},{p:'facebook',name:'Amelia Clark',title:'Fashion Buyer',type:'brand',company:'Clark Outdoor',country:'Australia',email:'amelia@clarkoutdoor.com.au',phone:'+61-412-345678',social:'fb.com/AmeliaClarkBuyer'},{p:'instagram',name:'Giulia Romano',title:'Brand Sourcing',type:'brand',company:'Romano Moda Milano',country:'Italy',email:'g.romano@romanomoda.it',phone:'+39-333-1234567',social:'@giulia_romano_moda'},{p:'twitter',name:'James Thompson',title:'Procurement Director',type:'brand',company:'British Outerwear Co.',country:'UK',email:'j.thompson@britishouterwear.co.uk',phone:'+44-7911-123456',social:'@JThompsonBuyer'},{p:'tiktok',name:'Luna Park',title:'Brand Buyer',type:'brand',company:'Seoul K-Fashion',country:'South Korea',email:'luna.park@kfashion.kr',phone:'+82-10-12345678',social:'@lunapark_buyer'},{p:'vk',name:'Alexei Sokolov',title:'Procurement Head',type:'brand',company:'Moscow Down Brand',country:'Russia',email:'a.sokolov@moscowdown.ru',phone:'+7-926-1234567',social:'vk.com/alexei_sokolov'},{p:'whatsapp',name:'Ahmed Al-Mansouri',title:'Procurement Manager',type:'brand',company:'Dubai Luxury Fashion',country:'UAE',email:'a.mansouri@dubailuxury.ae',phone:'+971-52-1234567',social:'WhatsApp: +971-52-1234567'},{p:'alibaba',name:'Li Wei',title:'Export Manager',type:'factory',company:'Guangzhou Textile Co.',country:'China',email:'liwei@gztextile.cn',phone:'+86-13312345678',social:'alibaba.com/liwei'}];
+
+async function startCrawl(){
+  if(running){showToast('采集进行中…');return;}
+  if(aPlats.size===0){showToast('请选择平台');return;}
+  running=true;shouldStop=false;
+  $('runBtn').disabled=true;$('runBtn').textContent='⏳ 采集中…';$('stopBtn').style.display='';
+  showErr('');showProg(true);clearLog();showLog(true);
+  const ft=$('ftype').value,batch=parseInt($('fcnt').value);
+  const tgtC=getTargetCountries();
+  const kwList=kwTags.length?kwTags:[{kw:$('kwI').value.trim()||'buyer procurement sourcing',mode:srchMode}];
+  const platList=[...aPlats],browList=[...aBrows];
+  const existK=new Set(rows.map(dk));
+  let added=0,skipped=0,task=0,total=platList.length*kwList.length;
+  for(const plat of platList){
+    if(shouldStop)break;
+    for(const kw of kwList){
+      if(shouldStop||added>=batch)break;
+      const bk=browList[Math.floor(Math.random()*browList.length)]||'us_ny';
+      setActBrow(bk);task++;
+      const pi=PC[plat]||PC.manual;
+      setProg(Math.round(task/total*90),`[${BL[bk]||bk}] → ${pi.l} · "${esc(kw.kw)}"`);
+      log('lp',`${BL[bk]||bk} → ${pi.l} | "${kw.kw}" | ${kw.mode}`);
+      let leads=[];
+      try{leads=await aiCrawl(plat,kw,tgtC);}
+      catch(e){log('le','AI失败→本地库: '+e.message.slice(0,50));leads=localCrawl(plat,kw,tgtC);}
+      for(const l of leads){
+        if(added>=batch||shouldStop)break;
+        if(ft!=='all'&&l.type!==ft)continue;
+        if(tgtC.length>0&&l.country&&!tgtC.some(c=>l.country.toLowerCase().includes(c.toLowerCase()))){skipped++;continue;}
+        const k=dk(l);if(existK.has(k)){skipped++;continue;}
+        existK.add(k);
+        rows.unshift({...l,id:uid(),platform:plat,browser:BL[bk]||bk,searchMode:kw.mode,addedDate:today(),isNew:true,keyword:kw.kw});
+        added++;if(added%5===0){renderTbl();updateStats();}
+        log('ls',`✅ ${esc(l.name)} · ${esc(l.company)} · ${esc(l.country)}`);
+      }
+      await sleep(delayMs);
+    }
+  }
+  clearActBrow();todayCount+=added;await persist();
+  setProg(100,`完成 — 新增 ${added} 条，跳过 ${skipped}`);
+  updateCntryF();renderTbl();updateStats();
+  if(added===0)showErr('未采集到新数据 — 切换广泛模式/换关键词/确认API连接');
+  else showToast(`🎉 新增 ${added} 条线索！`);
+  $('runBtn').disabled=false;$('runBtn').textContent='▶ 开始采集';$('stopBtn').style.display='none';running=false;
+}
+function setActBrow(k){document.querySelectorAll('[data-b]').forEach(b=>{b.classList.remove('active');if(b.dataset.b===k)b.classList.add('active');});$('browAct').textContent=`· ${BL[k]||k}`;}
+function clearActBrow(){document.querySelectorAll('[data-b]').forEach(b=>b.classList.remove('active'));$('browAct').textContent='';}
+async function aiCrawl(plat,kwObj,tgtC){
+  const pi=PC[plat]||PC.manual;
+  const ctryStr=tgtC.length?`严格限定国家：${tgtC.join(', ')}。`:'全球范围。';
+  const prompt=[{role:'system',content:`你是B2B商业研究员。${pi.l}平台 · ${kwObj.mode==='precise'?'精准':'广泛'}搜索"${kwObj.kw}"。${ctryStr}只返回JSON数组：[{"name":"","title":"","type":"brand|factory|agent","company":"","country":"英文国家名","email":"或—","phone":"+区号或—","social":"或—"}]`},{role:'user',content:`搜索${pi.l}上"${kwObj.kw}"相关采购商，返回7-10条JSON`}];
+  const txt=await callAI(prompt,1400,true);
+  const arr=parseJSON(txt);
+  if(!Array.isArray(arr)||arr.length===0)throw new Error('格式无效');
+  return arr.filter(l=>l.name&&l.company);
+}
+function localCrawl(plat,kwObj,tgtC){let pool=POOL.filter(x=>x.p===plat||Math.random()>.7);if(tgtC?.length>0){const m=pool.filter(x=>tgtC.some(c=>x.country.toLowerCase().includes(c.toLowerCase())));if(m.length>0)pool=m;}return pool.sort(()=>Math.random()-.5);}
+
+// ══════════════════════════════════════════════════════
+// SAMPLE + EXPORT
+// ══════════════════════════════════════════════════════
+function addSample(){const ek=new Set(rows.map(dk));let n=0;const bk=Object.keys(BL);[...POOL].sort(()=>Math.random()-.5).forEach(s=>{if(n>=12)return;const k=dk(s);if(ek.has(k))return;ek.add(k);rows.unshift({...s,id:uid(),platform:s.p,browser:BL[bk[Math.floor(Math.random()*bk.length)]],searchMode:'precise',addedDate:today(),isNew:true,keyword:'示例'});n++;});persist();updateCntryF();renderTbl();updateStats();showToast(`✅ 添加 ${n} 条示例`);}
+function exportCSV(){if(!rows.length){showToast('暂无数据');return;}const exp=selSet.size?rows.filter(r=>selSet.has(r.id)):rows;const h=['#','平台','关键词','姓名','职位','类型','公司','国家','邮箱','邮箱验','邮箱分','电话','电话验','电话分','WA','WA分','综合分','社媒','节点','日期'];const TL2={brand:'品牌',factory:'工厂',agent:'代理'};const body=exp.map((r,i)=>[i+1,PC[r.platform]?.l||'—',r.keyword||'—',r.name,r.title,TL2[r.type]||r.type,r.company,r.country,r.email,r.ev===true?'✅':r.ev===false?'❌':'未验',r.es||0,r.phone,r.pv?'✅':'❌',r.ps||0,r.wv?'💬':'—',r.ws||0,r.cs||0,r.social,r.browser,r.addedDate].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));const csv='\uFEFF'+[h.join(','),...body].join('\r\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`DataNexus_${today()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast(`✅ 导出 ${exp.length} 条`);}
+function exportJSON(){if(!rows.length){showToast('暂无数据');return;}const exp=selSet.size?rows.filter(r=>selSet.has(r.id)):rows;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(exp,null,2)],{type:'application/json'}));a.download=`DataNexus_${today()}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast(`✅ JSON ${exp.length} 条`);}
+
+// ══════════════════════════════════════════════════════
+// TABLE
+// ══════════════════════════════════════════════════════
+function selAll(){filteredRows().forEach(r=>selSet.add(r.id));renderTbl();}
+function selNone(){selSet.clear();renderTbl();}
+function togAll(c){c?selAll():selNone();}
+function clearF(){['f-nm','f-kw'].forEach(i=>{const e=$(i);if(e)e.value='';});['f-pl','f-ty','f-co','f-vl'].forEach(i=>{const e=$(i);if(e)e.value='';});renderTbl();}
+function updateCntryF(){const s=$('f-co');if(!s)return;const cur=s.value;const cs=[...new Set(rows.map(r=>r.country).filter(Boolean))].sort();s.innerHTML='<option value="">全部国家</option>'+cs.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');s.value=cur;}
+function filteredRows(){
+  const fn=($('f-nm')?.value||'').toLowerCase(),fp=$('f-pl')?.value||'',ft=$('f-ty')?.value||'',fc=$('f-co')?.value||'',fv=$('f-vl')?.value||'',fk=($('f-kw')?.value||'').toLowerCase();
+  return rows.filter(r=>{
+    if(fn&&!((r.name||'').toLowerCase().includes(fn)||(r.company||'').toLowerCase().includes(fn)))return false;
+    if(fp&&r.platform!==fp)return false;if(ft&&r.type!==ft)return false;if(fc&&r.country!==fc)return false;
+    if(fv==='email_ok'&&r.ev!==true)return false;if(fv==='phone_ok'&&!r.pv)return false;
+    if(fv==='wa_ok'&&!r.wv)return false;if(fv==='hi'&&(r.cs||0)<80)return false;if(fv==='nv'&&r.vs==='done')return false;
+    if(fk&&![r.name,r.company,r.country,r.title,r.email,r.keyword||''].join(' ').toLowerCase().includes(fk))return false;
+    return true;
+  }).sort((a,b)=>{let av=sCol==='idx'?rows.indexOf(a):a[sCol]||'',bv=sCol==='idx'?rows.indexOf(b):b[sCol]||'';return String(av).localeCompare(String(bv))*sDir;});
+}
+function srtBy(col){sDir=sCol===col?-sDir:1;sCol=col;document.querySelectorAll('th').forEach(t=>t.classList.remove('asc','desc'));renderTbl();}
+const TL={brand:'品牌',factory:'工厂',agent:'代理'};const TC={brand:'tbrand',factory:'tfactory',agent:'tagent'};
+function renderTbl(){
+  const list=filteredRows();
+  $('emptyEl').style.display=list.length?'none':'block';
+  $('mainTbl').style.display=list.length?'table':'none';
+  $('fCnt').textContent=`${list.length} / ${rows.length}`;
+  $('selCnt').textContent=selSet.size?`已选 ${selSet.size}`:'';
+  const ca=$('chkAll');if(ca)ca.checked=list.length>0&&list.every(r=>selSet.has(r.id));
+  if(!list.length)return;
+  $('tbody').innerHTML=list.map((r,i)=>{
+    const pl=PC[r.platform]||PC.manual;
+    const plB=`<span style="display:inline-flex;align-items:center;gap:2px;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;background:${pl.bg};color:${pl.c};border:1px solid ${pl.c}33">${pl.i} ${pl.l}</span>`;
+    let vh='';
+    if(r.vs==='checking')vh=`<span class="vbg vchk">⏳</span>`;
+    else if(r.vs==='done'){
+      const ev=r.ev===true?`<span class="vbg vok">✅邮(${r.es})</span>`:`<span class="vbg vfail">❌邮(${r.es})</span>`;
+      const pv=r.pv?`<span class="vbg vok">📱(${r.ps})</span>`:`<span class="vbg vfail">❌(${r.ps})</span>`;
+      const wv=r.wv?`<span class="vbg vwa">💬(${r.ws})</span>`:`<span class="vbg" style="border:1px solid var(--bd);color:var(--tx3);font-family:var(--fm);font-size:8px;padding:1px 5px;border-radius:2px">—</span>`;
+      const s=r.cs;const sq=s!=null?`<div class="vscore ${s>=80?'vhi':s>=50?'vmd':'vlo'}">${s}分<div style="width:${s}%;height:2px;background:${s>=80?'var(--grn)':s>=50?'var(--amb)':'var(--red)'};border-radius:2px;margin-top:2px"></div></div>`:'';
+      vh=`<div class="vcell">${ev}${pv}${wv}${sq}</div>`;
+    }else vh=`<span class="vbg vpend" onclick="validateRow('${r.id}')">🔌验证</span>`;
+    const em=r.email||'—',ph=r.phone||'—',so=r.social||'—';
+    return`<tr class="${r.isNew&&i<8?'ri':''}">
+      <td><input type="checkbox" ${selSet.has(r.id)?'checked':''} onchange="selTog('${r.id}',this.checked)" style="cursor:pointer;accent-color:var(--neo)"></td>
+      <td style="color:var(--tx4);font-family:var(--fm);font-size:9px">${i+1}</td>
+      <td>${plB}</td>
+      <td style="font-weight:600;white-space:nowrap;font-size:12px">${esc(r.name||'—')}${r.isNew?'<span class="tnew">NEW</span>':''}${r.enriched?'<span style="font-size:9px;margin-left:2px">✨</span>':''}</td>
+      <td style="color:var(--tx2);font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.title||'')}">${esc(r.title||'—')}</td>
+      <td><span class="tag ${TC[r.type]||'tagent'}">${TL[r.type]||esc(r.type)||'—'}</span></td>
+      <td style="font-weight:500;font-size:12px">${esc(r.company||'—')}</td>
+      <td style="font-size:11px;color:var(--tx2)">${esc(r.country||'—')}</td>
+      <td class="ec" onclick="cp2('${esc2(em)}','邮箱')" title="${esc(r.er||'')}">${esc(em).slice(0,28)}</td>
+      <td class="pc2" onclick="cp2('${esc2(ph)}','电话')">${esc(ph)}</td>
+      <td class="sc2" onclick="cp2('${esc2(so)}','社媒')">${esc(so).slice(0,18)}</td>
+      <td>${vh}</td>
+      <td style="font-family:var(--fm);font-size:9px;color:var(--tx4);white-space:nowrap">${esc(r.addedDate||'—')}</td>
+      <td style="white-space:nowrap"><button class="srcbtn" onclick="enrichRow('${r.id}')">✨AI</button> <button class="delbtn" onclick="delRow('${r.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+function selTog(id,c){if(c)selSet.add(id);else selSet.delete(id);$('selCnt').textContent=selSet.size?`已选 ${selSet.size}`:'';const ca=$('chkAll');if(ca)ca.checked=filteredRows().every(r=>selSet.has(r.id));}
+function updateStats(){
+  const vd=rows.filter(r=>r.vs==='done'),tot=rows.length;
+  $('s0').textContent=tot;$('s1').textContent=todayCount;
+  $('s2').textContent=rows.filter(r=>r.type==='brand').length;$('s3').textContent=rows.filter(r=>r.type==='factory').length;$('s4').textContent=rows.filter(r=>r.type==='agent').length;
+  $('s5').textContent=vd.filter(r=>r.ev===true).length;$('s6').textContent=vd.filter(r=>r.pv).length;$('s7').textContent=vd.filter(r=>r.wv).length;$('s8').textContent=rows.filter(r=>r.social&&r.social!=='—').length;
+  const vr=tot>0?Math.round(vd.length/tot*100):0;$('s9').textContent=vr+'%';
+  const sc=vd.filter(r=>r.cs!=null);$('s10').textContent=sc.length?Math.round(sc.reduce((a,r)=>a+r.cs,0)/sc.length)+'分':'—';
+  $('b1').textContent=todayCount;$('b2').textContent=tot;$('b3').textContent=vr+'%';
+}
+
+// ══════════════════════════════════════════════════════
+// AI ASSISTANT
+// ══════════════════════════════════════════════════════
+let aiOpen=false,aiHist=[],aiLoading=false;
+const AI_SYS='你是NEXUS，专业跨境贸易AI助手。帮助分析采购线索、生成开发信、查询市场信息。回复简洁实用，中文为主，给出具体可执行建议。';
+function toggleAI(){aiOpen=!aiOpen;$('aiPanel').classList.toggle('open',aiOpen);if(aiOpen)$('aiFab').classList.remove('pls');else $('aiFab').classList.add('pls');}
+function aiQ(q){if(!aiOpen)toggleAI();$('aiInp').value=q;sendAI();}
+async function sendAI(){
+  if(aiLoading)return;const inp=$('aiInp'),msg=inp.value.trim();if(!msg)return;inp.value='';
+  addAIMsg('user',msg);aiHist.push({role:'user',content:msg});
+  $('aiSt').className='aist thinking';$('aiSt').textContent='● 思考中…';
+  aiLoading=true;$('aiSend').disabled=true;const tid='t'+Date.now();addTyping(tid);
+  try{
+    const msgs=[{role:'system',content:AI_SYS},...aiHist.slice(-10)];
+    const txt=await callAI(msgs,800,false);
+    rmMsg(tid);
+    if(txt){addAIMsg('bot',txt);aiHist.push({role:'assistant',content:txt});if(aiHist.length>20)aiHist=aiHist.slice(-20);}
+    else addAIMsg('bot','⚠️ 未获得响应，请重试');
+  }catch(e){rmMsg(tid);addAIMsg('bot',`⚠️ ${esc(e.message.slice(0,80))}`);}
+  $('aiSt').className='aist';$('aiSt').textContent=`● ${API_META[curAPI]?.name||'在线'}`;
+  aiLoading=false;$('aiSend').disabled=false;
+}
+function addAIMsg(role,text){const c=$('aiMsgs'),d=document.createElement('div');d.className=`aimsg ${role}`;d.innerHTML=`<div class="aiico">${role==='bot'?'🤖':'👤'}</div><div class="aibbl">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function addTyping(id){const c=$('aiMsgs'),d=document.createElement('div');d.className='aimsg bot';d.id=id;d.innerHTML=`<div class="aiico">🤖</div><div class="aibbl"><div class="dots"><span></span><span></span><span></span></div></div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function rmMsg(id){const e=document.getElementById(id);if(e)e.remove();}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function $(id){return document.getElementById(id);}
+function dk(r){const e=(r.email||'').trim().toLowerCase();return(e&&e!=='—')?e:(r.name+'|'+r.company).toLowerCase();}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2,7);}
+function today(){return new Date().toLocaleDateString('zh-CN');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function cp2(t,l){if(!t||t==='—'){showToast('无内容');return;}navigator.clipboard.writeText(t).then(()=>showToast(`✅ 已复制${l}`)).catch(()=>prompt('手动复制:',t));}
+function delRow(id){rows=rows.filter(r=>r.id!==id);selSet.delete(id);persist();updateCntryF();renderTbl();updateStats();}
+function doClear(){if(!rows.length){showToast('已空');return;}if(!confirm(`清空全部 ${rows.length} 条数据？`))return;rows=[];todayCount=0;selSet.clear();persist();updateCntryF();renderTbl();updateStats();showProg(false);showLog(false);showErr('');showToast('已清空');}
+function closeM(id){const e=$(id);if(e)e.classList.remove('show');}
+let logN=0;
+function log(t,m){const b=$('logB');if(!b)return;const ts=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});b.innerHTML+=`<div class="${t}">[${ts}] ${esc(m)}</div>`;b.scrollTop=b.scrollHeight;const lc=$('logCnt');if(lc)lc.textContent=++logN+'条';}
+function clearLog(){const b=$('logB');if(b)b.innerHTML='';logN=0;const lc=$('logCnt');if(lc)lc.textContent='0条';}
+function showLog(v){const w=$('logW');if(w)w.classList.toggle('show',v);}
+function showProg(v){const w=$('progW');if(w)w.classList.toggle('show',v);}
+function setProg(p,m){const f=$('progF');if(f)f.style.width=p+'%';const pm=$('progM');if(pm)pm.textContent=m;const pp=$('progP');if(pp)pp.textContent=p+'%';}
+function showErr(m){const e=$('errB');if(e){m?(e.textContent=m,e.classList.add('show')):e.classList.remove('show');}}
+let _tt;
+function showToast(m){const t=$('toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m){['setMod','addMod','legalMod','cpMod'].forEach(id=>closeM(id));}}));
+
+// ══════════════════════════════════════════════════════
+// BOOT SEQUENCE
+// ══════════════════════════════════════════════════════
+(async()=>{
+  await loadState();
+  await initApp();
+})();
+</script>
+</body>
+</html>
