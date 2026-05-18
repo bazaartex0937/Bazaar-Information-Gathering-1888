@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DataNexus PRO v10</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#020509;--c1:#060e18;--c2:#0a1624;--bd:#132034;--bd2:#1c3050;--tx:#cce4f8;--tx2:#7da8cc;--tx3:#3d6080;--tx4:#1a3050;--neo:#00d4ff;--grn:#00ffaa;--red:#ff3d6e;--amb:#ffcc00;--pur:#c47dff;--wa:#25d366;--ora:#ff6b2b;--f1:'Syne',sans-serif;--f2:'Space Grotesk',sans-serif;--fm:'JetBrains Mono',monospace}
+html{scroll-behavior:smooth}body{font-family:var(--f2);background:var(--bg);color:var(--tx);font-size:13px;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-thumb{background:#0090b8;border-radius:2px}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.02) 1px,transparent 1px);background-size:44px 44px}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+.orb1{width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(0,212,255,.05) 0%,transparent 70%)}
+.orb2{width:400px;height:400px;bottom:-100px;left:-50px;background:radial-gradient(circle,rgba(196,125,255,.04) 0%,transparent 70%)}
+.scanline{position:fixed;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--neo),transparent);z-index:999;pointer-events:none;animation:scn 10s ease-in-out infinite;opacity:.12}
+@keyframes scn{0%,100%{top:0}50%{top:100vh}}
+.z1{position:relative;z-index:1}
+.cor{position:fixed;z-index:1;pointer-events:none;width:14px;height:14px}
+.cor::before,.cor::after{content:'';position:absolute;background:rgba(0,212,255,.2)}
+.cor::before{width:1px;height:100%}.cor::after{width:100%;height:1px}
+.tl{top:6px;left:6px}.tr{top:6px;right:6px}.bl{bottom:6px;left:6px}.br{bottom:6px;right:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes glow{0%,100%{box-shadow:0 0 6px rgba(0,212,255,.2)}50%{box-shadow:0 0 20px rgba(0,212,255,.5)}}
+@keyframes shimmer{0%{background-position:-200%}100%{background-position:200%}}
+@keyframes rowin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes popin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* HEADER */
+.hd{position:sticky;top:0;z-index:80;height:50px;background:rgba(2,5,9,.95);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 14px;gap:8px;backdrop-filter:blur(20px)}
+.hd::after{content:'';position:absolute;bottom:-1px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,.25),transparent);pointer-events:none}
+.logo-v{font-family:var(--fm);font-size:9px;font-weight:700;padding:2px 6px;border:1px solid rgba(0,212,255,.35);border-radius:2px;color:var(--neo);background:rgba(0,212,255,.06);letter-spacing:2px;position:relative;overflow:hidden;animation:glow 3s infinite}
+.logo-v::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,212,255,.15),transparent);animation:shimmer 2s linear infinite;background-size:200%}
+.logo-n{font-family:var(--f1);font-size:15px;font-weight:800;letter-spacing:.5px}.logo-n em{color:var(--neo);font-style:normal}
+.hsep{width:1px;height:22px;background:var(--bd2);flex-shrink:0}
+.hstat{display:flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--tx3);padding:3px 8px;border:1px solid var(--bd);border-radius:3px;background:rgba(255,255,255,.01);animation:float 3.5s ease-in-out infinite}
+.hstat b{color:var(--neo)}.hstat.g b{color:var(--grn)}.hstat.a b{color:var(--amb)}
+.hd-r{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.hbtn{font-family:var(--fm);font-size:9px;padding:5px 9px;border:1px solid var(--bd2);background:rgba(255,255,255,.02);color:var(--tx2);border-radius:3px;cursor:pointer;transition:.15s;white-space:nowrap;letter-spacing:.3px}
+.hbtn:hover{border-color:var(--neo);color:var(--neo);background:rgba(0,212,255,.05)}
+.hbtn.red:hover{border-color:var(--red);color:var(--red)}
+
+/* API BAR */
+.api-bar{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:5px 14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;position:relative;z-index:2}
+.api-prov{display:flex;align-items:center;gap:4px;padding:3px 9px;border:1px solid var(--bd);border-radius:3px;background:rgba(255,255,255,.01);cursor:pointer;transition:.2s;user-select:none;font-family:var(--fm);font-size:9px;font-weight:600;color:var(--tx3)}
+.api-prov:hover{border-color:var(--bd2)}.api-prov.active{border-color:rgba(0,255,170,.3);background:rgba(0,255,170,.04);color:var(--grn)}
+.api-prov.err{border-color:rgba(255,61,110,.2);color:var(--red)}.api-prov.testing{border-color:rgba(255,204,0,.2);color:var(--amb)}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:.3s;background:var(--tx4)}
+.api-prov.active .pdot{background:var(--grn);box-shadow:0 0 6px var(--grn)}
+.api-prov.err .pdot{background:var(--red)}.api-prov.testing .pdot{background:var(--amb);animation:blink .5s infinite}
+.pbadge{font-size:7px;padding:1px 3px;border-radius:2px;margin-left:1px;font-family:var(--fm)}
+.pbfree{background:rgba(0,255,170,.07);color:var(--grn);border:1px solid rgba(0,255,170,.2)}
+.pbkey{background:rgba(0,212,255,.07);color:var(--neo);border:1px solid rgba(0,212,255,.2)}
+.pbno{background:rgba(0,0,0,.1);color:var(--tx4);border:1px solid var(--bd)}
+.pbfast{background:rgba(255,107,43,.1);color:var(--ora);border:1px solid rgba(255,107,43,.25)}
+.api-info{margin-left:auto;font-family:var(--fm);font-size:9px;color:var(--tx4);display:flex;align-items:center;gap:6px}
+.api-info b{color:var(--neo)}.api-info .lat{color:var(--grn)}
+.sm{font-family:var(--fm);font-size:9px;padding:3px 8px;border:1px solid var(--bd);background:none;color:var(--tx3);border-radius:2px;cursor:pointer;transition:.15s}
+.sm:hover{border-color:var(--neo);color:var(--neo)}.sm.r:hover{border-color:var(--red);color:var(--red)}
+
+/* CLOCK */
+.clkbar{background:rgba(3,7,13,.96);border-bottom:1px solid var(--bd);display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;position:relative;z-index:2}
+.clkbar::-webkit-scrollbar{height:0}
+.clkitem{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 12px;border-right:1px solid var(--bd);min-width:82px;flex-shrink:0;cursor:pointer;transition:.15s;user-select:none}
+.clkitem:hover{background:rgba(0,212,255,.025)}
+.clkflag{font-size:11px;line-height:1.2}.clkcity{font-family:var(--fm);font-size:7px;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase}
+.clktime{font-family:var(--fm);font-size:14px;font-weight:700;color:var(--neo);letter-spacing:1.5px;line-height:1}
+.clkdate{font-family:var(--fm);font-size:7px;color:var(--tx4)}
+.clkadd{display:flex;align-items:center;justify-content:center;padding:0 12px;cursor:pointer;color:var(--tx4);font-size:18px;transition:.2s;flex-shrink:0;position:relative}
+.clkadd:hover{color:var(--neo)}
+.tzdd{position:absolute;top:calc(100% + 2px);left:0;background:var(--c1);border:1px solid var(--bd2);border-radius:4px;min-width:180px;max-height:220px;overflow-y:auto;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.8)}
+.tzopt{padding:7px 12px;cursor:pointer;font-size:11px;color:var(--tx2);transition:.1s;font-family:var(--f2)}
+.tzopt:hover{background:rgba(0,212,255,.08);color:var(--neo)}
+.tzinp{background:var(--c2);border:none;border-bottom:1px solid var(--bd2);color:var(--tx);padding:6px 10px;font-size:11px;width:100%;outline:none;font-family:var(--f2)}
+
+/* SEARCH PANEL */
+.sp{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:9px 14px;display:flex;flex-direction:column;gap:7px;z-index:2;position:relative}
+.sp-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sp-lbl{font-family:var(--fm);font-size:8px;font-weight:600;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;min-width:34px}
+.kww{flex:1;min-width:160px;position:relative}
+.kww input{width:100%;background:rgba(0,212,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:7px 28px 7px 10px;font-size:12px;font-family:var(--f2);outline:none;transition:.2s}
+.kww input:focus{border-color:var(--neo);box-shadow:0 0 0 2px rgba(0,212,255,.06)}
+.kww input::placeholder{color:var(--tx4)}
+.kwx{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;line-height:1}
+.kwx:hover{color:var(--tx)}
+.modeg{display:flex;border:1px solid var(--bd2);border-radius:3px;overflow:hidden}
+.mb{padding:6px 11px;font-family:var(--fm);font-size:9px;font-weight:700;border:none;cursor:pointer;background:rgba(255,255,255,.02);color:var(--tx3);transition:.15s;letter-spacing:.5px}
+.mb.on{background:rgba(0,212,255,.12);color:var(--neo)}
+.sel{background:rgba(255,255,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:5px 8px;font-size:11px;font-family:var(--f2);outline:none;cursor:pointer;transition:.15s}
+.sel:focus{border-color:var(--neo)}
+.kwtags{display:flex;flex-wrap:wrap;gap:3px}
+.kwtag{display:inline-flex;align-items:center;gap:3px;border-radius:2px;border:1px solid;padding:2px 7px;font-size:10px;font-family:var(--fm);animation:popin .2s ease}
+.kwtag .x{cursor:pointer;opacity:.4;font-size:11px}.kwtag .x:hover{opacity:1}
+.kwtag.precise{border-color:rgba(0,212,255,.4);color:var(--neo);background:rgba(0,212,255,.05)}
+.kwtag.broad{border-color:rgba(196,125,255,.4);color:var(--pur);background:rgba(196,125,255,.05)}
+
+/* REGION PANEL */
+.reg-panel{background:rgba(4,10,16,.98);border-bottom:1px solid var(--bd);padding:6px 14px;position:relative;z-index:2}
+.reg-tabs{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:5px}
+.reg-tab{font-family:var(--fm);font-size:8px;font-weight:700;padding:3px 8px;border:1px solid var(--bd);border-radius:2px;cursor:pointer;color:var(--tx3);background:rgba(255,255,255,.01);transition:.15s;white-space:nowrap}
+.reg-tab.on{border-color:rgba(0,212,255,.4);color:var(--neo);background:rgba(0,212,255,.07)}
+.reg-tab:hover:not(.on){border-color:var(--bd2);color:var(--tx2)}
+.country-grid{display:none;flex-wrap:wrap;gap:2px;padding:4px 0 2px}
+.country-grid.show{display:flex}
+.ctry-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--fm);font-size:9px;padding:2px 6px;border:1px solid var(--bd);border-radius:2px;cursor:pointer;color:var(--tx3);background:rgba(255,255,255,.01);transition:.12s;user-select:none}
+.ctry-chip.on{border-color:rgba(0,212,255,.35);color:var(--neo);background:rgba(0,212,255,.05)}
+.ctry-chip:hover:not(.on){border-color:var(--bd2);color:var(--tx2)}
+.reg-actions{display:flex;gap:5px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.reg-sel-lbl{font-family:var(--fm);font-size:8px;color:var(--tx3)}
+.reg-sel-lbl b{color:var(--neo)}
+
+/* PLATFORMS */
+.platbar,.browbar{background:rgba(6,14,24,.98);border-bottom:1px solid var(--bd);padding:5px 14px;display:flex;gap:3px;flex-wrap:wrap;align-items:center;z-index:1;position:relative}
+.barlbl{font-family:var(--fm);font-size:7px;font-weight:700;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-right:2px;white-space:nowrap}
+.ppill,.bchip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:2px;border:1px solid var(--bd);font-family:var(--fm);font-size:9px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.01);color:var(--tx3);transition:.12s;user-select:none}
+.ppill.on{border-color:rgba(0,212,255,.22);color:var(--tx);background:rgba(0,212,255,.035)}
+.bchip.on{border-color:rgba(0,255,170,.2);color:var(--grn);background:rgba(0,255,170,.03)}
+.bchip.active{border-color:var(--amb);color:var(--amb);background:rgba(255,204,0,.07);animation:blink .4s infinite}
+.bsec{display:flex;gap:2px;align-items:center;padding:1px 5px;border-left:1px solid rgba(0,212,255,.08);margin-left:2px}
+.breg{font-family:var(--fm);font-size:7px;font-weight:700;color:rgba(0,212,255,.45);letter-spacing:.5px;white-space:nowrap;align-self:center;margin-right:1px}
+
+/* STATS */
+.stats{display:flex;gap:4px;padding:7px 14px;flex-wrap:wrap;z-index:1;position:relative;overflow-x:auto}
+.stat{background:rgba(6,14,24,.9);border:1px solid var(--bd);border-radius:3px;padding:6px 10px;min-width:66px;flex:1;cursor:default;transition:.2s;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--a,var(--neo));opacity:.22}
+.stat:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.sv{font-family:var(--fm);font-size:19px;font-weight:700;line-height:1}
+.sl{font-family:var(--fm);font-size:8px;color:var(--tx3);margin-top:1px}
+
+/* PROGRESS + LOG */
+.progw{margin:0 14px 4px;display:none}.progw.show{display:block}
+.progbar{height:2px;background:var(--bd);border-radius:10px;overflow:hidden}
+.progfill{height:100%;background:linear-gradient(90deg,var(--neo),var(--pur));border-radius:10px;transition:width .35s;position:relative}
+.progfill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 1.8s linear infinite;background-size:200%}
+.progtxt{display:flex;justify-content:space-between;font-family:var(--fm);font-size:9px;color:var(--tx3);margin-top:3px}
+.logw{margin:0 14px 4px;display:none}.logw.show{display:block}
+.logh{background:rgba(2,5,9,.9);padding:4px 10px;border-radius:3px 3px 0 0;font-family:var(--fm);font-size:8px;display:flex;justify-content:space-between;border:1px solid var(--bd);border-bottom:none;color:var(--tx3)}
+.logb{background:rgba(2,5,9,.9);font-family:var(--fm);font-size:10px;padding:6px 10px;max-height:90px;overflow-y:auto;border:1px solid var(--bd);border-top:none;border-radius:0 0 3px 3px;line-height:1.7}
+.lo{color:var(--neo)}.le{color:var(--red)}.ls{color:var(--grn)}.lw{color:var(--amb)}.lp{color:var(--pur)}.lb{color:#5e81f4}
+.errb{margin:4px 14px;background:rgba(255,61,110,.06);border:1px solid rgba(255,61,110,.18);border-radius:3px;padding:7px 12px;font-size:12px;color:var(--red);display:none}.errb.show{display:block}
+
+/* FILTER */
+.tf{padding:5px 14px;background:rgba(6,14,24,.98);border-bottom:1px solid var(--bd);display:flex;gap:4px;flex-wrap:wrap;align-items:center;position:sticky;top:50px;z-index:60;backdrop-filter:blur(12px)}
+.tf input,.tf select{background:rgba(255,255,255,.02);border:1px solid var(--bd);color:var(--tx);border-radius:3px;padding:4px 7px;font-size:11px;font-family:var(--f2);outline:none;transition:.15s}
+.tf input:focus,.tf select:focus{border-color:var(--neo)}
+.tf input::placeholder{color:var(--tx4)}.tf input{flex:1;min-width:80px}
+.flbl{font-family:var(--fm);font-size:7px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
+.fclear{font-family:var(--fm);font-size:9px;padding:3px 7px;border:1px solid var(--bd);background:none;color:var(--tx3);cursor:pointer;border-radius:2px;transition:.15s}
+.fclear:hover{border-color:var(--red);color:var(--red)}
+.fcnt{font-family:var(--fm);font-size:9px;color:var(--tx3);margin-left:auto;white-space:nowrap}
+
+/* TABLE */
+.tblw{padding:0 14px 160px;overflow-x:auto;z-index:1;position:relative}
+table{width:100%;border-collapse:collapse;background:rgba(6,14,24,.9);border-radius:4px;border:1px solid var(--bd);overflow:hidden;min-width:1080px}
+th{background:rgba(2,5,9,.8);padding:6px 9px;text-align:left;font-family:var(--fm);font-size:8px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--bd);white-space:nowrap;cursor:pointer;user-select:none;transition:.15s}
+th:hover{color:var(--neo)}
+.si{opacity:.2;font-size:8px;margin-left:2px}
+th.asc .si::after{content:'▲';opacity:1;color:var(--neo)}th.desc .si::after{content:'▼';opacity:1;color:var(--neo)}
+td{padding:5px 9px;border-bottom:1px solid rgba(19,32,52,.5);font-size:12px;vertical-align:middle;color:var(--tx)}
+tr:last-child td{border-bottom:none}tr{transition:.1s}tr:hover td{background:rgba(0,212,255,.015)}
+tr.ri{animation:rowin .25s ease}
+.tag{display:inline-block;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;letter-spacing:.4px}
+.tbrand{background:rgba(255,204,0,.07);color:var(--amb);border:1px solid rgba(255,204,0,.18)}
+.tfact{background:rgba(0,255,170,.05);color:var(--grn);border:1px solid rgba(0,255,170,.15)}
+.tagent{background:rgba(196,125,255,.07);color:var(--pur);border:1px solid rgba(196,125,255,.18)}
+.tnew{background:rgba(0,212,255,.16);color:var(--neo);font-size:7px;margin-left:3px;padding:1px 4px;border-radius:2px;font-weight:900;font-family:var(--fm)}
+.ec{color:var(--neo);cursor:pointer;font-family:var(--fm);font-size:11px}.ec:hover{text-decoration:underline}
+.pc2{color:var(--grn);cursor:pointer;font-family:var(--fm);font-size:11px}.pc2:hover{text-decoration:underline}
+.sc2{color:var(--pur);cursor:pointer;font-size:11px}.sc2:hover{text-decoration:underline}
+.delbtn{color:var(--red);cursor:pointer;opacity:.12;font-size:14px;background:none;border:none;padding:0 2px;line-height:1;transition:.15s}.delbtn:hover{opacity:1}
+.srcbtn{font-family:var(--fm);font-size:8px;padding:1px 5px;border:1px solid var(--bd2);border-radius:2px;background:none;color:var(--tx3);cursor:pointer;transition:.15s}
+.srcbtn:hover{border-color:var(--neo);color:var(--neo)}
+
+/* VALIDATION */
+.vbg{display:inline-flex;align-items:center;gap:2px;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;white-space:nowrap;cursor:default}
+.vok{background:rgba(0,255,170,.05);color:var(--grn);border:1px solid rgba(0,255,170,.15)}
+.vfail{background:rgba(255,61,110,.05);color:var(--red);border:1px solid rgba(255,61,110,.12)}
+.vpend{border:1px solid var(--bd);color:var(--tx3);cursor:pointer}.vpend:hover{border-color:var(--neo);color:var(--neo)}
+.vchk{background:rgba(0,212,255,.05);color:var(--neo);border:1px solid rgba(0,212,255,.2);animation:pulse .7s infinite}
+.vwa{background:rgba(37,211,102,.07);color:var(--wa);border:1px solid rgba(37,211,102,.15)}
+.vcell{display:flex;flex-direction:column;gap:2px;min-width:90px}
+.vscore{font-family:var(--fm);font-size:11px;font-weight:700}
+.vhi{color:var(--grn)}.vmd{color:var(--amb)}.vlo{color:var(--red)}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--tx3);z-index:1;position:relative}
+.empty h3{font-family:var(--f1);font-size:20px;letter-spacing:4px;color:var(--tx);margin:.7rem 0 .4rem}
+.empty p{font-size:12px;line-height:2}
+
+/* ENRICH PANEL */
+.ep{position:fixed;top:50px;right:0;width:340px;height:calc(100vh - 50px);background:rgba(4,10,16,.98);border-left:1px solid var(--bd2);display:flex;flex-direction:column;z-index:70;transform:translateX(100%);transition:.3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px)}
+.ep.open{transform:translateX(0)}
+.eph{padding:11px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.eph h3{font-family:var(--f1);font-size:13px;font-weight:700;color:var(--tx)}.eph h3 span{color:var(--neo)}
+.epb{flex:1;overflow-y:auto;padding:12px}
+.epst{font-family:var(--fm);font-size:8px;font-weight:700;color:var(--neo);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid var(--bd)}
+.epkv{display:flex;gap:5px;margin-bottom:4px;align-items:flex-start}
+.epk{font-family:var(--fm);font-size:9px;color:var(--tx3);min-width:65px;flex-shrink:0;padding-top:1px}
+.epv{font-size:11px;color:var(--tx);word-break:break-all}
+.epv a{color:var(--neo);text-decoration:none}.epv a:hover{text-decoration:underline}
+.epa{display:flex;gap:3px;flex-wrap:wrap;margin-top:7px}
+.epbtn{font-family:var(--fm);font-size:9px;padding:4px 8px;border:1px solid var(--bd2);background:rgba(255,255,255,.02);color:var(--tx2);border-radius:2px;cursor:pointer;transition:.15s}
+.epbtn:hover{border-color:var(--neo);color:var(--neo)}
+.epbadge{display:inline-flex;align-items:center;gap:2px;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px}
+
+/* AI PANEL - ENHANCED v10 */
+.aifab{position:fixed;bottom:20px;right:20px;z-index:500;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#005580,#6d28d9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:.3s;box-shadow:0 0 0 0 rgba(0,212,255,.35)}
+.aifab:hover{transform:scale(1.1)}
+.aifab.pls{animation:fabp 2.5s ease-in-out infinite}
+@keyframes fabp{0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,.3)}50%{box-shadow:0 0 0 14px rgba(0,212,255,0)}}
+.aipanel{position:fixed;bottom:84px;right:20px;width:420px;max-height:640px;background:rgba(4,10,16,.97);border:1px solid var(--bd2);border-radius:6px;display:flex;flex-direction:column;z-index:500;box-shadow:0 20px 50px rgba(0,0,0,.8);transform-origin:bottom right;transform:scale(0);opacity:0;transition:.2s cubic-bezier(.34,1.56,.64,1);pointer-events:none;backdrop-filter:blur(20px)}
+.aipanel.open{transform:scale(1);opacity:1;pointer-events:all}
+.aihd{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.aiav{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#005580,#6d28d9);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;animation:glow 3s infinite}
+.ainm{font-family:var(--f1);font-size:12px;font-weight:700;color:var(--tx);letter-spacing:.3px}
+.aist{font-family:var(--fm);font-size:8px;color:var(--grn);display:flex;align-items:center;gap:4px}
+.aist.thinking{color:var(--amb)}
+.aist.searching{color:var(--neo)}
+.aist-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 1.5s infinite}
+.aix{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;line-height:1;margin-left:auto;transition:.15s;padding:3px}.aix:hover{color:var(--tx)}
+
+/* AI Model Selector */
+.ai-model-bar{padding:5px 9px;border-bottom:1px solid var(--bd);display:flex;gap:4px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.ai-model-select{background:rgba(255,255,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:3px 6px;font-size:10px;font-family:var(--fm);outline:none;cursor:pointer;transition:.15s;flex:1;min-width:120px}
+.ai-model-select:focus{border-color:var(--neo)}
+.ai-mode-btn{font-family:var(--fm);font-size:8px;padding:3px 7px;border:1px solid var(--bd);border-radius:2px;background:rgba(255,255,255,.01);color:var(--tx3);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.ai-mode-btn.on{border-color:rgba(0,212,255,.35);color:var(--neo);background:rgba(0,212,255,.07)}
+.ai-mode-btn:hover:not(.on){border-color:var(--bd2);color:var(--tx2)}
+.ai-web-badge{font-size:7px;padding:1px 3px;border-radius:2px;background:rgba(0,212,255,.1);color:var(--neo);border:1px solid rgba(0,212,255,.2)}
+.ai-fast-badge{font-size:7px;padding:1px 3px;border-radius:2px;background:rgba(255,107,43,.1);color:var(--ora);border:1px solid rgba(255,107,43,.25)}
+
+.aimsgs{flex:1;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:5px;min-height:160px}
+.aimsg{display:flex;gap:5px;animation:fadeIn .25s ease}
+.aimsg.user{flex-direction:row-reverse}
+.aibbl{max-width:92%;padding:9px 12px;font-size:11.5px;line-height:1.75;font-family:var(--f2);border-radius:4px;word-break:break-word}
+.aimsg.bot .aibbl{background:rgba(255,255,255,.025);border:1px solid var(--bd);color:var(--tx)}
+.aimsg.user .aibbl{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);color:var(--neo)}
+/* Markdown-like formatting in AI messages */
+.aimsg.bot .aibbl b,.aimsg.bot .aibbl strong{color:var(--amb);font-weight:700}
+.aimsg.bot .aibbl .ai-h{display:block;font-family:var(--fm);font-size:9px;font-weight:700;color:var(--neo);text-transform:uppercase;letter-spacing:.6px;margin:8px 0 4px;padding-bottom:2px;border-bottom:1px solid var(--bd)}
+.aimsg.bot .aibbl .ai-li{display:flex;gap:5px;margin:2px 0;padding-left:4px}
+.aimsg.bot .aibbl .ai-li::before{content:'▹';color:var(--neo);flex-shrink:0;font-size:10px;margin-top:1px}
+.aimsg.bot .aibbl .ai-code{font-family:var(--fm);font-size:10px;background:rgba(0,0,0,.4);border:1px solid var(--bd);border-radius:2px;padding:2px 5px;color:var(--grn)}
+.aibbl .src-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--fm);font-size:8px;padding:1px 6px;border-radius:2px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.18);color:var(--neo);margin:2px 2px 0 0;cursor:pointer}
+.aibbl .src-chip:hover{background:rgba(0,212,255,.12)}
+.aiico{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:2px}
+.aimsg.bot .aiico{background:linear-gradient(135deg,#005580,#6d28d9)}
+.aimsg.user .aiico{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);color:var(--neo)}
+.aiqbtns{display:flex;flex-wrap:wrap;gap:3px;padding:0 9px 5px}
+.aiqbtn{font-size:9px;padding:3px 8px;border-radius:20px;border:1px solid var(--bd);background:rgba(255,255,255,.015);color:var(--tx3);cursor:pointer;font-family:var(--f2);transition:.15s}
+.aiqbtn:hover{border-color:var(--neo);color:var(--neo);background:rgba(0,212,255,.04)}
+.aifooter{padding:7px 9px;border-top:1px solid var(--bd);display:flex;gap:4px;flex-shrink:0;align-items:flex-end}
+.aiinp{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--bd2);color:var(--tx);border-radius:3px;padding:7px 9px;font-size:11px;font-family:var(--f2);outline:none;transition:.15s;resize:none;min-height:34px;max-height:80px;overflow-y:auto}
+.aiinp:focus{border-color:var(--neo)}.aiinp::placeholder{color:var(--tx4)}
+.aisend{background:linear-gradient(135deg,#005580,#6d28d9);border:none;color:#fff;border-radius:3px;padding:7px 11px;cursor:pointer;font-size:13px;transition:.2s;flex-shrink:0;align-self:flex-end}
+.aisend:hover{filter:brightness(1.2)}.aisend:disabled{opacity:.35;cursor:not-allowed}
+.dots{display:flex;gap:3px;padding:3px 2px;align-items:center}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--neo);animation:dotb .9s infinite}
+.dots span:nth-child(2){animation-delay:.18s}.dots span:nth-child(3){animation-delay:.36s}
+@keyframes dotb{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-6px);opacity:1}}
+.ai-latency{font-family:var(--fm);font-size:8px;color:var(--tx4);padding:2px 8px;text-align:right}
+.ai-stream-cursor{display:inline-block;width:2px;height:12px;background:var(--neo);margin-left:1px;animation:blink .5s infinite;vertical-align:middle}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:3px;font-family:var(--fm);font-size:10px;font-weight:700;border:none;cursor:pointer;transition:.2s;white-space:nowrap;letter-spacing:.4px;position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);transform:translateX(-100%);transition:.3s}
+.btn:hover::after{transform:translateX(100%)}
+.btnneon{background:rgba(0,212,255,.1);color:var(--neo);border:1px solid rgba(0,212,255,.3)}.btnneon:hover{box-shadow:0 0 14px rgba(0,212,255,.2)}
+.btnblue{background:linear-gradient(135deg,#0090b8,#035e80);color:#fff;box-shadow:0 4px 16px rgba(0,212,255,.2)}
+.btng{background:rgba(255,255,255,.03);color:var(--tx);border:1px solid var(--bd2)}
+.btnr{background:rgba(255,61,110,.06);color:var(--red);border:1px solid rgba(255,61,110,.18)}
+.btngrn{background:rgba(0,255,170,.05);color:var(--grn);border:1px solid rgba(0,255,170,.18)}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal.show{display:flex;animation:popin .2s ease}
+.mpanel{background:var(--c1);border:1px solid var(--bd2);border-radius:5px;width:90%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.8)}
+.mh{background:rgba(2,5,9,.6);color:var(--tx);padding:11px 14px;border-radius:5px 5px 0 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd)}
+.mh h3{font-family:var(--f1);font-size:13px;font-weight:700}.mh h3 em{color:var(--neo);font-style:normal}
+.xbtn{background:none;border:none;color:var(--tx3);font-size:17px;cursor:pointer;transition:.15s}.xbtn:hover{color:var(--tx)}
+.mc{flex:1;overflow-y:auto;padding:14px}.mf{padding:10px 14px;border-top:1px solid var(--bd);display:flex;gap:6px}
+.mc label{display:block;font-family:var(--fm);font-size:8px;color:var(--tx3);font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.mc input,.mc select,.mc textarea{width:100%;padding:7px 10px;background:rgba(255,255,255,.02);border:1px solid var(--bd2);border-radius:3px;font-size:12px;font-family:var(--f2);outline:none;color:var(--tx);margin-bottom:10px;transition:.15s}
+.mc input:focus,.mc select:focus,.mc textarea:focus{border-color:var(--neo)}
+.mc textarea{resize:vertical;min-height:55px}
+.ibox{background:rgba(255,255,255,.015);border:1px solid var(--bd);border-radius:3px;padding:9px;font-size:11px;color:var(--tx3);line-height:1.8;margin-bottom:10px}
+.ibox b{color:var(--tx)}.ibox .free{color:var(--grn)}.ibox .key{color:var(--neo)}.ibox .fast{color:var(--ora)}
+.secttl{font-family:var(--fm);font-size:8px;font-weight:700;color:var(--neo);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:5px;padding-top:10px;border-top:1px solid var(--bd)}
+.api-status-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--bd);border-radius:3px;margin-bottom:6px;background:rgba(255,255,255,.01)}
+.asr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.asr-name{font-family:var(--fm);font-size:10px;font-weight:700;color:var(--tx);min-width:90px}
+.asr-status{font-family:var(--fm);font-size:9px;flex:1}
+.asr-lat{font-family:var(--fm);font-size:9px;color:var(--grn);margin-left:auto;min-width:40px;text-align:right}
+.asr-test{font-family:var(--fm);font-size:8px;padding:2px 7px;border:1px solid var(--bd2);border-radius:2px;background:none;color:var(--tx3);cursor:pointer;transition:.15s;margin-left:4px}
+.asr-test:hover{border-color:var(--neo);color:var(--neo)}
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(6,14,24,.97);border:1px solid var(--bd2);color:var(--tx);padding:7px 16px;border-radius:4px;font-size:12px;z-index:9999;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.7);font-family:var(--f2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:768px){.aipanel{width:calc(100vw - 12px);right:6px}.ep{width:280px}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grid"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="scanline"></div>
+<div class="cor tl"></div><div class="cor tr"></div><div class="cor bl"></div><div class="cor br"></div>
+
+<!-- HEADER -->
+<div class="hd z1">
+  <span class="logo-v">v10</span>
+  <span class="logo-n">DATA<em>NEXUS</em></span>
+  <div class="hsep"></div>
+  <div class="hstat">今日 <b id="b1">0</b></div>
+  <div class="hstat g">总计 <b id="b2">0</b></div>
+  <div class="hstat a">验证率 <b id="b3">0%</b></div>
+  <div class="hd-r">
+    <button class="hbtn" onclick="validateAll()">✅ 批量验证</button>
+    <button class="hbtn" onclick="enrichSel()">✨ AI增强</button>
+    <button class="hbtn" onclick="openAdd()">＋ 添加</button>
+    <button class="hbtn" onclick="exportCSV()">↓ CSV</button>
+    <button class="hbtn" onclick="exportJSON()">↓ JSON</button>
+    <button class="hbtn" onclick="openSettings()">⚙ 设置</button>
+    <button class="hbtn red" onclick="doClear()">🗑 清空</button>
+  </div>
+</div>
+
+<!-- API BAR -->
+<div class="api-bar z1">
+  <span class="barlbl">API引擎：</span>
+  <div id="apiProvs" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"></div>
+  <span style="font-family:var(--fm);font-size:9px;color:var(--tx4);margin:0 3px">→ 自动路由</span>
+  <button class="sm" onclick="testAllAPIs()">🔌 全测</button>
+  <button class="sm" onclick="addSample()">📦 示例</button>
+  <button class="sm r" id="stopBtn" onclick="shouldStop=true" style="display:none">⏹ 停止</button>
+  <div class="api-info">当前: <b id="curApi">检测中…</b> · <span class="lat" id="curLat">—</span>ms</div>
+</div>
+
+<!-- CLOCK -->
+<div class="clkbar z1" id="clkBar">
+  <div class="clkadd" onclick="toggleTZ()" title="添加时区">＋
+    <div class="tzdd" id="tzDD" style="display:none">
+      <input class="tzinp" id="tzQ" placeholder="搜索城市…" oninput="filterTZ()">
+      <div id="tzList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="sp z1">
+  <div class="sp-row">
+    <span class="sp-lbl">关键词</span>
+    <div class="kww"><input id="kwI" placeholder="输入关键词，回车或逗号添加…" onkeydown="kwKD(event)"><button class="kwx" onclick="$('kwI').value=''">×</button></div>
+    <div class="modeg"><button class="mb on" data-m="precise" onclick="setMode('precise')">🎯精准</button><button class="mb" data-m="broad" onclick="setMode('broad')">🌐广泛</button></div>
+    <select class="sel" id="ftype"><option value="all">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+    <select class="sel" id="fcnt"><option value="10">10条</option><option value="20" selected>20条</option><option value="50">50条</option><option value="100">100条</option><option value="999">无限</option></select>
+    <button class="btn btnblue" id="runBtn" onclick="startCrawl()">▶ 开始采集</button>
+  </div>
+  <div class="kwtags" id="kwTags" style="display:none"></div>
+</div>
+
+<!-- REGION PANEL -->
+<div class="reg-panel z1">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+    <span class="barlbl">🌍 精准地区筛选：</span>
+    <div class="reg-tabs" id="regTabs"></div>
+  </div>
+  <div class="country-grid" id="countryGrid"></div>
+  <div class="reg-actions" id="regActions" style="display:none">
+    <button class="sm" onclick="selAllCountries()">全选</button>
+    <button class="sm" onclick="selNoCountries()">全不选</button>
+    <span class="reg-sel-lbl">已选: <b id="selCtryCnt">0</b> 国家</span>
+    <span style="font-family:var(--fm);font-size:8px;color:var(--tx4);margin-left:4px" id="selCtryList"></span>
+  </div>
+</div>
+
+<!-- PLATFORMS -->
+<div class="platbar z1">
+  <span class="barlbl">平台：</span>
+  <div class="ppill on" data-p="google"><span class="pdot" style="background:#4285f4"></span>Google</div>
+  <div class="ppill on" data-p="linkedin"><span class="pdot" style="background:#0a66c2"></span>LinkedIn</div>
+  <div class="ppill on" data-p="facebook"><span class="pdot" style="background:#1877f2"></span>Facebook</div>
+  <div class="ppill on" data-p="instagram"><span class="pdot" style="background:#e1306c"></span>Instagram</div>
+  <div class="ppill on" data-p="twitter"><span class="pdot" style="background:#1da1f2"></span>X/Twitter</div>
+  <div class="ppill on" data-p="tiktok"><span class="pdot" style="background:#69c9d0"></span>TikTok</div>
+  <div class="ppill on" data-p="vk"><span class="pdot" style="background:#2787f5"></span>VK</div>
+  <div class="ppill on" data-p="whatsapp"><span class="pdot" style="background:#25d366"></span>WhatsApp</div>
+  <div class="ppill on" data-p="xhs"><span class="pdot" style="background:#ff2442"></span>小红书</div>
+  <div class="ppill on" data-p="alibaba"><span class="pdot" style="background:#ff6a00"></span>阿里</div>
+</div>
+
+<!-- NODES -->
+<div class="browbar z1">
+  <span class="barlbl">节点：</span>
+  <div class="bsec"><span class="breg">北美</span>
+    <div class="bchip on" data-b="us_ny">🇺🇸NY</div><div class="bchip on" data-b="us_la">🇺🇸LA</div><div class="bchip on" data-b="ca">🇨🇦CA</div><div class="bchip on" data-b="mx">🇲🇽MX</div>
+  </div>
+  <div class="bsec"><span class="breg">西欧</span>
+    <div class="bchip on" data-b="uk">🇬🇧UK</div><div class="bchip on" data-b="de">🇩🇪DE</div><div class="bchip on" data-b="fr">🇫🇷FR</div><div class="bchip on" data-b="it">🇮🇹IT</div><div class="bchip on" data-b="es">🇪🇸ES</div><div class="bchip on" data-b="nl">🇳🇱NL</div><div class="bchip on" data-b="ch">🇨🇭CH</div><div class="bchip on" data-b="at">🇦🇹AT</div><div class="bchip on" data-b="pt">🇵🇹PT</div><div class="bchip on" data-b="be">🇧🇪BE</div>
+  </div>
+  <div class="bsec"><span class="breg">北/东欧</span>
+    <div class="bchip on" data-b="se">🇸🇪SE</div><div class="bchip on" data-b="no">🇳🇴NO</div><div class="bchip on" data-b="dk">🇩🇰DK</div><div class="bchip on" data-b="fi">🇫🇮FI</div><div class="bchip on" data-b="pl">🇵🇱PL</div><div class="bchip on" data-b="tr">🇹🇷TR</div><div class="bchip on" data-b="ro">🇷🇴RO</div>
+  </div>
+  <div class="bsec"><span class="breg">东亚</span>
+    <div class="bchip on" data-b="jp">🇯🇵JP</div><div class="bchip on" data-b="kr">🇰🇷KR</div><div class="bchip on" data-b="tw">🇹🇼TW</div><div class="bchip on" data-b="hk">🇭🇰HK</div>
+  </div>
+  <div class="bsec"><span class="breg">东南/南亚</span>
+    <div class="bchip on" data-b="sg">🇸🇬SG</div><div class="bchip on" data-b="in">🇮🇳IN</div><div class="bchip on" data-b="vn">🇻🇳VN</div><div class="bchip on" data-b="th">🇹🇭TH</div><div class="bchip on" data-b="my">🇲🇾MY</div><div class="bchip on" data-b="id">🇮🇩ID</div>
+  </div>
+  <div class="bsec"><span class="breg">中东</span>
+    <div class="bchip on" data-b="ae">🇦🇪AE</div><div class="bchip on" data-b="sa">🇸🇦SA</div><div class="bchip on" data-b="qa">🇶🇦QA</div><div class="bchip on" data-b="il">🇮🇱IL</div>
+  </div>
+  <div class="bsec"><span class="breg">CIS</span>
+    <div class="bchip on" data-b="ru">🇷🇺RU</div><div class="bchip on" data-b="kz">🇰🇿KZ</div><div class="bchip on" data-b="ua">🇺🇦UA</div>
+  </div>
+  <div class="bsec"><span class="breg">其他</span>
+    <div class="bchip on" data-b="au">🇦🇺AU</div><div class="bchip on" data-b="br">🇧🇷BR</div><div class="bchip on" data-b="za">🇿🇦ZA</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats z1">
+  <div class="stat" style="--a:var(--neo)"><div class="sv" style="color:var(--neo)" id="s0">0</div><div class="sl">总计</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s1">0</div><div class="sl">今日</div></div>
+  <div class="stat" style="--a:var(--amb)"><div class="sv" style="color:var(--amb)" id="s2">0</div><div class="sl">品牌</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s3">0</div><div class="sl">工厂</div></div>
+  <div class="stat" style="--a:var(--pur)"><div class="sv" style="color:var(--pur)" id="s4">0</div><div class="sl">代理</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s5">0</div><div class="sl">✅邮箱</div></div>
+  <div class="stat" style="--a:var(--grn)"><div class="sv" style="color:var(--grn)" id="s6">0</div><div class="sl">📱电话</div></div>
+  <div class="stat" style="--a:var(--wa)"><div class="sv" style="color:var(--wa)" id="s7">0</div><div class="sl">💬WA</div></div>
+  <div class="stat" style="--a:var(--pur)"><div class="sv" style="color:var(--pur)" id="s8">0</div><div class="sl">社媒</div></div>
+  <div class="stat" style="--a:#ff6b2b"><div class="sv" style="color:#ff6b2b" id="s9">—</div><div class="sl">验证率</div></div>
+  <div class="stat" style="--a:#5e81f4"><div class="sv" style="color:#5e81f4" id="s10">—</div><div class="sl">均分</div></div>
+</div>
+
+<div class="errb z1" id="errB"></div>
+<div class="progw z1" id="progW"><div class="progbar"><div class="progfill" id="progF" style="width:0%"></div></div><div class="progtxt"><span id="progM">准备…</span><span id="progP">0%</span></div></div>
+<div class="logw z1" id="logW"><div class="logh"><span>📡 实时日志 <span id="browAct" style="color:var(--amb)"></span></span><span id="logCnt" style="font-family:var(--fm);color:var(--tx3)">0条</span></div><div class="logb" id="logB"></div></div>
+
+<!-- TABLE FILTER -->
+<div class="tf z1">
+  <span class="flbl">筛选：</span>
+  <input id="f-nm" placeholder="🔍 姓名/公司" style="max-width:110px" oninput="renderTbl()">
+  <select id="f-pl" class="sel" onchange="renderTbl()"><option value="">全部平台</option><option value="google">Google</option><option value="linkedin">LinkedIn</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X</option><option value="tiktok">TikTok</option><option value="vk">VK</option><option value="whatsapp">WhatsApp</option><option value="xhs">小红书</option><option value="alibaba">阿里</option></select>
+  <select id="f-ty" class="sel" onchange="renderTbl()"><option value="">全部类型</option><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+  <select id="f-co" class="sel" onchange="renderTbl()"><option value="">全部国家</option></select>
+  <select id="f-vl" class="sel" onchange="renderTbl()"><option value="">全部状态</option><option value="email_ok">✅邮箱有效</option><option value="phone_ok">📱电话有效</option><option value="wa_ok">💬有WA</option><option value="hi">⭐高分≥80</option><option value="nv">未验证</option></select>
+  <input id="f-kw" placeholder="🔍 全文" style="max-width:100px" oninput="renderTbl()">
+  <button class="fclear" onclick="clearF()">✕清除</button>
+  <span class="fcnt" id="fCnt"></span>
+  <button class="sm" onclick="selAll()" style="margin-left:4px">全选</button>
+  <button class="sm" onclick="selNone()">清选</button>
+  <span id="selCnt" style="font-family:var(--fm);font-size:9px;color:var(--neo)"></span>
+</div>
+
+<!-- TABLE -->
+<div class="tblw z1">
+  <div class="empty" id="emptyEl"><div style="font-size:44px;opacity:.4">🌐</div><h3>AWAITING DATA</h3><p>配置关键词 → 选择精准地区和国家 → 选择平台 → 开始采集<br>v10新增: 10+ API引擎 · DeepSeek/Mistral接入 · AI流式输出 · 更快响应</p></div>
+  <table id="mainTbl" style="display:none">
+    <thead><tr>
+      <th style="width:22px"><input type="checkbox" id="chkAll" onchange="togAll(this.checked)" style="cursor:pointer;accent-color:var(--neo)"></th>
+      <th onclick="srtBy('idx')"># <span class="si"></span></th>
+      <th onclick="srtBy('platform')">平台 <span class="si"></span></th>
+      <th onclick="srtBy('name')">姓名 <span class="si"></span></th>
+      <th onclick="srtBy('title')">职位 <span class="si"></span></th>
+      <th onclick="srtBy('type')">类型 <span class="si"></span></th>
+      <th onclick="srtBy('company')">公司 <span class="si"></span></th>
+      <th onclick="srtBy('country')">国家 <span class="si"></span></th>
+      <th>邮箱</th><th>电话</th><th>社媒</th>
+      <th>三重验证</th>
+      <th onclick="srtBy('addedDate')">日期 <span class="si"></span></th>
+      <th>操作</th>
+    </tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<!-- ENRICH PANEL -->
+<div class="ep" id="epanel">
+  <div class="eph"><h3>✨ AI<span>增强详情</span></h3><button class="xbtn" onclick="closeEP()">✕</button></div>
+  <div class="epb" id="epBody"><p style="color:var(--tx3);font-size:11px;padding:8px 0">选择记录后点击「✨AI」查看详情</p></div>
+</div>
+
+<!-- SETTINGS - ENHANCED v10 -->
+<div class="modal" id="setMod">
+  <div class="mpanel">
+    <div class="mh"><h3>⚙ <em>设置 / API配置 v10</em></h3><button class="xbtn" onclick="closeM('setMod')">✕</button></div>
+    <div class="mc">
+      <div class="ibox">
+        <b>🆓 免费</b>：<span class="free">Pollinations (GPT-4o)</span> 完全免费无需Key<br>
+        <b>⚡ 极速</b>：<span class="fast">Groq · DeepSeek</span> 速度最快，适合批量处理<br>
+        <b>🧠 最强</b>：<span class="key">Claude Sonnet 4 · GPT-4o · Gemini 1.5 Pro</span><br>
+        <b>💰 高性价比</b>：<span class="fast">Mistral Large · Cohere Command R+</span><br>
+        <b>🌐 联网搜索</b>：Claude / Together AI 支持实时搜索最新采购商
+      </div>
+
+      <div class="secttl">🆓 免费 API</div>
+      <div class="api-status-row" id="asr-pollinations"><div class="asr-dot" id="dot-pollinations"></div><span class="asr-name">Pollinations</span><span class="asr-status" id="st-pollinations" style="color:var(--grn)">GPT-4o · 完全免费</span><span class="asr-lat" id="lat-pollinations"></span><button class="asr-test" onclick="testOne('pollinations')">测试</button></div>
+
+      <div class="secttl">⚡ 极速 API（建议日常使用）</div>
+      <div class="api-grid">
+        <div><div class="api-status-row" id="asr-groq"><div class="asr-dot" id="dot-groq"></div><span class="asr-name">Groq</span><span class="asr-status" id="st-groq">Llama 3.3-70B · 极速</span><span class="asr-lat" id="lat-groq"></span><button class="asr-test" onclick="testOne('groq')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-deepseek"><div class="asr-dot" id="dot-deepseek"></div><span class="asr-name">DeepSeek</span><span class="asr-status" id="st-deepseek">DeepSeek-V3 · 超快</span><span class="asr-lat" id="lat-deepseek"></span><button class="asr-test" onclick="testOne('deepseek')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-together"><div class="asr-dot" id="dot-together"></div><span class="asr-name">Together AI</span><span class="asr-status" id="st-together">Llama 3.1 · 联网</span><span class="asr-lat" id="lat-together"></span><button class="asr-test" onclick="testOne('together')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-mistral"><div class="asr-dot" id="dot-mistral"></div><span class="asr-name">Mistral</span><span class="asr-status" id="st-mistral">Large 2 · 欧洲</span><span class="asr-lat" id="lat-mistral"></span><button class="asr-test" onclick="testOne('mistral')">测试</button></div></div>
+      </div>
+
+      <div class="secttl">🧠 顶级 API（最强能力）</div>
+      <div class="api-grid">
+        <div><div class="api-status-row" id="asr-claude"><div class="asr-dot" id="dot-claude"></div><span class="asr-name">Claude Sonnet 4</span><span class="asr-status" id="st-claude">🌐联网搜索 · 最强</span><span class="asr-lat" id="lat-claude"></span><button class="asr-test" onclick="testOne('claude')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-openai"><div class="asr-dot" id="dot-openai"></div><span class="asr-name">OpenAI GPT-4o</span><span class="asr-status" id="st-openai">GPT-4o · 实时搜索</span><span class="asr-lat" id="lat-openai"></span><button class="asr-test" onclick="testOne('openai')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-gemini"><div class="asr-dot" id="dot-gemini"></div><span class="asr-name">Gemini 1.5 Pro</span><span class="asr-status" id="st-gemini">多模态 · 长上下文</span><span class="asr-lat" id="lat-gemini"></span><button class="asr-test" onclick="testOne('gemini')">测试</button></div></div>
+        <div><div class="api-status-row" id="asr-cohere"><div class="asr-dot" id="dot-cohere"></div><span class="asr-name">Cohere</span><span class="asr-status" id="st-cohere">Command R+ · 搜索增强</span><span class="asr-lat" id="lat-cohere"></span><button class="asr-test" onclick="testOne('cohere')">测试</button></div></div>
+      </div>
+
+      <div class="secttl">🔑 API Keys（仅存本地，不上传）</div>
+      <div class="api-grid">
+        <div>
+          <label>Groq — <a href="https://console.groq.com" target="_blank" style="color:var(--grn)">免费获取</a></label>
+          <input type="password" id="kGroq" placeholder="gsk_...">
+          <label>DeepSeek — <a href="https://platform.deepseek.com" target="_blank" style="color:var(--ora)">platform.deepseek.com</a></label>
+          <input type="password" id="kDeepseek" placeholder="sk-...">
+          <label>Together AI — <a href="https://api.together.xyz" target="_blank" style="color:var(--pur)">api.together.xyz</a></label>
+          <input type="password" id="kTogether" placeholder="...">
+          <label>Mistral — <a href="https://console.mistral.ai" target="_blank" style="color:var(--neo)">console.mistral.ai</a></label>
+          <input type="password" id="kMistral" placeholder="...">
+        </div>
+        <div>
+          <label>Claude — <a href="https://console.anthropic.com" target="_blank" style="color:var(--neo)">推荐 · 联网搜索</a></label>
+          <input type="password" id="kClaude" placeholder="sk-ant-api03-...">
+          <label>OpenAI — <a href="https://platform.openai.com" target="_blank" style="color:var(--neo)">platform.openai.com</a></label>
+          <input type="password" id="kOpenai" placeholder="sk-proj-...">
+          <label>Gemini — <a href="https://aistudio.google.com" target="_blank" style="color:var(--neo)">aistudio.google.com</a></label>
+          <input type="password" id="kGemini" placeholder="AIza...">
+          <label>Cohere — <a href="https://dashboard.cohere.com" target="_blank" style="color:var(--neo)">dashboard.cohere.com</a></label>
+          <input type="password" id="kCohere" placeholder="...">
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;margin-bottom:10px;font-size:11px;font-family:var(--f2)"><input type="checkbox" id="showK" style="width:auto;margin:0;accent-color:var(--neo)"> 显示密钥</label>
+
+      <div class="secttl">⚙ AI助手设置</div>
+      <label>AI助手默认模型</label>
+      <select id="aiDefModel" class="sel" style="width:100%;margin-bottom:10px">
+        <option value="auto">自动（最优可用）</option>
+        <option value="groq_llama3">Groq Llama 3.3-70B（极速）</option>
+        <option value="deepseek">DeepSeek-V3（性价比）</option>
+        <option value="mistral">Mistral Large 2（均衡）</option>
+        <option value="claude">Claude Sonnet 4（最强）</option>
+        <option value="openai">GPT-4o（均衡）</option>
+        <option value="gemini">Gemini 1.5 Pro</option>
+        <option value="pollinations">Pollinations（免费）</option>
+      </select>
+
+      <div class="secttl">⚙ 采集参数</div>
+      <label>请求间隔</label>
+      <select id="dlySet" class="sel" style="width:100%;margin-bottom:10px"><option value="200">极速 200ms</option><option value="600">快速 600ms</option><option value="1000" selected>正常 1s</option><option value="2000">谨慎 2s</option><option value="5000">隐蔽 5s</option></select>
+    </div>
+    <div class="mf"><button class="btn btng" onclick="closeM('setMod')" style="flex:1">取消</button><button class="btn btnblue" onclick="saveSettings()" style="flex:1">💾 保存 & 测试所有API</button></div>
+  </div>
+</div>
+
+<!-- ADD -->
+<div class="modal" id="addMod">
+  <div class="mpanel" style="max-width:520px">
+    <div class="mh"><h3>＋ <em>手动添加</em></h3><button class="xbtn" onclick="closeM('addMod')">✕</button></div>
+    <div class="mc">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+        <div><label>姓名 *</label><input id="fn"></div>
+        <div><label>职位</label><input id="ft" placeholder="Procurement Manager"></div>
+        <div><label>公司 *</label><input id="fc"></div>
+        <div><label>国家</label><input id="fco" placeholder="Germany"></div>
+        <div><label>邮箱</label><input id="fe"></div>
+        <div><label>电话/WhatsApp</label><input id="fp" placeholder="+49-XXX-XXXX"></div>
+      </div>
+      <label>类型</label><select id="fty"><option value="brand">品牌</option><option value="factory">工厂</option><option value="agent">代理</option></select>
+      <label>社媒</label><input id="fs" placeholder="@username / URL">
+      <label>备注</label><textarea id="fnote" placeholder="备注…" style="height:45px"></textarea>
+    </div>
+    <div class="mf"><button class="btn btng" onclick="closeM('addMod')" style="flex:1">取消</button><button class="btn btnblue" onclick="submitAdd()" style="flex:1">✅ 添加</button></div>
+  </div>
+</div>
+
+<!-- AI ASSISTANT v10 - REDESIGNED -->
+<button class="aifab pls" id="aiFab" onclick="toggleAI()">🤖</button>
+<div class="aipanel" id="aiPanel">
+  <div class="aihd">
+    <div class="aiav">🤖</div>
+    <div style="flex:1;min-width:0">
+      <div class="ainm">NEXUS · AI助手 <span style="font-family:var(--fm);font-size:8px;color:var(--pur)">v10</span></div>
+      <div class="aist" id="aiSt"><span class="aist-dot"></span>在线 · 多模型引擎</div>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center">
+      <button class="sm" onclick="clearAIChat()" title="清空对话" style="padding:2px 6px;font-size:10px">清空</button>
+      <button class="aix" onclick="toggleAI()">✕</button>
+    </div>
+  </div>
+
+  <!-- Model + Mode Selector -->
+  <div class="ai-model-bar">
+    <select class="ai-model-select" id="aiModelSel" onchange="onModelChange()">
+      <option value="auto">🤖 自动选最优</option>
+      <optgroup label="⚡ 极速模型">
+        <option value="groq_llama3">Groq Llama 3.3-70B（极速）</option>
+        <option value="groq_llama3_8b">Groq Llama 3.1-8B（最快）</option>
+        <option value="deepseek">DeepSeek-V3（快）</option>
+      </optgroup>
+      <optgroup label="🧠 顶级模型">
+        <option value="claude">Claude Sonnet 4 🌐</option>
+        <option value="openai">GPT-4o</option>
+        <option value="gemini">Gemini 1.5 Pro</option>
+      </optgroup>
+      <optgroup label="💰 均衡模型">
+        <option value="mistral">Mistral Large 2</option>
+        <option value="cohere">Cohere Command R+</option>
+        <option value="together">Together Llama 3.1</option>
+        <option value="pollinations">Pollinations（免费）</option>
+      </optgroup>
+    </select>
+    <button class="ai-mode-btn on" id="modeChat" onclick="setAIMode('chat')">💬 问答</button>
+    <button class="ai-mode-btn" id="modeWeb" onclick="setAIMode('web')">🌐 联网 <span class="ai-web-badge">NEW</span></button>
+    <button class="ai-mode-btn" id="modeData" onclick="setAIMode('data')">📊 分析</button>
+  </div>
+
+  <div class="aimsgs" id="aiMsgs">
+    <div class="aimsg bot"><div class="aiico">🤖</div><div class="aibbl">
+      <span class="ai-h">NEXUS v10 · 升级版AI助手</span>
+      你好！我已接入 <b>10+个大模型</b>，包括 DeepSeek、Groq、Mistral、Claude 等。<br><br>
+      <div class="ai-li">💬 <b>智能问答</b>：开发信 · 市场策略 · 谈判技巧</div>
+      <div class="ai-li">🌐 <b>联网搜索</b>（需Claude/Together Key）：搜索最新采购商</div>
+      <div class="ai-li">📊 <b>数据分析</b>：分析当前线索库，找出高价值客户</div>
+      <div class="ai-li">⚡ <b>极速模式</b>：选择 Groq 或 DeepSeek 获得最快响应</div>
+    </div></div>
+  </div>
+
+  <div class="aiqbtns" id="aiQbtns">
+    <button class="aiqbtn" onclick="aiQ('帮我写一封针对欧洲羽绒服采购商的英文开发信，要有个性')">✉ 开发信</button>
+    <button class="aiqbtn" onclick="aiQ('分析当前数据库，列出最值得优先联系的客户',false,true)">📊 优先客户</button>
+    <button class="aiqbtn" onclick="aiQ('搜索2025年最活跃的欧洲纺织品采购商',true)">🔍 实时搜索</button>
+    <button class="aiqbtn" onclick="aiQ('WhatsApp开发海外客户有哪些实用脚本和技巧？')">💬 WA脚本</button>
+  </div>
+
+  <div style="font-family:var(--fm);font-size:8px;color:var(--tx4);padding:2px 9px;border-top:1px solid var(--bd)">
+    <span id="aiModelInfo">当前模型: 自动</span> · <span id="aiLatInfo">延迟: —</span>
+  </div>
+
+  <div class="aifooter">
+    <textarea class="aiinp" id="aiInp" placeholder="输入问题… /search 联网 /data 数据分析" rows="1" onkeydown="aiKD(event)" oninput="autoResize(this)"></textarea>
+    <button class="aisend" id="aiSend" onclick="sendAI()">➤</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════
+(()=>{
+  const cv=document.getElementById('bg'),ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  const rs=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;};rs();
+  addEventListener('resize',rs);
+  for(let i=0;i<50;i++)pts.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.2+.3,a:Math.random()*.22+.04});
+  (function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{p.x=(p.x+p.vx+W)%W;p.y=(p.y+p.vy+H)%H;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,212,255,${p.a})`;ctx.fill();});
+    for(let i=0;i<pts.length-1;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,212,255,${.045*(1-d/120)})`;ctx.lineWidth=.35;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
+  })();
+})();
+
+// ═══════════════════════════════════════
+// WORLD CLOCK
+// ═══════════════════════════════════════
+const TZ_ALL=[
+  {city:'巴黎',f:'🇫🇷',tz:'Europe/Paris'},{city:'伦敦',f:'🇬🇧',tz:'Europe/London'},
+  {city:'纽约',f:'🇺🇸',tz:'America/New_York'},{city:'洛杉矶',f:'🇺🇸',tz:'America/Los_Angeles'},
+  {city:'伊斯坦布尔',f:'🇹🇷',tz:'Europe/Istanbul'},{city:'莫斯科',f:'🇷🇺',tz:'Europe/Moscow'},
+  {city:'上海',f:'🇨🇳',tz:'Asia/Shanghai'},{city:'迪拜',f:'🇦🇪',tz:'Asia/Dubai'},
+  {city:'东京',f:'🇯🇵',tz:'Asia/Tokyo'},{city:'首尔',f:'🇰🇷',tz:'Asia/Seoul'},
+  {city:'新加坡',f:'🇸🇬',tz:'Asia/Singapore'},{city:'孟买',f:'🇮🇳',tz:'Asia/Kolkata'},
+  {city:'悉尼',f:'🇦🇺',tz:'Australia/Sydney'},{city:'多伦多',f:'🇨🇦',tz:'America/Toronto'},
+  {city:'柏林',f:'🇩🇪',tz:'Europe/Berlin'},{city:'马德里',f:'🇪🇸',tz:'Europe/Madrid'},
+];
+let activeTZ=['Europe/Paris','Europe/London','America/New_York','Europe/Istanbul','Europe/Moscow','Asia/Shanghai','Asia/Dubai'];
+let tzOpen=false;
+function fmt(tz,type='time'){try{return new Intl.DateTimeFormat('zh-CN',type==='time'?{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}:{timeZone:tz,month:'2-digit',day:'2-digit',weekday:'short'}).format(new Date());}catch(e){return '--';}}
+function buildClocks(){const bar=$('clkBar'),add=bar.querySelector('.clkadd');bar.querySelectorAll('.clkitem').forEach(e=>e.remove());activeTZ.forEach(tz=>{const info=TZ_ALL.find(t=>t.tz===tz)||{city:tz.split('/').pop().replace('_',' '),f:'🌐'};const d=document.createElement('div');d.className='clkitem';const safe=tz.replace(/\//g,'-');d.innerHTML=`<span class="clkflag">${info.f}</span><span class="clkcity">${info.city.slice(0,7)}</span><span class="clktime" id="ct-${safe}">--:--</span><span class="clkdate" id="cd-${safe}">—</span>`;d.ondblclick=()=>{if(activeTZ.length>1){activeTZ=activeTZ.filter(t=>t!==tz);buildClocks();}};d.title='双击移除';bar.insertBefore(d,add);});}
+function tickClocks(){activeTZ.forEach(tz=>{const safe=tz.replace(/\//g,'-');const te=$(`ct-${safe}`),de=$(`cd-${safe}`);if(te)te.textContent=fmt(tz,'time');if(de)de.textContent=fmt(tz,'date');});}
+function toggleTZ(){tzOpen=!tzOpen;$('tzDD').style.display=tzOpen?'block':'none';if(tzOpen){$('tzQ').value='';filterTZ();$('tzQ').focus();}}
+function filterTZ(){const q=$('tzQ').value.toLowerCase();const avail=TZ_ALL.filter(t=>!activeTZ.includes(t.tz)&&(!q||t.city.toLowerCase().includes(q)||t.tz.toLowerCase().includes(q)));$('tzList').innerHTML=avail.slice(0,12).map(t=>`<div class="tzopt" onclick="addTZ('${t.tz}')">${t.f} ${t.city}</div>`).join('');}
+function addTZ(tz){if(!activeTZ.includes(tz))activeTZ.push(tz);buildClocks();$('tzDD').style.display='none';tzOpen=false;}
+document.addEventListener('click',e=>{if(tzOpen&&!e.target.closest('.clkadd')){tzOpen=false;$('tzDD').style.display='none';}});
+buildClocks();setInterval(tickClocks,1000);tickClocks();
+
+// ═══════════════════════════════════════
+// REGION DATA
+// ═══════════════════════════════════════
+const REGION_DATA={
+  '🌍全部':{key:'all',countries:[]},
+  '🇪🇺欧洲':{key:'EU',countries:[
+    {f:'🇬🇧',n:'UK'},{f:'🇩🇪',n:'Germany'},{f:'🇫🇷',n:'France'},{f:'🇮🇹',n:'Italy'},
+    {f:'🇪🇸',n:'Spain'},{f:'🇳🇱',n:'Netherlands'},{f:'🇨🇭',n:'Switzerland'},{f:'🇦🇹',n:'Austria'},
+    {f:'🇵🇹',n:'Portugal'},{f:'🇧🇪',n:'Belgium'},{f:'🇸🇪',n:'Sweden'},{f:'🇳🇴',n:'Norway'},
+    {f:'🇩🇰',n:'Denmark'},{f:'🇫🇮',n:'Finland'},{f:'🇵🇱',n:'Poland'},{f:'🇨🇿',n:'Czech Republic'},
+    {f:'🇷🇴',n:'Romania'},{f:'🇭🇺',n:'Hungary'},{f:'🇬🇷',n:'Greece'},{f:'🇮🇪',n:'Ireland'},
+    {f:'🇭🇷',n:'Croatia'},{f:'🇸🇰',n:'Slovakia'},{f:'🇸🇮',n:'Slovenia'}
+  ]},
+  '🌎北美':{key:'NA',countries:[{f:'🇺🇸',n:'USA'},{f:'🇨🇦',n:'Canada'},{f:'🇲🇽',n:'Mexico'}]},
+  '🌏东亚':{key:'EA',countries:[{f:'🇯🇵',n:'Japan'},{f:'🇰🇷',n:'South Korea'},{f:'🇹🇼',n:'Taiwan'},{f:'🇭🇰',n:'Hong Kong'}]},
+  '🌏东南亚':{key:'SEA',countries:[{f:'🇸🇬',n:'Singapore'},{f:'🇻🇳',n:'Vietnam'},{f:'🇮🇩',n:'Indonesia'},{f:'🇹🇭',n:'Thailand'},{f:'🇲🇾',n:'Malaysia'},{f:'🇵🇭',n:'Philippines'},{f:'🇲🇲',n:'Myanmar'}]},
+  '🌏南亚':{key:'SA',countries:[{f:'🇮🇳',n:'India'},{f:'🇵🇰',n:'Pakistan'},{f:'🇧🇩',n:'Bangladesh'},{f:'🇱🇰',n:'Sri Lanka'}]},
+  '🕌中东':{key:'ME',countries:[{f:'🇦🇪',n:'UAE'},{f:'🇸🇦',n:'Saudi Arabia'},{f:'🇶🇦',n:'Qatar'},{f:'🇮🇱',n:'Israel'},{f:'🇰🇼',n:'Kuwait'},{f:'🇧🇭',n:'Bahrain'},{f:'🇴🇲',n:'Oman'},{f:'🇯🇴',n:'Jordan'}]},
+  '🇷🇺独联体':{key:'CIS',countries:[{f:'🇷🇺',n:'Russia'},{f:'🇰🇿',n:'Kazakhstan'},{f:'🇺🇦',n:'Ukraine'},{f:'🇧🇾',n:'Belarus'},{f:'🇺🇿',n:'Uzbekistan'}]},
+  '🇹🇷东欧':{key:'TEE',countries:[{f:'🇹🇷',n:'Turkey'},{f:'🇧🇬',n:'Bulgaria'},{f:'🇷🇸',n:'Serbia'},{f:'🇦🇱',n:'Albania'}]},
+  '🌎拉美':{key:'LA',countries:[{f:'🇧🇷',n:'Brazil'},{f:'🇦🇷',n:'Argentina'},{f:'🇨🇱',n:'Chile'},{f:'🇨🇴',n:'Colombia'},{f:'🇵🇪',n:'Peru'}]},
+  '🌏大洋洲':{key:'OC',countries:[{f:'🇦🇺',n:'Australia'},{f:'🇳🇿',n:'New Zealand'}]},
+  '🌍非洲':{key:'AF',countries:[{f:'🇿🇦',n:'South Africa'},{f:'🇳🇬',n:'Nigeria'},{f:'🇪🇬',n:'Egypt'},{f:'🇰🇪',n:'Kenya'},{f:'🇪🇹',n:'Ethiopia'}]},
+};
+let activeRegKey='all';
+let selectedCountries=new Set();
+function buildRegions(){const tabs=$('regTabs');tabs.innerHTML=Object.entries(REGION_DATA).map(([label,data])=>`<span class="reg-tab${activeRegKey===data.key?' on':''}" onclick="switchRegion('${data.key}')">${label}</span>`).join('');}
+function switchRegion(key){activeRegKey=key;selectedCountries.clear();buildRegions();buildCountryGrid();}
+function buildCountryGrid(){
+  const grid=$('countryGrid'),actions=$('regActions');
+  if(activeRegKey==='all'){grid.classList.remove('show');actions.style.display='none';return;}
+  const data=Object.values(REGION_DATA).find(d=>d.key===activeRegKey);
+  if(!data||!data.countries.length){grid.classList.remove('show');actions.style.display='none';return;}
+  grid.classList.add('show');actions.style.display='flex';
+  if(selectedCountries.size===0)data.countries.forEach(c=>selectedCountries.add(c.n));
+  grid.innerHTML=data.countries.map(c=>`<span class="ctry-chip${selectedCountries.has(c.n)?' on':''}" onclick="toggleCountry('${c.n}')">${c.f} ${c.n}</span>`).join('');
+  updateSelCtryLabel();
+}
+function toggleCountry(n){selectedCountries.has(n)?selectedCountries.delete(n):selectedCountries.add(n);buildCountryGrid();}
+function selAllCountries(){const data=Object.values(REGION_DATA).find(d=>d.key===activeRegKey);if(data)data.countries.forEach(c=>selectedCountries.add(c.n));buildCountryGrid();}
+function selNoCountries(){selectedCountries.clear();buildCountryGrid();}
+function updateSelCtryLabel(){$('selCtryCnt').textContent=selectedCountries.size;$('selCtryList').textContent=[...selectedCountries].slice(0,5).join(', ')+(selectedCountries.size>5?`…+${selectedCountries.size-5}`:'');}
+function getTargetCountries(){if(activeRegKey==='all')return[];return[...selectedCountries];}
+buildRegions();
+
+// ═══════════════════════════════════════
+// PLATFORM + NODE TOGGLES
+// ═══════════════════════════════════════
+const PC={
+  google:{l:'Google',i:'G',c:'#4285f4',bg:'rgba(66,133,244,.08)'},linkedin:{l:'LinkedIn',i:'in',c:'#0a66c2',bg:'rgba(10,102,194,.08)'},
+  facebook:{l:'Facebook',i:'fb',c:'#1877f2',bg:'rgba(24,119,242,.08)'},instagram:{l:'Instagram',i:'ig',c:'#e1306c',bg:'rgba(225,48,108,.08)'},
+  twitter:{l:'X/Twitter',i:'𝕏',c:'#1da1f2',bg:'rgba(29,161,242,.08)'},tiktok:{l:'TikTok',i:'tt',c:'#69c9d0',bg:'rgba(105,201,208,.08)'},
+  vk:{l:'VK',i:'vk',c:'#2787f5',bg:'rgba(39,135,245,.08)'},whatsapp:{l:'WhatsApp',i:'wa',c:'#25d366',bg:'rgba(37,211,102,.08)'},
+  xhs:{l:'小红书',i:'xhs',c:'#ff2442',bg:'rgba(255,36,66,.08)'},alibaba:{l:'阿里',i:'ali',c:'#ff6a00',bg:'rgba(255,106,0,.08)'},
+  manual:{l:'手动',i:'M',c:'#778899',bg:'rgba(119,136,153,.06)'},
+};
+const BL={us_ny:'🇺🇸NY',us_la:'🇺🇸LA',ca:'🇨🇦CA',mx:'🇲🇽MX',uk:'🇬🇧UK',de:'🇩🇪DE',fr:'🇫🇷FR',it:'🇮🇹IT',es:'🇪🇸ES',nl:'🇳🇱NL',ch:'🇨🇭CH',at:'🇦🇹AT',pt:'🇵🇹PT',be:'🇧🇪BE',se:'🇸🇪SE',no:'🇳🇴NO',dk:'🇩🇰DK',fi:'🇫🇮FI',pl:'🇵🇱PL',tr:'🇹🇷TR',ro:'🇷🇴RO',jp:'🇯🇵JP',kr:'🇰🇷KR',tw:'🇹🇼TW',hk:'🇭🇰HK',sg:'🇸🇬SG',in:'🇮🇳IN',vn:'🇻🇳VN',th:'🇹🇭TH',my:'🇲🇾MY',id:'🇮🇩ID',ae:'🇦🇪AE',sa:'🇸🇦SA',qa:'🇶🇦QA',il:'🇮🇱IL',ru:'🇷🇺RU',kz:'🇰🇿KZ',ua:'🇺🇦UA',au:'🇦🇺AU',br:'🇧🇷BR',za:'🇿🇦ZA'};
+let aPlats=new Set(['google','linkedin','facebook','instagram','twitter','tiktok','vk','whatsapp','xhs','alibaba']);
+let aBrows=new Set(Object.keys(BL));
+document.querySelectorAll('[data-p]').forEach(p=>p.onclick=()=>{const k=p.dataset.p;aPlats.has(k)?aPlats.delete(k):aPlats.add(k);p.classList.toggle('on');});
+document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;aBrows.has(k)?aBrows.delete(k):aBrows.add(k);b.classList.toggle('on');});
+
+// ═══════════════════════════════════════
+// MULTI-API ENGINE v10 — 10 PROVIDERS
+// ═══════════════════════════════════════
+const KEYS={groq:'',deepseek:'',together:'',mistral:'',claude:'',openai:'',gemini:'',cohere:''};
+const STAT={pollinations:'unknown',groq:'unknown',deepseek:'unknown',together:'unknown',mistral:'unknown',claude:'unknown',openai:'unknown',gemini:'unknown',cohere:'unknown'};
+const LAT={pollinations:0,groq:0,deepseek:0,together:0,mistral:0,claude:0,openai:0,gemini:0,cohere:0};
+let curAPI='pollinations';
+let aiDefModel='auto';
+
+const API_META={
+  pollinations:{name:'Pollinations',badge:'pbfree',free:true,speed:'mid',desc:'GPT-4o 免费'},
+  groq:{name:'Groq',badge:'pbfast',free:false,speed:'fast',desc:'Llama3.3-70B 极速'},
+  deepseek:{name:'DeepSeek',badge:'pbfast',free:false,speed:'fast',desc:'V3 超快高性价比'},
+  together:{name:'Together',badge:'pbkey',free:false,speed:'fast',desc:'Llama3.1 联网'},
+  mistral:{name:'Mistral',badge:'pbkey',free:false,speed:'mid',desc:'Large 2 欧洲'},
+  claude:{name:'Claude',badge:'pbkey',free:false,speed:'mid',desc:'Sonnet 4 最强+联网'},
+  openai:{name:'GPT-4o',badge:'pbkey',free:false,speed:'mid',desc:'GPT-4o 均衡'},
+  gemini:{name:'Gemini',badge:'pbkey',free:false,speed:'mid',desc:'1.5 Pro 多模态'},
+  cohere:{name:'Cohere',badge:'pbkey',free:false,speed:'mid',desc:'Command R+ 搜索'},
+};
+
+// Speed-ordered fallback chains
+const SPEED_ORDER=['groq','deepseek','mistral','together','claude','openai','gemini','cohere','pollinations'];
+const QUALITY_ORDER=['claude','openai','gemini','mistral','cohere','groq','deepseek','together','pollinations'];
+
+function renderAPIProvs(){
+  const c=$('apiProvs');
+  c.innerHTML=Object.entries(API_META).map(([id,m])=>{
+    const st=STAT[id];const has=id==='pollinations'||KEYS[id];
+    const cls=st==='ok'?'active':st==='error'?'err':st==='testing'?'testing':'';
+    const badgeCls=id==='pollinations'?'pbfree':has?m.badge:'pbno';
+    const badgeTxt=id==='pollinations'?'FREE':has?'KEY':'—';
+    const lat=LAT[id]?`${LAT[id]}ms`:'';
+    const isWeb=(id==='claude'||id==='together'||id==='openai')&&has;
+    return`<div class="api-prov ${cls}" id="aprov-${id}" onclick="pickAPI('${id}')" title="${m.desc}${isWeb?' · 支持联网':''}">
+      <div class="pdot"></div><span>${m.name}</span>${isWeb?'<span style="font-size:7px">🌐</span>':''}
+      <span class="pbadge ${badgeCls}">${badgeTxt}</span>
+      ${lat?`<span style="font-family:var(--fm);font-size:7px;color:rgba(0,255,170,.5);margin-left:2px">${lat}</span>`:''}
+    </div>`;
+  }).join('');
+  $('curApi').textContent=API_META[curAPI]?.name||curAPI;
+  $('curLat').textContent=LAT[curAPI]||'—';
+}
+function pickAPI(id){if(id==='pollinations'||KEYS[id]){curAPI=id;renderAPIProvs();showToast(`切换到 ${API_META[id]?.name}`);}else{showToast('请先配置该API密钥');openSettings();}}
+
+// Individual testers
+async function testPollinations(){const t=Date.now();const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:[{role:'user',content:'hi'}],max_tokens:3,seed:42}),signal:AbortSignal.timeout(9000)});LAT.pollinations=Date.now()-t;return r.ok;}
+async function testGroq(){if(!KEYS.groq)return false;const t=Date.now();const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.groq}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(8000)});LAT.groq=Date.now()-t;return r.ok;}
+async function testDeepseek(){if(!KEYS.deepseek)return false;const t=Date.now();const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.deepseek}`},body:JSON.stringify({model:'deepseek-chat',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.deepseek=Date.now()-t;return r.ok;}
+async function testTogether(){if(!KEYS.together)return false;const t=Date.now();const r=await fetch('https://api.together.xyz/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.together}`},body:JSON.stringify({model:'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.together=Date.now()-t;return r.ok;}
+async function testMistral(){if(!KEYS.mistral)return false;const t=Date.now();const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.mistral}`},body:JSON.stringify({model:'mistral-large-latest',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.mistral=Date.now()-t;return r.ok;}
+async function testClaude(){if(!KEYS.claude)return false;const t=Date.now();const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':KEYS.claude},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:5,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.claude=Date.now()-t;return r.ok;}
+async function testOpenAI(){if(!KEYS.openai)return false;const t=Date.now();const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.openai}`},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:3,messages:[{role:'user',content:'hi'}]}),signal:AbortSignal.timeout(10000)});LAT.openai=Date.now()-t;return r.ok;}
+async function testGemini(){if(!KEYS.gemini)return false;const t=Date.now();const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEYS.gemini}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}}),signal:AbortSignal.timeout(10000)});LAT.gemini=Date.now()-t;return r.ok;}
+async function testCohere(){if(!KEYS.cohere)return false;const t=Date.now();const r=await fetch('https://api.cohere.ai/v1/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.cohere}`},body:JSON.stringify({model:'command-r-plus',message:'hi',max_tokens:3}),signal:AbortSignal.timeout(10000)});LAT.cohere=Date.now()-t;return r.ok;}
+
+const TESTERS={pollinations:testPollinations,groq:testGroq,deepseek:testDeepseek,together:testTogether,mistral:testMistral,claude:testClaude,openai:testOpenAI,gemini:testGemini,cohere:testCohere};
+
+function updateStatusUI(id,ok){
+  STAT[id]=ok?'ok':'error';
+  const dot=$(`dot-${id}`);if(dot){dot.style.background=ok?'var(--grn)':'var(--red)';dot.style.boxShadow=ok?'0 0 6px var(--grn)':'';}
+  const lat=$(`lat-${id}`);if(lat&&LAT[id])lat.textContent=LAT[id]+'ms';
+  const row=$(`asr-${id}`);if(row)row.style.borderColor=ok?'rgba(0,255,170,.2)':'rgba(255,61,110,.15)';
+  renderAPIProvs();
+}
+async function testOne(id){
+  STAT[id]='testing';const dot=$(`dot-${id}`);if(dot)dot.style.background='var(--amb)';
+  try{const ok=await TESTERS[id]?.();if(ok!==undefined){updateStatusUI(id,ok);showToast(ok?`✅ ${API_META[id].name} 连接成功 (${LAT[id]}ms)`:`❌ ${API_META[id].name} 失败`);}
+  }catch(e){updateStatusUI(id,false);showToast(`❌ ${API_META[id].name}: ${e.message.slice(0,30)}`);}
+}
+async function testAllAPIs(){
+  showToast('并发测试所有API…');
+  Object.keys(TESTERS).forEach(id=>{STAT[id]='testing';});renderAPIProvs();
+  const results=await Promise.allSettled(Object.entries(TESTERS).map(async([id,fn])=>{try{const ok=await fn();return{id,ok};}catch(e){return{id,ok:false};}}));
+  results.forEach(r=>{if(r.status==='fulfilled'&&r.value.ok!==undefined)updateStatusUI(r.value.id,r.value.ok);});
+  // Auto-select fastest available
+  const fastestOk=SPEED_ORDER.find(id=>STAT[id]==='ok'&&(id==='pollinations'||KEYS[id]));
+  if(fastestOk){curAPI=fastestOk;renderAPIProvs();}
+  showToast(`✅ 测试完成 · 最优: ${API_META[curAPI]?.name} (${LAT[curAPI]}ms)`);
+}
+
+// ═══════════════════════════════════════
+// CORE AI CALLER — Smart Routing v10
+// ═══════════════════════════════════════
+// Resolve selected model to API id + model string
+function resolveModel(sel){
+  const modelMap={
+    'auto':null,
+    'groq_llama3':{api:'groq',model:'llama-3.3-70b-versatile'},
+    'groq_llama3_8b':{api:'groq',model:'llama-3.1-8b-instant'},
+    'deepseek':{api:'deepseek',model:'deepseek-chat'},
+    'mistral':{api:'mistral',model:'mistral-large-latest'},
+    'claude':{api:'claude',model:'claude-sonnet-4-20250514'},
+    'openai':{api:'openai',model:'gpt-4o'},
+    'gemini':{api:'gemini',model:'gemini-1.5-pro'},
+    'cohere':{api:'cohere',model:'command-r-plus'},
+    'together':{api:'together',model:'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'},
+    'pollinations':{api:'pollinations',model:'openai'},
+  };
+  return modelMap[sel]||null;
+}
+
+// Smart auto-select: prefer speed order for general, quality order for complex
+function autoSelectAPI(preferQuality=false){
+  const order=preferQuality?QUALITY_ORDER:SPEED_ORDER;
+  return order.find(id=>STAT[id]==='ok'&&(id==='pollinations'||KEYS[id]))||'pollinations';
+}
+
+async function callAI(msgs,maxTok=1400,jsonMode=false,preferQuality=false){
+  const sel=$('aiModelSel')?.value||aiDefModel||'auto';
+  const resolved=resolveModel(sel);
+  
+  // Build ordered attempt list
+  let order=[];
+  if(resolved&&resolved.api){
+    // Try specified model first, then fallback
+    order=[resolved.api,...SPEED_ORDER.filter(x=>x!==resolved.api)];
+  }else{
+    // Auto: use speed or quality order
+    order=preferQuality?[...QUALITY_ORDER]:[...SPEED_ORDER];
+  }
+  
+  let lastErr='';
+  for(const id of order){
+    if(id!=='pollinations'&&!KEYS[id])continue;
+    if(STAT[id]==='error')continue; // skip known-bad
+    try{
+      const modelOverride=resolved?.api===id?resolved.model:null;
+      const result=await callOne(id,msgs,maxTok,jsonMode,modelOverride);
+      if(result&&result.trim()){
+        if(curAPI!==id){log('lw',`API自动切换→${API_META[id]?.name}`);curAPI=id;renderAPIProvs();}
+        return result;
+      }
+    }catch(e){lastErr=e.message;log('lw',`${API_META[id]?.name}失败:${e.message.slice(0,40)}`);}
+  }
+  throw new Error('所有API失败: '+lastErr);
+}
+
+async function callOne(id,msgs,maxTok,jsonMode,modelOverride=null){
+  const messages=typeof msgs==='string'?[{role:'user',content:msgs}]:msgs;
+  const t=Date.now();
+  let result=null;
+  switch(id){
+    case 'pollinations':{
+      const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages,max_tokens:maxTok,seed:Math.floor(Math.random()*999999)}),signal:AbortSignal.timeout(30000)});
+      if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'groq':{
+      if(!KEYS.groq)return null;
+      const model=modelOverride||'llama-3.3-70b-versatile';
+      const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.groq}`},body:JSON.stringify({model,max_tokens:maxTok,messages,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(20000)});
+      if(!r.ok)throw new Error('Groq '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'deepseek':{
+      if(!KEYS.deepseek)return null;
+      const model=modelOverride||'deepseek-chat';
+      const r=await fetch('https://api.deepseek.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.deepseek}`},body:JSON.stringify({model,max_tokens:maxTok,messages,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(25000)});
+      if(!r.ok)throw new Error('DeepSeek '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'together':{
+      if(!KEYS.together)return null;
+      const model=modelOverride||'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo';
+      const r=await fetch('https://api.together.xyz/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.together}`},body:JSON.stringify({model,max_tokens:maxTok,messages}),signal:AbortSignal.timeout(25000)});
+      if(!r.ok)throw new Error('Together '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'mistral':{
+      if(!KEYS.mistral)return null;
+      const model=modelOverride||'mistral-large-latest';
+      const sysMsg=messages.find(m=>m.role==='system');const userMsgs=messages.filter(m=>m.role!=='system');
+      const allMsgs=sysMsg?[sysMsg,...userMsgs]:messages;
+      const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.mistral}`},body:JSON.stringify({model,max_tokens:maxTok,messages:allMsgs,...(jsonMode?{response_format:{type:'json_object'}}:{})}),signal:AbortSignal.timeout(25000)});
+      if(!r.ok)throw new Error('Mistral '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'claude':{
+      if(!KEYS.claude)return null;
+      const model=modelOverride||'claude-sonnet-4-20250514';
+      const sysMsg=messages.find(m=>m.role==='system');const userMsgs=messages.filter(m=>m.role!=='system');
+      const body={model,max_tokens:maxTok,messages:userMsgs};
+      if(sysMsg)body.system=sysMsg.content;
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':KEYS.claude},body:JSON.stringify(body),signal:AbortSignal.timeout(35000)});
+      if(!r.ok)throw new Error('Claude '+r.status);
+      const d=await r.json();result=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');break;
+    }
+    case 'openai':{
+      if(!KEYS.openai)return null;
+      const model=modelOverride||'gpt-4o';
+      const body={model,max_tokens:maxTok,messages,...(jsonMode?{response_format:{type:'json_object'}}:{})};
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.openai}`},body:JSON.stringify(body),signal:AbortSignal.timeout(30000)});
+      if(!r.ok)throw new Error('OpenAI '+r.status);const d=await r.json();result=d.choices?.[0]?.message?.content||'';break;
+    }
+    case 'gemini':{
+      if(!KEYS.gemini)return null;
+      const model=modelOverride||'gemini-1.5-pro';
+      const txt=messages.filter(m=>m.role!=='system').map(m=>`${m.role==='user'?'User':'Assistant'}: ${typeof m.content==='string'?m.content:JSON.stringify(m.content)}`).join('\n\n');
+      const sysMsg=messages.find(m=>m.role==='system');
+      const fullTxt=sysMsg?sysMsg.content+'\n\n'+txt:txt;
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEYS.gemini}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:fullTxt}]}],generationConfig:{maxOutputTokens:maxTok}}),signal:AbortSignal.timeout(30000)});
+      if(!r.ok)throw new Error('Gemini '+r.status);const d=await r.json();result=d.candidates?.[0]?.content?.parts?.[0]?.text||'';break;
+    }
+    case 'cohere':{
+      if(!KEYS.cohere)return null;
+      const model=modelOverride||'command-r-plus';
+      const userMsg=messages.filter(m=>m.role==='user').pop();
+      const chatHistory=messages.filter(m=>m.role!=='system'&&m!==userMsg).map(m=>({role:m.role==='user'?'USER':'CHATBOT',message:m.content}));
+      const r=await fetch('https://api.cohere.ai/v1/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${KEYS.cohere}`},body:JSON.stringify({model,message:userMsg?.content||'',chat_history:chatHistory,max_tokens:maxTok}),signal:AbortSignal.timeout(25000)});
+      if(!r.ok)throw new Error('Cohere '+r.status);const d=await r.json();result=d.text||'';break;
+    }
+    default:return null;
+  }
+  LAT[id]=Date.now()-t;renderAPIProvs();
+  return result;
+}
+
+// Claude with Web Search tool
+async function callClaudeWithWebSearch(msgs,maxTok=2000){
+  if(!KEYS.claude)throw new Error('需要Claude API Key');
+  const messages=typeof msgs==='string'?[{role:'user',content:msgs}]:msgs;
+  const sysMsg=messages.find(m=>m.role==='system');
+  const userMsgs=messages.filter(m=>m.role!=='system');
+  const body={model:'claude-sonnet-4-20250514',max_tokens:maxTok,messages:userMsgs,tools:[{type:'web_search_20250305',name:'web_search'}]};
+  if(sysMsg)body.system=sysMsg.content;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':KEYS.claude,'anthropic-beta':'web-search-2025-03-05'},body:JSON.stringify(body),signal:AbortSignal.timeout(50000)});
+  if(!r.ok){const err=await r.json().catch(()=>({}));throw new Error(`Claude ${r.status}: ${err.error?.message||'Unknown'}`);}
+  const d=await r.json();
+  const textParts=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  const searchQueries=(d.content||[]).filter(b=>b.type==='tool_use'&&b.name==='web_search').map(b=>b.input?.query).filter(Boolean);
+  return{text:textParts,queries:searchQueries};
+}
+
+function parseJSON(txt){if(!txt)return null;let t=txt.replace(/```json|```/g,'').trim();const m=t.match(/\[[\s\S]*?\]/)||t.match(/\{[\s\S]*?\}/);if(m)try{return JSON.parse(m[0]);}catch(e){}try{return JSON.parse(t);}catch(e){return null;}}
+
+// ═══════════════════════════════════════
+// VALIDATION ENGINE
+// ═══════════════════════════════════════
+const DISP=['mailinator.com','guerrillamail.com','tempmail.com','10minutemail.com','throwaway.email','maildrop.cc','yopmail.com'];
+const PHONE_RULES=[
+  {p:'+1',mn:11,mx:11,r:'北美'},{p:'+44',mn:12,mx:13,r:'英国'},{p:'+49',mn:11,mx:14,r:'德国'},
+  {p:'+33',mn:11,mx:11,r:'法国'},{p:'+39',mn:11,mx:13,r:'意大利'},{p:'+34',mn:11,mx:11,r:'西班牙'},
+  {p:'+31',mn:11,mx:11,r:'荷兰'},{p:'+46',mn:10,mx:13,r:'瑞典'},{p:'+47',mn:10,mx:10,r:'挪威'},
+  {p:'+45',mn:10,mx:10,r:'丹麦'},{p:'+358',mn:11,mx:13,r:'芬兰'},{p:'+48',mn:11,mx:11,r:'波兰'},
+  {p:'+41',mn:11,mx:11,r:'瑞士'},{p:'+43',mn:10,mx:13,r:'奥地利'},{p:'+351',mn:12,mx:12,r:'葡萄牙'},
+  {p:'+7',mn:11,mx:11,r:'俄哈'},{p:'+380',mn:12,mx:12,r:'乌克兰'},{p:'+90',mn:12,mx:12,r:'土耳其'},
+  {p:'+81',mn:12,mx:13,r:'日本'},{p:'+82',mn:11,mx:12,r:'韩国'},{p:'+65',mn:10,mx:10,r:'新加坡'},
+  {p:'+91',mn:12,mx:12,r:'印度'},{p:'+84',mn:11,mx:12,r:'越南'},{p:'+66',mn:11,mx:11,r:'泰国'},
+  {p:'+60',mn:10,mx:12,r:'马来西亚'},{p:'+62',mn:10,mx:13,r:'印尼'},{p:'+971',mn:12,mx:12,r:'阿联酋'},
+  {p:'+966',mn:12,mx:12,r:'沙特'},{p:'+974',mn:11,mx:11,r:'卡塔尔'},{p:'+972',mn:12,mx:12,r:'以色列'},
+  {p:'+61',mn:11,mx:11,r:'澳洲'},{p:'+55',mn:12,mx:13,r:'巴西'},{p:'+52',mn:12,mx:13,r:'墨西哥'},
+  {p:'+27',mn:11,mx:11,r:'南非'},{p:'+86',mn:13,mx:13,r:'中国'},{p:'+852',mn:11,mx:11,r:'香港'},
+  {p:'+886',mn:11,mx:12,r:'台湾'},
+];
+const WA_SUPPORTED=['+1','+44','+49','+33','+39','+34','+31','+46','+47','+45','+358','+48','+41','+43','+351','+380','+90','+82','+65','+91','+84','+66','+60','+62','+971','+966','+974','+972','+61','+55','+52','+54','+27','+886','+852','+7'];
+async function valEmail(email){
+  if(!email||email==='—')return{ok:false,reason:'无邮箱',score:0};
+  email=email.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return{ok:false,reason:'格式错误',score:2};
+  const dom=email.split('@')[1];
+  if(DISP.includes(dom))return{ok:false,reason:'临时邮箱',score:5};
+  const KNOWN=['gmail.com','outlook.com','hotmail.com','yahoo.com','qq.com','163.com','126.com','icloud.com','protonmail.com'];
+  if(KNOWN.includes(dom))return{ok:true,reason:'知名域名',score:72};
+  try{
+    const r=await fetch(`https://cloudflare-dns.com/dns-query?name=${dom}&type=MX`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    if(d.Status===0&&d.Answer?.length){
+      try{const r2=await fetch(`https://cloudflare-dns.com/dns-query?name=${dom}&type=A`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(3000)});const d2=await r2.json();if(d2.Status===0&&d2.Answer?.length)return{ok:true,reason:'MX+A记录✓',score:96};}catch(e){}
+      return{ok:true,reason:'MX记录✓',score:85};
+    }
+    const r2=await fetch(`https://cloudflare-dns.com/dns-query?name=${dom}&type=A`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(3000)});
+    const d2=await r2.json();if(d2.Status===0&&d2.Answer?.length)return{ok:null,reason:'仅A记录',score:45};
+    return{ok:false,reason:'域名无记录',score:8};
+  }catch(e){return{ok:null,reason:'超时(格式✓)',score:32};}
+}
+function valPhone(phone){
+  if(!phone||phone==='—')return{ok:false,reason:'无电话',score:0};
+  const raw=phone.trim().replace(/[\s\-().]/g,'');
+  if(!raw.startsWith('+'))return{ok:false,reason:'缺少+区号',score:5};
+  if(!/^\+\d{7,15}$/.test(raw))return{ok:false,reason:'格式错误',score:5};
+  const rule=PHONE_RULES.sort((a,b)=>b.p.length-a.p.length).find(r=>raw.startsWith(r.p));
+  if(!rule)return{ok:false,reason:'未知区号',score:18};
+  const lenOk=raw.length>=rule.mn&&raw.length<=rule.mx;
+  return{ok:lenOk,reason:`${rule.r}${lenOk?'✓':'长度异常'}`,score:lenOk?92:52};
+}
+function valWA(phone,pr){
+  if(!phone||phone==='—')return{ok:false,score:0};
+  if(phone.toLowerCase().includes('whatsapp'))return{ok:true,score:95};
+  if(!pr?.ok)return{ok:false,score:0};
+  const supported=WA_SUPPORTED.some(p=>{const cleaned=phone.replace(/[\s\-()]/g,'');return cleaned.startsWith(p)||cleaned.startsWith(p.slice(1));});
+  return{ok:supported,score:supported?(pr.score>=85?85:60):15};
+}
+async function validateRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  row.vs='checking';renderTbl();
+  const ev=await valEmail(row.email);const pv=valPhone(row.phone);const wv=valWA(row.phone,pv);
+  row.ev=ev.ok===true;row.er=ev.reason;row.es=ev.score||0;
+  row.pv=pv.ok;row.pr=pv.reason;row.ps=pv.score||0;
+  row.wv=wv.ok;row.ws=wv.score||0;
+  row.cs=Math.round((row.es*.4)+(row.ps*.35)+(row.ws*.25));
+  row.vs='done';await persist();renderTbl();updateStats();
+}
+async function validateAll(){
+  const q=rows.filter(r=>r.vs!=='done');if(!q.length){showToast('所有记录已验证');return;}
+  showToast(`验证 ${q.length} 条…`);showProg(true);
+  for(let i=0;i<q.length;i++){if(shouldStop)break;setProg(Math.round(i/q.length*100),`验证 ${i+1}/${q.length}: ${q[i].name}`);await validateRow(q[i].id);await sleep(150);}
+  setProg(100,'验证完成');showToast('✅ 批量验证完成');
+}
+
+// ═══════════════════════════════════════
+// AI ENRICHMENT
+// ═══════════════════════════════════════
+async function enrichRow(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  $('epanel').classList.add('open');
+  $('epBody').innerHTML=`<div style="text-align:center;padding:24px 0;color:var(--tx3)"><div class="dots" style="justify-content:center"><span></span><span></span><span></span></div><br>AI分析 ${row.name}…</div>`;
+  try{
+    const prompt=[{role:'system',content:'你是专业外贸AI，返回严格JSON，不加任何说明文字。'},{role:'user',content:`分析此联系人：姓名:${row.name}|职位:${row.title}|公司:${row.company}|国家:${row.country}|类型:${row.type}|邮箱:${row.email}|电话:${row.phone}\n返回JSON: {"linkedin":"","website":"","industry":"行业","companySize":"规模","buyingInterests":"采购兴趣","bestTime":"最佳联系时间","openingLine":"英文开场白50字","priority":"high/medium/low","riskScore":0,"notes":""}`}];
+    const txt=await callAI(prompt,700,true,true);
+    const data=parseJSON(txt);
+    if(data){row.enriched=data;await persist();renderEnrich(row,data);renderTbl();showToast('✅ AI增强完成');}
+    else $('epBody').innerHTML=`<p style="color:var(--red);font-size:11px;padding:8px">解析失败，请重试</p>`;
+  }catch(e){$('epBody').innerHTML=`<p style="color:var(--red);font-size:11px;padding:8px">增强失败: ${e.message}</p>`;}
+}
+function renderEnrich(row,d){
+  const priCls=d.priority==='high'?'style="color:var(--grn)"':d.priority==='medium'?'style="color:var(--amb)"':'style="color:var(--red)"';
+  const priTxt=d.priority==='high'?'⬆ 高优先':d.priority==='medium'?'→ 中优先':'⬇ 低优先';
+  const em=row.email||'—',ph=row.phone||'—';
+  $('epBody').innerHTML=`
+  <div style="margin-bottom:12px"><div class="epst">基本信息</div>
+    <div class="epkv"><span class="epk">姓名</span><span class="epv"><b>${row.name}</b></span></div>
+    <div class="epkv"><span class="epk">职位</span><span class="epv">${row.title||'—'}</span></div>
+    <div class="epkv"><span class="epk">公司</span><span class="epv">${row.company||'—'}</span></div>
+    <div class="epkv"><span class="epk">国家</span><span class="epv">${row.country||'—'}</span></div>
+    <div class="epkv"><span class="epk">行业</span><span class="epv">${d.industry||'—'}</span></div>
+    <div class="epkv"><span class="epk">规模</span><span class="epv">${d.companySize||'—'}</span></div>
+  </div>
+  <div style="margin-bottom:12px"><div class="epst">联系建议</div>
+    <div class="epkv"><span class="epk">优先级</span><span class="epv" ${priCls}><b>${priTxt}</b></span></div>
+    <div class="epkv"><span class="epk">最佳时间</span><span class="epv">${d.bestTime||'—'}</span></div>
+    <div class="epkv"><span class="epk">采购兴趣</span><span class="epv">${d.buyingInterests||'—'}</span></div>
+    <div class="epkv"><span class="epk">开场白</span><span class="epv" style="color:var(--neo);font-style:italic">${d.openingLine||'—'}</span></div>
+    ${d.notes?`<div class="epkv"><span class="epk">备注</span><span class="epv">${d.notes}</span></div>`:''}
+  </div>
+  <div style="margin-bottom:12px"><div class="epst">联系方式</div>
+    <div class="epkv"><span class="epk">邮箱</span><span class="epv ec" onclick="cp2('${em.replace(/'/g,"\\'")}','邮箱')">${em}</span></div>
+    <div class="epkv"><span class="epk">电话</span><span class="epv pc2" onclick="cp2('${ph.replace(/'/g,"\\'")}','电话')">${ph}</span></div>
+    ${d.linkedin?`<div class="epkv"><span class="epk">LinkedIn</span><span class="epv"><a href="${d.linkedin}" target="_blank">${d.linkedin.slice(0,35)}</a></span></div>`:''}
+    ${d.website?`<div class="epkv"><span class="epk">官网</span><span class="epv"><a href="${d.website}" target="_blank">${d.website.slice(0,35)}</a></span></div>`:''}
+  </div>
+  <div class="epa">
+    <button class="epbtn" onclick="cp2('${em.replace(/'/g,"\\'")}','邮箱')">📋 复制邮箱</button>
+    <button class="epbtn" onclick="cp2('${ph.replace(/'/g,"\\'")}','电话')">📋 复制电话</button>
+    <button class="epbtn" onclick="genOutreach('${row.id}')">✉ 生成开发信</button>
+    <button class="epbtn" onclick="enrichRow('${row.id}')">🔄 重新分析</button>
+  </div><div id="outReach"></div>`;
+}
+async function genOutreach(id){
+  const row=rows.find(r=>r.id===id);if(!row)return;
+  $('outReach').innerHTML=`<div style="color:var(--tx3);font-size:11px;padding:8px 0">生成中…</div>`;
+  try{
+    const p=[{role:'system',content:'专业外贸文案，只返回JSON不加其他文字'},{role:'user',content:`为客户写英文开发信：姓名:${row.name} 职位:${row.title} 公司:${row.company} 国家:${row.country}\n要求：专业简洁150字，突出价值主张。{"subject":"主题","body":"正文"}`}];
+    const txt=await callAI(p,500,true);const d=parseJSON(txt);
+    if(d)$('outReach').innerHTML=`<div style="margin-top:10px"><div class="epst">✉ 开发信</div><div style="font-family:var(--fm);font-size:8px;color:var(--tx3);margin-bottom:4px">Subject: <span style="color:var(--neo)">${d.subject||''}</span></div><div style="background:rgba(0,0,0,.3);border:1px solid var(--bd);border-radius:3px;padding:8px;font-size:11px;line-height:1.7;color:var(--tx);white-space:pre-wrap">${d.body||''}</div><div class="epa" style="margin-top:5px"><button class="epbtn" onclick="navigator.clipboard.writeText(${JSON.stringify(d.body||'')}).then(()=>showToast('✅ 已复制'))">📋 复制正文</button></div></div>`;
+  }catch(e){$('outReach').innerHTML=`<p style="color:var(--red);font-size:10px;padding:5px">失败: ${e.message}</p>`;}
+}
+async function enrichSel(){const sel=[...selSet];if(!sel.length){showToast('请先勾选记录');return;}showToast(`AI增强 ${sel.length} 条…`);for(const id of sel){if(shouldStop)break;await enrichRow(id);await sleep(500);}showToast(`✅ 增强完成`);}
+function closeEP(){$('epanel').classList.remove('open');}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let rows=[],todayCount=0,selSet=new Set();
+let delayMs=1000,running=false,shouldStop=false,srchMode='precise',kwTags=[];
+let sCol='idx',sDir=1;
+
+(async()=>{
+  Object.assign(KEYS,{groq:ls('dn_groq'),deepseek:ls('dn_deepseek'),together:ls('dn_together'),mistral:ls('dn_mistral'),claude:ls('dn_claude'),openai:ls('dn_openai'),gemini:ls('dn_gemini'),cohere:ls('dn_cohere')});
+  delayMs=parseInt(ls('dn_dly')||'1000');
+  aiDefModel=ls('dn_aimodel')||'auto';
+  try{const r=await window.storage.get('dn_v9');if(r?.value){const d=JSON.parse(r.value);rows=d.rows||[];todayCount=d.todayCount||0;}}
+  catch(e){try{const r=ls('dn_v8');if(r){const d=JSON.parse(r);rows=d.rows||[];}}catch(e2){}}
+  updateCntryF();renderTbl();updateStats();
+  // Parallel test all configured APIs
+  const tests=[];
+  tests.push(testPollinations().then(ok=>updateStatusUI('pollinations',ok)).catch(()=>updateStatusUI('pollinations',false)));
+  Object.entries(KEYS).forEach(([k,v])=>{if(v&&TESTERS[k])tests.push(TESTERS[k]().then(ok=>updateStatusUI(k,ok)).catch(()=>updateStatusUI(k,false)));});
+  Promise.all(tests).then(()=>{
+    const fastestOk=SPEED_ORDER.find(id=>STAT[id]==='ok'&&(id==='pollinations'||KEYS[id]));
+    if(fastestOk)curAPI=fastestOk;
+    renderAPIProvs();
+  });
+  renderAPIProvs();
+  log('lb','DataNexus v10 — 10+ API引擎 · DeepSeek/Mistral · AI流式 · 模型选择器');
+})();
+async function persist(){try{await window.storage.set('dn_v9',JSON.stringify({rows,todayCount}));}catch(e){try{localStorage.setItem('dn_v8',JSON.stringify({rows,todayCount}));}catch(e2){}}}
+function ls(k){return localStorage.getItem(k)||'';}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function openSettings(){
+  $('setMod').classList.add('show');
+  Object.entries(KEYS).forEach(([k,v])=>{const e=$(k==='openai'?'kOpenai':k==='deepseek'?'kDeepseek':k==='together'?'kTogether':k==='mistral'?'kMistral':k==='claude'?'kClaude':k==='gemini'?'kGemini':k==='cohere'?'kCohere':'kGroq');if(e)e.value=v;});
+  $('dlySet').value=delayMs;
+  $('aiDefModel').value=aiDefModel;
+}
+function saveSettings(){
+  const keyMap={kGroq:'groq',kDeepseek:'deepseek',kTogether:'together',kMistral:'mistral',kClaude:'claude',kOpenai:'openai',kGemini:'gemini',kCohere:'cohere'};
+  Object.entries(keyMap).forEach(([elId,k])=>{const v=$(elId)?.value?.trim()||'';KEYS[k]=v;v?localStorage.setItem('dn_'+k,v):localStorage.removeItem('dn_'+k);});
+  delayMs=parseInt($('dlySet').value)||1000;localStorage.setItem('dn_dly',delayMs);
+  aiDefModel=$('aiDefModel')?.value||'auto';localStorage.setItem('dn_aimodel',aiDefModel);
+  closeM('setMod');renderAPIProvs();testAllAPIs();showToast('✅ 已保存，并发测试API中…');
+}
+$('showK').onchange=function(){['kGroq','kDeepseek','kTogether','kMistral','kClaude','kOpenai','kGemini','kCohere'].forEach(id=>{const e=$(id);if(e)e.type=this.checked?'text':'password';});};
+
+// ═══════════════════════════════════════
+// ADD
+// ═══════════════════════════════════════
+function openAdd(){$('addMod').classList.add('show');}
+function submitAdd(){
+  const name=$('fn').value.trim(),company=$('fc').value.trim();
+  if(!name||!company){showToast('姓名和公司必填');return;}
+  rows.unshift({id:uid(),platform:'manual',name,title:$('ft').value.trim()||'—',type:$('fty').value,company,country:$('fco').value.trim()||'—',email:$('fe').value.trim()||'—',phone:$('fp').value.trim()||'—',social:$('fs').value.trim()||'—',note:$('fnote').value.trim()||'',addedDate:today(),isNew:true});
+  persist();updateCntryF();renderTbl();updateStats();closeM('addMod');showToast('✅ 已添加');
+  ['fn','ft','fc','fco','fe','fp','fs','fnote'].forEach(i=>{const e=$(i);if(e)e.value='';});
+}
+
+// ═══════════════════════════════════════
+// KEYWORDS
+// ═══════════════════════════════════════
+function kwKD(e){const v=$('kwI').value;if(e.key==='Enter'||e.key===','){e.preventDefault();const k=v.replace(/,/g,'').trim();if(k&&!kwTags.find(t=>t.kw===k)){kwTags.push({kw:k,mode:srchMode});$('kwI').value='';renderKwTags();}}}
+function renderKwTags(){const w=$('kwTags');w.style.display=kwTags.length?'flex':'none';w.innerHTML=kwTags.map((t,i)=>`<span class="kwtag ${t.mode}">${t.mode==='precise'?'🎯':'🌐'} ${t.kw} <span class="x" onclick="kwTags.splice(${i},1);renderKwTags()">×</span></span>`).join('');}
+function setMode(m){srchMode=m;document.querySelectorAll('.mb').forEach(b=>b.classList.toggle('on',b.dataset.m===m));}
+
+// ═══════════════════════════════════════
+// CRAWL ENGINE
+// ═══════════════════════════════════════
+const POOL=[
+  {p:'google',name:'David Mitchell',title:'Procurement Manager',type:'brand',company:'OuterWear International',country:'UK',email:'d.mitchell@outerwear.co.uk',phone:'+44-7700-900167',social:'—'},
+  {p:'google',name:'Jennifer Lee',title:'Sourcing Specialist',type:'brand',company:'Summit Sports Inc.',country:'USA',email:'j.lee@summitsports.com',phone:'+1-303-555-0142',social:'—'},
+  {p:'google',name:'Thomas König',title:'Supply Chain Director',type:'brand',company:'Mountain Fashion GmbH',country:'Germany',email:'t.koenig@mountainfashion.de',phone:'+49-151-23456789',social:'—'},
+  {p:'google',name:'Marie Dubois',title:'Buying Director',type:'brand',company:'Alpine Fashion Group',country:'France',email:'m.dubois@alpinefashion.fr',phone:'+33-6-12345678',social:'—'},
+  {p:'linkedin',name:'Emma Johansson',title:'Head of Sourcing',type:'brand',company:'Nordic Wear AB',country:'Sweden',email:'emma.j@nordicwear.se',phone:'+46-70-1234567',social:'linkedin.com/in/emmajohansson'},
+  {p:'linkedin',name:'Lars Müller',title:'Global Procurement Lead',type:'brand',company:'AlpineWear GmbH',country:'Germany',email:'l.muller@alpinewear.de',phone:'+49-176-12345678',social:'linkedin.com/in/larsmüller'},
+  {p:'facebook',name:'Amelia Clark',title:'Fashion Buyer',type:'brand',company:'Clark Outdoor',country:'Australia',email:'amelia@clarkoutdoor.com.au',phone:'+61-412-345678',social:'fb.com/AmeliaClarkBuyer'},
+  {p:'instagram',name:'Giulia Romano',title:'Brand Sourcing',type:'brand',company:'Romano Moda Milano',country:'Italy',email:'g.romano@romanomoda.it',phone:'+39-333-1234567',social:'@giulia_romano_moda'},
+  {p:'twitter',name:'James Thompson',title:'Procurement Director',type:'brand',company:'British Outerwear Co.',country:'UK',email:'j.thompson@britishouterwear.co.uk',phone:'+44-7911-123456',social:'@JThompsonBuyer'},
+  {p:'tiktok',name:'Luna Park',title:'Brand Buyer',type:'brand',company:'Seoul K-Fashion',country:'South Korea',email:'luna.park@kfashion.kr',phone:'+82-10-12345678',social:'@lunapark_buyer'},
+  {p:'vk',name:'Alexei Sokolov',title:'Procurement Head',type:'brand',company:'Moscow Down Brand',country:'Russia',email:'a.sokolov@moscowdown.ru',phone:'+7-926-1234567',social:'vk.com/alexei_sokolov'},
+  {p:'whatsapp',name:'Ahmed Al-Mansouri',title:'Procurement Manager',type:'brand',company:'Dubai Luxury Fashion',country:'UAE',email:'a.mansouri@dubailuxury.ae',phone:'+971-52-1234567',social:'WhatsApp: +971-52-1234567'},
+  {p:'alibaba',name:'Li Wei',title:'Export Manager',type:'factory',company:'Guangzhou Textile Co.',country:'China',email:'liwei@gztextile.cn',phone:'+86-13312345678',social:'alibaba.com/liwei'},
+];
+async function startCrawl(){
+  if(running){showToast('采集进行中…');return;}
+  if(aPlats.size===0){showToast('请选择平台');return;}
+  running=true;shouldStop=false;
+  $('runBtn').disabled=true;$('runBtn').textContent='⏳ 采集中…';$('stopBtn').style.display='';
+  showErr('');showProg(true);clearLog();showLog(true);
+  const ft=$('ftype').value,batch=parseInt($('fcnt').value);
+  const targetCountries=getTargetCountries();
+  const kwList=kwTags.length?kwTags:[{kw:$('kwI').value.trim()||'buyer procurement sourcing',mode:srchMode}];
+  const platList=[...aPlats],browList=[...aBrows];
+  const existK=new Set(rows.map(dk));
+  let added=0,skipped=0,task=0,total=platList.length*kwList.length;
+  for(const plat of platList){
+    if(shouldStop)break;
+    for(const kw of kwList){
+      if(shouldStop||added>=batch)break;
+      const bk=browList[Math.floor(Math.random()*browList.length)]||'us_ny';
+      setActBrow(bk);task++;
+      const pct=Math.round(task/total*90);
+      const pi=PC[plat]||PC.manual;
+      const regLabel=targetCountries.length?targetCountries.slice(0,3).join(',')+`${targetCountries.length>3?`+${targetCountries.length-3}国`:''}`:' 全球';
+      setProg(pct,`[${BL[bk]||bk}] → ${pi.l} · "${kw.kw}" · ${regLabel}`);
+      log('lp',`${BL[bk]||bk} → ${pi.l} | "${kw.kw}" | ${regLabel}`);
+      let leads=[];
+      try{leads=await aiCrawl(plat,kw,targetCountries);}
+      catch(e){log('le','AI采集失败→本地库: '+e.message.slice(0,50));leads=localCrawl(plat,kw,targetCountries);}
+      for(const l of leads){
+        if(added>=batch||shouldStop)break;
+        if(ft!=='all'&&l.type!==ft)continue;
+        if(targetCountries.length>0&&l.country&&!targetCountries.some(c=>l.country.toLowerCase().includes(c.toLowerCase())||c.toLowerCase().includes(l.country.toLowerCase()))){skipped++;continue;}
+        const k=dk(l);if(existK.has(k)){skipped++;continue;}
+        existK.add(k);
+        rows.unshift({...l,id:uid(),platform:plat,browser:BL[bk]||bk,searchMode:kw.mode,addedDate:today(),isNew:true,keyword:kw.kw});
+        added++;if(added%5===0){renderTbl();updateStats();}
+        log('ls',`✅ ${l.name} · ${l.company} · ${l.country}`);
+      }
+      await sleep(delayMs);
+    }
+  }
+  clearActBrow();todayCount+=added;await persist();
+  setProg(100,`完成 — 新增 ${added} 条，跳过 ${skipped}`);
+  updateCntryF();renderTbl();updateStats();
+  if(added===0)showErr('未采集到新数据 — 建议: 切换广泛模式 / 换关键词 / 确认API连接');
+  else showToast(`🎉 新增 ${added} 条线索！`);
+  $('runBtn').disabled=false;$('runBtn').textContent='▶ 开始采集';$('stopBtn').style.display='none';running=false;
+}
+function setActBrow(k){document.querySelectorAll('[data-b]').forEach(b=>{b.classList.remove('active');if(b.dataset.b===k)b.classList.add('active');});$('browAct').textContent=`· ${BL[k]||k}`;}
+function clearActBrow(){document.querySelectorAll('[data-b]').forEach(b=>b.classList.remove('active'));$('browAct').textContent='';}
+async function aiCrawl(plat,kwObj,targetCountries){
+  const pi=PC[plat]||PC.manual;
+  const ctryStr=targetCountries.length?`严格限定国家：${targetCountries.join(', ')}。country必须精确匹配。`:'全球范围。';
+  const sysP=`你是B2B商业数据研究员。${pi.l}平台 · ${kwObj.mode==='precise'?'精准':'广泛'}搜索"${kwObj.kw}"。${ctryStr}\n只返回JSON数组：[{"name":"","title":"","type":"brand|factory|agent","company":"","country":"英文国家名","email":"或—","phone":"+区号号码或—","social":"或—"}]`;
+  const txt=await callAI([{role:'system',content:sysP},{role:'user',content:`搜索${pi.l}上的${kwObj.kw}相关采购商，返回7-10条真实商业联系人，JSON格式`}],1400,true);
+  const arr=parseJSON(txt);
+  if(!Array.isArray(arr)||arr.length===0)throw new Error('返回格式无效');
+  return arr.filter(l=>l.name&&l.company);
+}
+function localCrawl(plat,kwObj,targetCountries){
+  let pool=POOL.filter(x=>x.p===plat||Math.random()>.6);
+  if(targetCountries?.length>0){const m=pool.filter(x=>targetCountries.some(c=>x.country.toLowerCase().includes(c.toLowerCase())));if(m.length>0)pool=m;}
+  return pool.sort(()=>Math.random()-.5);
+}
+function addSample(){
+  const ek=new Set(rows.map(dk));let n=0;const bk=Object.keys(BL);
+  [...POOL].sort(()=>Math.random()-.5).forEach(s=>{if(n>=12)return;const k=dk(s);if(ek.has(k))return;ek.add(k);rows.unshift({...s,id:uid(),platform:s.p,browser:BL[bk[Math.floor(Math.random()*bk.length)]],searchMode:'precise',addedDate:today(),isNew:true,keyword:'示例'});n++;});
+  persist();updateCntryF();renderTbl();updateStats();showToast(`✅ 添加 ${n} 条示例`);
+}
+
+// ═══════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════
+function exportCSV(){
+  if(!rows.length){showToast('暂无数据');return;}
+  const exp=selSet.size?rows.filter(r=>selSet.has(r.id)):rows;
+  const h=['#','平台','关键词','姓名','职位','类型','公司','国家','邮箱','邮箱验证','邮箱分','电话','电话验证','电话分','WhatsApp','WA分','综合分','社媒','节点','模式','日期'];
+  const TL2={brand:'品牌',factory:'工厂',agent:'代理'};
+  const body=exp.map((r,i)=>[i+1,PC[r.platform]?.l||'—',r.keyword||'—',r.name,r.title,TL2[r.type]||r.type,r.company,r.country,r.email,r.ev===true?'✅':r.ev===false?'❌':'未验',r.es||0,r.phone,r.pv?'✅':'❌',r.ps||0,r.wv?'💬':'—',r.ws||0,r.cs||0,r.social,r.browser,r.searchMode,r.addedDate].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv='\uFEFF'+[h.join(','),...body].join('\r\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`DataNexus_${today()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast(`✅ 导出 ${exp.length} 条`);
+}
+function exportJSON(){
+  if(!rows.length){showToast('暂无数据');return;}
+  const exp=selSet.size?rows.filter(r=>selSet.has(r.id)):rows;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(exp,null,2)],{type:'application/json'}));a.download=`DataNexus_${today()}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);showToast(`✅ JSON导出 ${exp.length} 条`);
+}
+
+// ═══════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════
+function selAll(){filteredRows().forEach(r=>selSet.add(r.id));renderTbl();}
+function selNone(){selSet.clear();renderTbl();}
+function togAll(c){c?selAll():selNone();}
+function clearF(){['f-nm','f-kw'].forEach(i=>{const e=$(i);if(e)e.value='';});['f-pl','f-ty','f-co','f-vl'].forEach(i=>{const e=$(i);if(e)e.value='';});renderTbl();}
+function updateCntryF(){const s=$('f-co');if(!s)return;const cur=s.value;const cs=[...new Set(rows.map(r=>r.country).filter(Boolean))].sort();s.innerHTML='<option value="">全部国家</option>'+cs.map(c=>`<option value="${c}">${c}</option>`).join('');s.value=cur;}
+function filteredRows(){
+  const fn=($('f-nm')?.value||'').toLowerCase(),fp=$('f-pl')?.value||'',ft=$('f-ty')?.value||'',fc=$('f-co')?.value||'',fv=$('f-vl')?.value||'',fk=($('f-kw')?.value||'').toLowerCase();
+  return rows.filter(r=>{
+    if(fn&&!((r.name||'').toLowerCase().includes(fn)||(r.company||'').toLowerCase().includes(fn)))return false;
+    if(fp&&r.platform!==fp)return false;if(ft&&r.type!==ft)return false;if(fc&&r.country!==fc)return false;
+    if(fv==='email_ok'&&r.ev!==true)return false;if(fv==='phone_ok'&&!r.pv)return false;
+    if(fv==='wa_ok'&&!r.wv)return false;if(fv==='hi'&&(r.cs||0)<80)return false;if(fv==='nv'&&r.vs==='done')return false;
+    if(fk&&![r.name,r.company,r.country,r.title,r.email,r.keyword||''].join(' ').toLowerCase().includes(fk))return false;
+    return true;
+  }).sort((a,b)=>{let av=sCol==='idx'?rows.indexOf(a):a[sCol]||'',bv=sCol==='idx'?rows.indexOf(b):b[sCol]||'';return String(av).localeCompare(String(bv))*sDir;});
+}
+function srtBy(col){sDir=sCol===col?-sDir:1;sCol=col;document.querySelectorAll('th').forEach(t=>t.classList.remove('asc','desc'));renderTbl();}
+const TL={brand:'品牌',factory:'工厂',agent:'代理'};const TC={brand:'tbrand',factory:'tfactory',agent:'tagent'};
+function renderTbl(){
+  const list=filteredRows();
+  $('emptyEl').style.display=list.length?'none':'block';
+  $('mainTbl').style.display=list.length?'table':'none';
+  $('fCnt').textContent=`${list.length} / ${rows.length}`;
+  $('selCnt').textContent=selSet.size?`已选 ${selSet.size}`:'';
+  const chkAll=$('chkAll');if(chkAll)chkAll.checked=list.length>0&&list.every(r=>selSet.has(r.id));
+  if(!list.length)return;
+  $('tbody').innerHTML=list.map((r,i)=>{
+    const pl=PC[r.platform]||PC.manual;
+    const plB=`<span style="display:inline-flex;align-items:center;gap:2px;font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;background:${pl.bg};color:${pl.c};border:1px solid ${pl.c}33">${pl.i} ${pl.l}</span>`;
+    let vh='';
+    if(r.vs==='checking')vh=`<span class="vbg vchk">⏳</span>`;
+    else if(r.vs==='done'){
+      const ev=r.ev===true?`<span class="vbg vok">✅邮(${r.es})</span>`:`<span class="vbg vfail">❌邮(${r.es})</span>`;
+      const pv=r.pv?`<span class="vbg vok">📱电(${r.ps})</span>`:`<span class="vbg vfail">❌电(${r.ps})</span>`;
+      const wv=r.wv?`<span class="vbg vwa">💬WA(${r.ws})</span>`:`<span class="vbg" style="border:1px solid var(--bd);color:var(--tx3);font-family:var(--fm);font-size:8px;padding:1px 5px;border-radius:2px">—</span>`;
+      const s=r.cs;const sq=s!=null?`<div class="vscore ${s>=80?'vhi':s>=50?'vmd':'vlo'}">${s}分<div style="width:${s}%;height:2px;background:${s>=80?'var(--grn)':s>=50?'var(--amb)':'var(--red)'};border-radius:2px;margin-top:2px"></div></div>`:'';
+      vh=`<div class="vcell">${ev}${pv}${wv}${sq}</div>`;
+    }else vh=`<span class="vbg vpend" onclick="validateRow('${r.id}')">🔌验证</span>`;
+    const em=r.email||'—',ph=r.phone||'—',so=r.social||'—';
+    return`<tr class="${r.isNew&&i<8?'ri':''}">
+      <td><input type="checkbox" ${selSet.has(r.id)?'checked':''} onchange="selTog('${r.id}',this.checked)" style="cursor:pointer;accent-color:var(--neo)"></td>
+      <td style="color:var(--tx4);font-family:var(--fm);font-size:9px">${i+1}</td>
+      <td>${plB}</td>
+      <td style="font-weight:600;white-space:nowrap;font-size:12px">${r.name||'—'}${r.isNew?'<span class="tnew">NEW</span>':''}${r.enriched?'<span style="font-size:9px;margin-left:2px">✨</span>':''}</td>
+      <td style="color:var(--tx2);font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title||''}">${r.title||'—'}</td>
+      <td><span class="tag ${TC[r.type]||'tagent'}">${TL[r.type]||r.type||'—'}</span></td>
+      <td style="font-weight:500;font-size:12px">${r.company||'—'}</td>
+      <td style="font-size:11px;color:var(--tx2)">${r.country||'—'}</td>
+      <td class="ec" onclick="cp2('${em.replace(/'/g,"\\'")}','邮箱')">${em.slice(0,28)}</td>
+      <td class="pc2" onclick="cp2('${ph.replace(/'/g,"\\'")}','电话')">${ph}</td>
+      <td class="sc2" onclick="cp2('${so.replace(/'/g,"\\'")}','社媒')">${so.slice(0,18)}</td>
+      <td>${vh}</td>
+      <td style="font-family:var(--fm);font-size:9px;color:var(--tx4);white-space:nowrap">${r.addedDate||'—'}</td>
+      <td style="white-space:nowrap"><button class="srcbtn" onclick="enrichRow('${r.id}')">✨AI</button> <button class="delbtn" onclick="delRow('${r.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+function selTog(id,c){if(c)selSet.add(id);else selSet.delete(id);$('selCnt').textContent=selSet.size?`已选 ${selSet.size}`:'';const ca=$('chkAll');if(ca)ca.checked=filteredRows().every(r=>selSet.has(r.id));}
+function updateStats(){
+  const vd=rows.filter(r=>r.vs==='done'),tot=rows.length;
+  $('s0').textContent=tot;$('s1').textContent=todayCount;
+  $('s2').textContent=rows.filter(r=>r.type==='brand').length;$('s3').textContent=rows.filter(r=>r.type==='factory').length;$('s4').textContent=rows.filter(r=>r.type==='agent').length;
+  $('s5').textContent=vd.filter(r=>r.ev===true).length;$('s6').textContent=vd.filter(r=>r.pv).length;$('s7').textContent=vd.filter(r=>r.wv).length;$('s8').textContent=rows.filter(r=>r.social&&r.social!=='—').length;
+  const vr=tot>0?Math.round(vd.length/tot*100):0;$('s9').textContent=vr+'%';
+  const sc=vd.filter(r=>r.cs!=null);$('s10').textContent=sc.length?Math.round(sc.reduce((a,r)=>a+r.cs,0)/sc.length)+'分':'—';
+  $('b1').textContent=todayCount;$('b2').textContent=tot;$('b3').textContent=vr+'%';
+}
+
+// ═══════════════════════════════════════
+// AI ASSISTANT v10 — Enhanced
+// ═══════════════════════════════════════
+let aiOpen=false,aiHist=[],aiLoading=false,aiMode='chat';
+
+// Enhanced system prompt — concise & actionable
+const AI_SYSTEM=`你是NEXUS v10，专业跨境贸易AI助手。你的优势：
+- 深度了解B2B外贸、采购流程、各国商业文化
+- 能生成高质量开发信、谈判话术、市场分析
+- 精通WhatsApp、LinkedIn、邮件等多渠道开发策略
+
+回复规则：
+1. 用**加粗**标记关键行动点
+2. 用"##"开头标注段落标题（会被格式化）  
+3. 列表用"- "开头（会被格式化）
+4. 回答要具体可执行，避免泛泛而谈
+5. 中文回答，专业术语保留英文`;
+
+// Format AI response text to rich HTML
+function formatAIText(text){
+  return text
+    .replace(/##\s*(.+)/g,'<span class="ai-h">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/^[-•]\s*(.+)/gm,'<div class="ai-li">$1</div>')
+    .replace(/`([^`]+)`/g,'<span class="ai-code">$1</span>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n(?!<)/g,'<br>');
+}
+
+function toggleAI(){aiOpen=!aiOpen;$('aiPanel').classList.toggle('open',aiOpen);if(aiOpen)$('aiFab').classList.remove('pls');else $('aiFab').classList.add('pls');}
+
+function aiKD(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+
+function setAIMode(mode){
+  aiMode=mode;
+  ['modeChat','modeWeb','modeData'].forEach(id=>$(id)?.classList.remove('on'));
+  const modeId={'chat':'modeChat','web':'modeWeb','data':'modeData'}[mode];
+  $(modeId)?.classList.add('on');
+  const ph={chat:'问任何采购/外贸问题…',web:'联网搜索最新信息（需Claude Key）…',data:'分析当前数据库…'}[mode]||'';
+  $('aiInp').placeholder=ph;
+}
+
+function onModelChange(){
+  const sel=$('aiModelSel')?.value||'auto';
+  const needsKey={'claude':'Claude Key','openai':'OpenAI Key','gemini':'Gemini Key','mistral':'Mistral Key','deepseek':'DeepSeek Key','groq_llama3':'Groq Key','groq_llama3_8b':'Groq Key','cohere':'Cohere Key','together':'Together AI Key'};
+  const apiId=sel.split('_')[0];
+  if(needsKey[sel]&&!KEYS[apiId]&&KEYS[sel]===undefined&&!KEYS[sel.split('_')[0]]){
+    // Check more carefully
+    const key=KEYS[sel]||KEYS[sel.split('_')[0]];
+    if(!key)showToast(`⚠️ 需要 ${needsKey[sel]}，请先在设置中配置`);
+  }
+  $('aiModelInfo').textContent=`模型: ${$('aiModelSel')?.options[$('aiModelSel')?.selectedIndex]?.text||'自动'}`;
+}
+
+function aiQ(q,forceWeb=false,forceData=false){
+  if(!aiOpen)toggleAI();
+  if(forceWeb)setAIMode('web');
+  else if(forceData)setAIMode('data');
+  $('aiInp').value=q;sendAI();
+}
+
+function clearAIChat(){
+  aiHist=[];
+  $('aiMsgs').innerHTML=`<div class="aimsg bot"><div class="aiico">🤖</div><div class="aibbl"><b>对话已清空</b>，随时开始新话题！</div></div>`;
+  showToast('对话已清空');
+}
+
+async function sendAI(){
+  if(aiLoading)return;
+  const inp=$('aiInp'),msg=inp.value.trim();if(!msg)return;
+  inp.value='';inp.style.height='auto';
+  addAIMsg('user',msg);
+  
+  // Detect mode from message prefix
+  const useWeb=aiMode==='web'||msg.startsWith('/search ');
+  const useData=aiMode==='data'||msg.startsWith('/data ');
+  const cleanMsg=msg.replace(/^\/(search|data)\s*/,'');
+  
+  aiHist.push({role:'user',content:cleanMsg});
+  
+  // Update status
+  const stEl=$('aiSt');
+  stEl.className='aist '+(useWeb?'searching':'thinking');
+  stEl.innerHTML=`<span class="aist-dot"></span>${useWeb?'联网搜索中…':'思考中…'}`;
+  aiLoading=true;$('aiSend').disabled=true;
+  
+  const tid='t'+Date.now();addTyping(tid,useWeb);
+  const t0=Date.now();
+  
+  try{
+    let responseText='',queries=[];
+    
+    if(useWeb&&KEYS.claude){
+      // Claude with web search
+      let ctxMsg=cleanMsg;
+      if(useData&&rows.length)ctxMsg+=buildDataContext();
+      const webMsgs=[{role:'system',content:AI_SYSTEM},...aiHist.slice(-8,-1),{role:'user',content:ctxMsg}];
+      const result=await callClaudeWithWebSearch(webMsgs,2200);
+      responseText=result.text;queries=result.queries;
+    }else{
+      // Build messages with context
+      let userContent=cleanMsg;
+      if(useData&&rows.length)userContent+=buildDataContext();
+      
+      const msgs=[
+        {role:'system',content:AI_SYSTEM},
+        ...aiHist.slice(-10,-1),
+        {role:'user',content:userContent}
+      ];
+      responseText=await callAI(msgs,1200,false,useData); // prefer quality for data analysis
+    }
+    
+    rmMsg(tid);
+    const elapsed=Date.now()-t0;
+    $('aiLatInfo').textContent=`延迟: ${elapsed}ms`;
+    
+    if(responseText){
+      const formatted=formatAIText(responseText);
+      const queryBadges=queries.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;padding-top:6px;border-top:1px solid var(--bd)">${queries.map(q=>`<span class="src-chip">🔍 ${q}</span>`).join('')}</div>`:'';
+      addAIMsg('bot',formatted+queryBadges,queries.length>0);
+      aiHist.push({role:'assistant',content:responseText});
+      if(aiHist.length>20)aiHist=aiHist.slice(-20); // Keep last 20
+    }else addAIMsg('bot','⚠️ 未获得响应，请重试或切换模型');
+    
+  }catch(e){
+    rmMsg(tid);
+    if(e.message.includes('Claude')&&!KEYS.claude&&useWeb){
+      addAIMsg('bot',formatAIText(`## 联网搜索需要 Claude API Key\n\n- 请点击右上角 **⚙ 设置** 配置 Claude Key\n- 或切换到 **💬 智能问答** 模式（免费可用）\n- Together AI Key 也支持基础联网搜索`));
+    }else{
+      addAIMsg('bot',`⚠️ ${e.message.slice(0,100)}\n\n请检查API Key是否正确，或切换到其他模型`);
+    }
+  }
+  
+  stEl.className='aist';
+  stEl.innerHTML=`<span class="aist-dot"></span>${curAPI?API_META[curAPI]?.name||'在线':'在线'} · 多模型`;
+  aiLoading=false;$('aiSend').disabled=false;
+}
+
+function buildDataContext(){
+  const vd=rows.filter(r=>r.vs==='done');
+  const topRows=rows.filter(r=>r.cs!=null).sort((a,b)=>(b.cs||0)-(a.cs||0)).slice(0,5);
+  const countryCounts={};rows.forEach(r=>{if(r.country)countryCounts[r.country]=(countryCounts[r.country]||0)+1;});
+  const topCountries=Object.entries(countryCounts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,n])=>`${c}(${n})`).join('、');
+  return`\n\n[数据库概览]\n总计${rows.length}条 | 品牌${rows.filter(r=>r.type==='brand').length} | 工厂${rows.filter(r=>r.type==='factory').length} | 代理${rows.filter(r=>r.type==='agent').length}\n邮箱验证通过${vd.filter(r=>r.ev===true).length} | 有WhatsApp ${vd.filter(r=>r.wv).length} | 综合均分${rows.filter(r=>r.cs!=null).length?Math.round(rows.filter(r=>r.cs!=null).reduce((a,r)=>a+r.cs,0)/rows.filter(r=>r.cs!=null).length):0}\n主要国家: ${topCountries}\nTOP5客户: ${topRows.map(r=>`${r.name}(${r.cs}分,${r.country},${r.type})`).join('、')}`;
+}
+
+function addAIMsg(role,html,hasSearch=false){
+  const c=$('aiMsgs'),d=document.createElement('div');d.className=`aimsg ${role}`;
+  const badge=hasSearch?`<div style="font-family:var(--fm);font-size:8px;color:var(--neo);margin-bottom:5px;display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--neo);display:inline-block"></span>联网搜索结果</div>`:'';
+  d.innerHTML=`<div class="aiico">${role==='bot'?'🤖':'👤'}</div><div class="aibbl">${badge}${html}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  // Remove old quick buttons when user sends
+  if(role==='user'){const qb=$('aiQbtns');if(qb)qb.style.display='none';}
+}
+function addTyping(id,isWeb=false){
+  const c=$('aiMsgs'),d=document.createElement('div');d.className='aimsg bot';d.id=id;
+  const inner=isWeb?`<div style="display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:9px;color:var(--neo)"><div style="width:12px;height:12px;border:1.5px solid rgba(0,212,255,.2);border-top-color:var(--neo);border-radius:50%;animation:spin .8s linear infinite"></div>联网搜索中…</div>`:`<div class="dots"><span></span><span></span><span></span></div>`;
+  d.innerHTML=`<div class="aiico">🤖</div><div class="aibbl">${inner}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function rmMsg(id){const e=document.getElementById(id);if(e)e.remove();}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function $(id){return document.getElementById(id);}
+function dk(r){const e=(r.email||'').trim().toLowerCase();return(e&&e!=='—')?e:(r.name+'|'+r.company).toLowerCase();}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2,7);}
+function today(){return new Date().toLocaleDateString('zh-CN');}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function cp2(t,l){if(!t||t==='—'){showToast('无内容');return;}navigator.clipboard.writeText(t).then(()=>showToast(`✅ 已复制${l}`)).catch(()=>prompt('手动复制:',t));}
+function delRow(id){rows=rows.filter(r=>r.id!==id);selSet.delete(id);persist();updateCntryF();renderTbl();updateStats();}
+function doClear(){if(!rows.length){showToast('已空');return;}if(!confirm(`清空全部 ${rows.length} 条？`))return;rows=[];todayCount=0;selSet.clear();persist();updateCntryF();renderTbl();updateStats();showProg(false);showLog(false);showErr('');showToast('已清空');}
+function closeM(id){const e=$(id);if(e)e.classList.remove('show');}
+let logN=0;
+function log(t,m){const b=$('logB'),ts=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});b.innerHTML+=`<div class="${t}">[${ts}] ${m}</div>`;b.scrollTop=b.scrollHeight;$('logCnt').textContent=++logN+'条';}
+function clearLog(){$('logB').innerHTML='';logN=0;$('logCnt').textContent='0条';}
+function showLog(v){$('logW').classList.toggle('show',v);}
+function showProg(v){$('progW').classList.toggle('show',v);}
+function setProg(p,m){$('progF').style.width=p+'%';$('progM').textContent=m;$('progP').textContent=p+'%';}
+function showErr(m){const e=$('errB');m?(e.textContent=m,e.classList.add('show')):e.classList.remove('show');}
+let _tt;function showToast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m){closeM('setMod');closeM('addMod');}}));
+</script>
+</body>
+</html>
